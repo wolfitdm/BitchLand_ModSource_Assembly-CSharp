@@ -1,0 +1,19 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: mminit_1
+// Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
+// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+
+#nullable disable
+public class mminit_1 : mainmenu_animsetup
+{
+  public Girl TheGirl;
+
+  public override void Init()
+  {
+    base.Init();
+    this.TheGirl.AttatchBoobsToHands();
+    this.TheGirl.A_Standing = "boobs1";
+    this.TheGirl.SetHighLod();
+  }
+}
