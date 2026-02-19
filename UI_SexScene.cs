@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_SexScene
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -301,10 +301,13 @@ public class UI_SexScene : UI_Menu
           this.CurrentPoses = this.DildoPoses;
           goto default;
         }
-        this.DildoDrop.captionText.text = "None";
-        options.Add("You need a Dildo");
-        flag = true;
-        break;
+        else
+        {
+          this.DildoDrop.captionText.text = "None";
+          options.Add("You need a Dildo");
+          flag = true;
+          break;
+        }
       case 2:
         if ((Object) this.PlayerSex.Person2 != (Object) null)
         {
@@ -319,9 +322,12 @@ public class UI_SexScene : UI_Menu
                 this.CurrentPoses = this.SexPoses;
                 goto label_19;
               }
-              options.Add("Can't while forcing");
-              flag = true;
-              break;
+              else
+              {
+                options.Add("Can't while forcing");
+                flag = true;
+                break;
+              }
             case SexStateType.Sleeping:
               options.Add("Partner is sleeping");
               flag = true;
@@ -343,18 +349,24 @@ public class UI_SexScene : UI_Menu
           this.CurrentPoses = this.NoEnergyPoses;
           goto default;
         }
-        options.Add("You need a Partner");
-        flag = true;
-        break;
+        else
+        {
+          options.Add("You need a Partner");
+          flag = true;
+          break;
+        }
       case 4:
         if ((Object) this.PlayerSex.Person2 != (Object) null)
         {
           this.CurrentPoses = this.ForcedPoses;
           goto default;
         }
-        options.Add("You need a Partner");
-        flag = true;
-        break;
+        else
+        {
+          options.Add("You need a Partner");
+          flag = true;
+          break;
+        }
       default:
 label_19:
         for (int index = 0; index < this.CurrentPoses.Count; ++index)
@@ -538,6 +550,40 @@ label_19:
         {
           this.UICondomCheck();
           this.SpawnCondomJuices();
+        }
+        else if ((double) Random.Range(0.0f, 1f) < 0.05000000074505806)
+        {
+          this.ShowNotification_Sex("Condom has broken and was discarded");
+          for (int index = 0; index < Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Count; ++index)
+          {
+            if (Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems[index].name.StartsWith("Condom Box"))
+            {
+              int_CondomBox componentInChildren = Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems[index].GetComponentInChildren<int_CondomBox>(true);
+              if (componentInChildren.Condoms > 0)
+              {
+                --componentInChildren.Condoms;
+                break;
+              }
+            }
+            if (Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems[index].name == "Condom")
+            {
+              GameObject storageItem = Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems[index];
+              Main.Instance.Player.CurrentBackpack.ThisStorage.RemoveItem(storageItem);
+              Object.Destroy((Object) storageItem);
+              break;
+            }
+            if (Main.Instance.Player.Perks.Contains("Trash3"))
+            {
+              int_ResourceItem componentInChildren = Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems[index].GetComponentInChildren<int_ResourceItem>(true);
+              if ((Object) componentInChildren != (Object) null && componentInChildren.ResourceType == e_ResourceType.Condom)
+              {
+                GameObject storageItem = Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems[index];
+                Main.Instance.Player.CurrentBackpack.ThisStorage.RemoveItem(storageItem);
+                Object.Destroy((Object) storageItem);
+                break;
+              }
+            }
+          }
         }
         else
         {

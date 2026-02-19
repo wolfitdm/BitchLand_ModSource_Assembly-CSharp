@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: GenerateTerrain
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Text;
@@ -187,7 +187,7 @@ public class GenerateTerrain : MonoBehaviour
     this.Tris[13] = 4;
     this.Tris[14] = 6;
     this.Tris[15] = 6;
-    this.Tris[16 /*0x10*/] = 7;
+    this.Tris[16] = 7;
     this.Tris[17] = 5;
     this.Tris[18] = 0;
     this.Tris[19] = 7;
@@ -232,7 +232,7 @@ public class GenerateTerrain : MonoBehaviour
       for (int index5 = 0; index5 < this.TerrainCount; ++index5)
       {
         this.xOffset = (this.size - 1) * index5;
-        this.TerrainTileObject = new GameObject($"Terrain Tile: {index4.ToString()}/{index5.ToString()}");
+        this.TerrainTileObject = new GameObject("Terrain Tile: " + index4.ToString() + "/" + index5.ToString());
         this.TerrainTileObject.transform.parent = gameObject7.transform;
         this.TerrainTileObject.AddComponent<Terrain>();
         this.TerrainTileObject.AddComponent<TerrainCollider>();
@@ -279,7 +279,7 @@ public class GenerateTerrain : MonoBehaviour
   {
     TerrainData terrainData = myTerrain.terrainData;
     terrainData.heightmapResolution = this.size;
-    terrainData.SetDetailResolution(512 /*0x0200*/, 32 /*0x20*/);
+    terrainData.SetDetailResolution(512, 32);
     terrainData.thickness = 1f;
     terrainData.size = new Vector3((float) this.size, (float) this.height, (float) this.size);
     terrainData.SetHeights(0, 0, this.GenerateHeights());
@@ -312,7 +312,7 @@ public class GenerateTerrain : MonoBehaviour
         }
         if (this.yOffset == 0)
         {
-          if (index2 == 1 && index1 % 8 == 0 && index1 != 512 /*0x0200*/)
+          if (index2 == 1 && index1 % 8 == 0 && index1 != 512)
           {
             GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.WallObject[UnityEngine.Random.Range(0, this.WallObject.Length)], new Vector3((float) (index1 + this.xOffset) + this.transform.position.x, this.transform.position.y, (float) index2 + this.transform.position.z), Quaternion.Euler(0.0f, -90f, 0.0f));
             gameObject.transform.parent = this.WallHolder[this.counter].transform;
@@ -342,7 +342,7 @@ public class GenerateTerrain : MonoBehaviour
         }
         if (this.yOffset == (this.size - 1) * (this.TerrainCount - 1))
         {
-          if (this.size - 2 - index2 == 0 && (this.size - 1 - index1) % 8 == 0 && this.size - 1 - index1 != 512 /*0x0200*/)
+          if (this.size - 2 - index2 == 0 && (this.size - 1 - index1) % 8 == 0 && this.size - 1 - index1 != 512)
           {
             GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.WallObject[UnityEngine.Random.Range(0, this.WallObject.Length)], new Vector3((float) index1 + this.transform.position.x + (float) this.xOffset, this.transform.position.y, (float) index2 + this.transform.position.z + (float) this.yOffset + (float) (this.TerrainCount - 1)), Quaternion.Euler(0.0f, 90f, 0.0f));
             gameObject.transform.parent = this.WallHolder[this.counter].transform;
@@ -603,7 +603,7 @@ public class GenerateTerrain : MonoBehaviour
 
   public string GetSeed()
   {
-    return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{this.TerrainCount.ToString()}i{this.CoverObjectsPerTerrain.ToString()}i{this.RandomOffsetSeed.ToString()}i{this.height.ToString()}i{this.grassDensity.ToString()}i{this.BuildingsPerTerrain.ToString()}i{this.LargeHeight.ToString()}i{this.LargeNoiseScale.ToString()}i{this.BigHeight.ToString()}i{this.BigNoiseScale.ToString()}i{this.MidHeight.ToString()}i{this.MidNoiseScale.ToString()}i{this.SmallHeight.ToString()}i{this.SmallNoiseScale.ToString()}i{this.LargeSub.ToString()}i{this.BigSub.ToString()}i{this.MidSub.ToString()}i{this.SmallSub.ToString()}i{this.mult.ToString()}i{this.Exponent.ToString()}i{this.HoloWallHeight.ToString()}"));
+    return Convert.ToBase64String(Encoding.UTF8.GetBytes(this.TerrainCount.ToString() + "i" + this.CoverObjectsPerTerrain.ToString() + "i" + this.RandomOffsetSeed.ToString() + "i" + this.height.ToString() + "i" + this.grassDensity.ToString() + "i" + this.BuildingsPerTerrain.ToString() + "i" + this.LargeHeight.ToString() + "i" + this.LargeNoiseScale.ToString() + "i" + this.BigHeight.ToString() + "i" + this.BigNoiseScale.ToString() + "i" + this.MidHeight.ToString() + "i" + this.MidNoiseScale.ToString() + "i" + this.SmallHeight.ToString() + "i" + this.SmallNoiseScale.ToString() + "i" + this.LargeSub.ToString() + "i" + this.BigSub.ToString() + "i" + this.MidSub.ToString() + "i" + this.SmallSub.ToString() + "i" + this.mult.ToString() + "i" + this.Exponent.ToString() + "i" + this.HoloWallHeight.ToString()));
   }
 
   private void RestoreSeed(string Seed)
@@ -629,7 +629,7 @@ public class GenerateTerrain : MonoBehaviour
       this.SmallNoiseScale = float.Parse(strArray[13]);
       this.LargeSub = float.Parse(strArray[14]);
       this.BigSub = float.Parse(strArray[15]);
-      this.MidSub = float.Parse(strArray[16 /*0x10*/]);
+      this.MidSub = float.Parse(strArray[16]);
       this.SmallSub = float.Parse(strArray[17]);
       this.mult = float.Parse(strArray[18]);
       this.Exponent = float.Parse(strArray[19]);

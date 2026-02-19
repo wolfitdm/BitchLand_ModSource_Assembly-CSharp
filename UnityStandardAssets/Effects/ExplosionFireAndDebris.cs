@@ -1,64 +1,65 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UnityStandardAssets.Effects.ExplosionFireAndDebris
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections;
 using UnityEngine;
 
 #nullable disable
-namespace UnityStandardAssets.Effects;
-
-public class ExplosionFireAndDebris : MonoBehaviour
+namespace UnityStandardAssets.Effects
 {
-  public Transform[] debrisPrefabs;
-  public Transform firePrefab;
-  public int numDebrisPieces;
-  public int numFires;
-
-  private IEnumerator Start()
+  public class ExplosionFireAndDebris : MonoBehaviour
   {
-    ExplosionFireAndDebris explosionFireAndDebris = this;
-    float multiplier = explosionFireAndDebris.GetComponent<ParticleSystemMultiplier>().multiplier;
-    for (int index = 0; (double) index < (double) explosionFireAndDebris.numDebrisPieces * (double) multiplier; ++index)
+    public Transform[] debrisPrefabs;
+    public Transform firePrefab;
+    public int numDebrisPieces;
+    public int numFires;
+
+    private IEnumerator Start()
     {
-      Transform debrisPrefab = explosionFireAndDebris.debrisPrefabs[Random.Range(0, explosionFireAndDebris.debrisPrefabs.Length)];
-      Vector3 vector3 = explosionFireAndDebris.transform.position + Random.insideUnitSphere * 3f * multiplier;
-      Quaternion rotation1 = Random.rotation;
-      Vector3 position = vector3;
-      Quaternion rotation2 = rotation1;
-      Object.Instantiate<Transform>(debrisPrefab, position, rotation2);
-    }
-    yield return (object) null;
-    float num = 10f * multiplier;
-    foreach (Collider collider in Physics.OverlapSphere(explosionFireAndDebris.transform.position, num))
-    {
-      if (explosionFireAndDebris.numFires > 0)
+      ExplosionFireAndDebris explosionFireAndDebris = this;
+      float multiplier = explosionFireAndDebris.GetComponent<ParticleSystemMultiplier>().multiplier;
+      for (int index = 0; (double) index < (double) explosionFireAndDebris.numDebrisPieces * (double) multiplier; ++index)
       {
-        Ray ray = new Ray(explosionFireAndDebris.transform.position, collider.transform.position - explosionFireAndDebris.transform.position);
-        RaycastHit hitInfo;
-        if (collider.Raycast(ray, out hitInfo, num))
+        Transform debrisPrefab = explosionFireAndDebris.debrisPrefabs[Random.Range(0, explosionFireAndDebris.debrisPrefabs.Length)];
+        Vector3 vector3 = explosionFireAndDebris.transform.position + Random.insideUnitSphere * 3f * multiplier;
+        Quaternion rotation1 = Random.rotation;
+        Vector3 position = vector3;
+        Quaternion rotation2 = rotation1;
+        Object.Instantiate<Transform>(debrisPrefab, position, rotation2);
+      }
+      yield return (object) null;
+      float num = 10f * multiplier;
+      foreach (Collider collider in Physics.OverlapSphere(explosionFireAndDebris.transform.position, num))
+      {
+        if (explosionFireAndDebris.numFires > 0)
         {
-          explosionFireAndDebris.AddFire(collider.transform, hitInfo.point, hitInfo.normal);
+          Ray ray = new Ray(explosionFireAndDebris.transform.position, collider.transform.position - explosionFireAndDebris.transform.position);
+          RaycastHit hitInfo;
+          if (collider.Raycast(ray, out hitInfo, num))
+          {
+            explosionFireAndDebris.AddFire(collider.transform, hitInfo.point, hitInfo.normal);
+            --explosionFireAndDebris.numFires;
+          }
+        }
+      }
+      for (float maxDistance = 0.0f; explosionFireAndDebris.numFires > 0 && (double) maxDistance < (double) num; maxDistance += num * 0.1f)
+      {
+        RaycastHit hitInfo;
+        if (Physics.Raycast(new Ray(explosionFireAndDebris.transform.position + Vector3.up, Random.onUnitSphere), out hitInfo, maxDistance))
+        {
+          explosionFireAndDebris.AddFire((Transform) null, hitInfo.point, hitInfo.normal);
           --explosionFireAndDebris.numFires;
         }
       }
     }
-    for (float maxDistance = 0.0f; explosionFireAndDebris.numFires > 0 && (double) maxDistance < (double) num; maxDistance += num * 0.1f)
-    {
-      RaycastHit hitInfo;
-      if (Physics.Raycast(new Ray(explosionFireAndDebris.transform.position + Vector3.up, Random.onUnitSphere), out hitInfo, maxDistance))
-      {
-        explosionFireAndDebris.AddFire((Transform) null, hitInfo.point, hitInfo.normal);
-        --explosionFireAndDebris.numFires;
-      }
-    }
-  }
 
-  private void AddFire(Transform t, Vector3 pos, Vector3 normal)
-  {
-    pos += normal * 0.5f;
-    Object.Instantiate<Transform>(this.firePrefab, pos, Quaternion.identity).parent = t;
+    private void AddFire(Transform t, Vector3 pos, Vector3 normal)
+    {
+      pos += normal * 0.5f;
+      Object.Instantiate<Transform>(this.firePrefab, pos, Quaternion.identity).parent = t;
+    }
   }
 }

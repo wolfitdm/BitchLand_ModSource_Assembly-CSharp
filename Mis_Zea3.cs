@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea3
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -335,7 +335,7 @@ public class Mis_Zea3 : Mission
           _gameplay.DisplaySubtitle("They are called the Main 5", this.VoiceLines[15], (Action) (() =>
           {
             _ely.LookAtPlayer.NonplayerTarget = (Transform) null;
-            _gameplay.DisplaySubtitle("And I am one of them", this.VoiceLines[16 /*0x10*/], (Action) (() =>
+            _gameplay.DisplaySubtitle("And I am one of them", this.VoiceLines[16], (Action) (() =>
             {
               _ely.LookAtPlayer.NonplayerTarget = this.Ely_spots[8];
               _ely.Anim.Play("Anim_ElySit2");
@@ -391,7 +391,7 @@ public class Mis_Zea3 : Mission
                               _gameplay.DisplaySubtitle("Except sometimes they are stupid, they can't even think for themselves", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("War in particular, follows your dad's orders like a dog", this.VoiceLines[30], (Action) (() =>
                               {
                                 this.ElyMusicPlayer.volume = 0.1f;
-                                _gameplay.DisplaySubtitle("And Jeanne was the worse one", this.VoiceLines[31 /*0x1F*/], (Action) (() => _gameplay.DisplaySubtitle("First with prostitution everywhere, and later with just sex everywhere", this.VoiceLines[32 /*0x20*/], (Action) (() =>
+                                _gameplay.DisplaySubtitle("And Jeanne was the worse one", this.VoiceLines[31], (Action) (() => _gameplay.DisplaySubtitle("First with prostitution everywhere, and later with just sex everywhere", this.VoiceLines[32], (Action) (() =>
                                 {
                                   this.ElyMusicPlayer.volume = 0.125f;
                                   _gameplay.DisplaySubtitle("free sex anytime, no longer was there any romance to it", this.VoiceLines[33], (Action) (() =>
@@ -424,7 +424,7 @@ public class Mis_Zea3 : Mission
                                               _gameplay.DisplaySubtitle("Before anything could happen to me, I escaped the city and came to lead the ESB", this.VoiceLines[44], (Action) (() =>
                                               {
                                                 _ely.LookAtPlayer.NonplayerTarget = (Transform) null;
-                                                _gameplay.DisplaySubtitle("My plan is to return the city to a more normal civilization", this.VoiceLines[46], (Action) (() => _gameplay.DisplaySubtitle("We can make the world more open to sex like your dad's original vision", this.VoiceLines[47], (Action) (() => _gameplay.DisplaySubtitle("But not like how Jeanne wants it, she's madness itself", this.VoiceLines[48 /*0x30*/], (Action) (() => _gameplay.DisplaySubtitle("Civilization will fall if things go her way", this.VoiceLines[49], (Action) (() =>
+                                                _gameplay.DisplaySubtitle("My plan is to return the city to a more normal civilization", this.VoiceLines[46], (Action) (() => _gameplay.DisplaySubtitle("We can make the world more open to sex like your dad's original vision", this.VoiceLines[47], (Action) (() => _gameplay.DisplaySubtitle("But not like how Jeanne wants it, she's madness itself", this.VoiceLines[48], (Action) (() => _gameplay.DisplaySubtitle("Civilization will fall if things go her way", this.VoiceLines[49], (Action) (() =>
                                                 {
                                                   _ely.LookAtPlayer.NonplayerTarget = this.Ely_spots[8];
                                                   _gameplay.DisplaySubtitle("I know your dad very well, even with treason, if I explain things to him, he'll forgive me", this.VoiceLines[50], (Action) (() =>
@@ -500,7 +500,7 @@ public class Mis_Zea3 : Mission
                                                                       if (Main.Instance.FreeWorldPatch)
                                                                       {
                                                                         _string = "And find who is Rit's child";
-                                                                        _clip = this.VoiceLines[58];
+                                                                        _clip = this.VoiceLines[62];
                                                                       }
                                                                       else
                                                                       {
@@ -601,7 +601,7 @@ public class Mis_Zea3 : Mission
           _gameplay.DisplaySubtitle(this._c_line, this._c_clip, (Action) (() =>
           {
             _ely.LookAtPlayer.playerTransform = Main.Instance.Player.UserControl.m_Cam;
-            _gameplay.DisplaySubtitle("I used to manage the worker class", this.VoiceLines[16 /*0x10*/], (Action) (() => _gameplay.DisplaySubtitle("But I very much prefered if instead I'd manage the army", this.VoiceLines[17], (Action) (() =>
+            _gameplay.DisplaySubtitle("I used to manage the worker class", this.VoiceLines[16], (Action) (() => _gameplay.DisplaySubtitle("But I very much prefered if instead I'd manage the army", this.VoiceLines[17], (Action) (() =>
             {
               Main.Instance.MusicPlayer.volume = 0.025f;
               _gameplay.DisplaySubtitle("Since I plan and organize better than War", this.VoiceLines[18], (Action) (() =>
@@ -676,7 +676,7 @@ public class Mis_Zea3 : Mission
                                   this._c_line = "(nothing here)";
                                   this._c_clip = (AudioClip) null;
                                 }
-                                _gameplay.DisplaySubtitle(this._c_line, this._c_clip, (Action) (() => _gameplay.DisplaySubtitle("Things finally started improving when Rit showed up", this.VoiceLines[31 /*0x1F*/], (Action) (() => _gameplay.DisplaySubtitle("She's very odd tho, I still don't understand her", this.VoiceLines[32 /*0x20*/], (Action) (() => _gameplay.DisplaySubtitle("We found her in a pre-war bunker", this.VoiceLines[33], (Action) (() =>
+                                _gameplay.DisplaySubtitle(this._c_line, this._c_clip, (Action) (() => _gameplay.DisplaySubtitle("Things finally started improving when Rit showed up", this.VoiceLines[31], (Action) (() => _gameplay.DisplaySubtitle("She's very odd tho, I still don't understand her", this.VoiceLines[32], (Action) (() => _gameplay.DisplaySubtitle("We found her in a pre-war bunker", this.VoiceLines[33], (Action) (() =>
                                 {
                                   _ely.Anim.Play("Anim_ElySit2");
                                   _gameplay.DisplaySubtitle("And very quickly she became your dad's fifth wife", this.VoiceLines[34], (Action) (() =>
@@ -698,7 +698,7 @@ public class Mis_Zea3 : Mission
                                             _gameplay.DisplaySubtitle("And one day, boom, Rit was dead", this.VoiceLines[45], (Action) (() => _gameplay.DisplaySubtitle("I believe Jeanne did it", this.VoiceLines[46], (Action) (() => _gameplay.DisplaySubtitle("And out of caution that she was gonna kill me too, I ran away from the city", this.VoiceLines[47], (Action) (() =>
                                             {
                                               _ely.LookAtPlayer.playerTransform = this.Ely_spots[8];
-                                              _gameplay.DisplaySubtitle("I had already started creating the ESB in secret", this.VoiceLines[48 /*0x30*/], (Action) (() => _gameplay.DisplaySubtitle("Because I always plan ahead", this.VoiceLines[49], (Action) (() => _gameplay.DisplaySubtitle("It might not seem like it, but I still love your dad very much", this.VoiceLines[50], (Action) (() =>
+                                              _gameplay.DisplaySubtitle("I had already started creating the ESB in secret", this.VoiceLines[48], (Action) (() => _gameplay.DisplaySubtitle("Because I always plan ahead", this.VoiceLines[49], (Action) (() => _gameplay.DisplaySubtitle("It might not seem like it, but I still love your dad very much", this.VoiceLines[50], (Action) (() =>
                                               {
                                                 _ely.LookAtPlayer.playerTransform = Main.Instance.Player.UserControl.m_Cam;
                                                 _gameplay.DisplaySubtitle("He's a good person with good intentions for the world", this.VoiceLines[51], (Action) (() => _gameplay.DisplaySubtitle("And I know him, even with treason, if I explain things to him, he'll forgive me", this.VoiceLines[52], (Action) (() =>
@@ -774,7 +774,7 @@ public class Mis_Zea3 : Mission
                                                                 if (Main.Instance.FreeWorldPatch)
                                                                 {
                                                                   this._c_line = "You, you are Jeanne's";
-                                                                  this._c_clip = this.VoiceLines[63 /*0x3F*/];
+                                                                  this._c_clip = this.VoiceLines[63];
                                                                 }
                                                                 else
                                                                 {
@@ -784,7 +784,7 @@ public class Mis_Zea3 : Mission
                                                                 _gameplay.DisplaySubtitle(this._c_line, this._c_clip, (Action) (() => _gameplay.DisplaySubtitle("Probably, I can't remember exactly", this.VoiceLines[0], (Action) (() =>
                                                                 {
                                                                   _ely.LookAtPlayer.playerTransform = this.Ely_spots[8];
-                                                                  _gameplay.DisplaySubtitle("My memory is fuzzy, I also can't remember who exactly is Rit's child", this.VoiceLines[64 /*0x40*/], (Action) (() => _gameplay.DisplaySubtitle("Which is weird, it's like some memories I had just got deleted one day", this.VoiceLines[0], (Action) (() =>
+                                                                  _gameplay.DisplaySubtitle("My memory is fuzzy, I also can't remember who exactly is Rit's child", this.VoiceLines[64], (Action) (() => _gameplay.DisplaySubtitle("Which is weird, it's like some memories I had just got deleted one day", this.VoiceLines[0], (Action) (() =>
                                                                   {
                                                                     Main.Instance.MusicPlayer.volume = 0.1f;
                                                                     _gameplay.DisplaySubtitle("Go on your dad's office when he's not there", this.VoiceLines[65], (Action) (() =>
@@ -1181,7 +1181,7 @@ public class Mis_Zea3 : Mission
     AudioClip _clip;
     Main.Instance.GameplayMenu.TheScreenFader.FadeOut(7f, (Action) (() =>
     {
-      this.Ely_spots[64 /*0x40*/].gameObject.SetActive(false);
+      this.Ely_spots[64].gameObject.SetActive(false);
       this.Ely_spots[56].gameObject.SetActive(true);
       this.Ely_spots[57].gameObject.SetActive(true);
       foreach (bl_PlayAnim blPlayAnim in UnityEngine.Object.FindObjectsOfType<bl_PlayAnim>(true))
@@ -1212,7 +1212,7 @@ public class Mis_Zea3 : Mission
         Main.Instance.CityCharacters.Merussy.AddMoveBlocker("zea3end");
         _zea.AddMoveBlocker("zea3end");
         Main.Instance.CityCharacters.Dad.PlaceAt(this.Ely_spots[79]);
-        Main.Instance.CityCharacters.Merussy.PlaceAt(this.Ely_spots[80 /*0x50*/]);
+        Main.Instance.CityCharacters.Merussy.PlaceAt(this.Ely_spots[80]);
         _zea.PlaceAt(this.Ely_spots[81]);
         Main.Instance.CityCharacters.Merussy.enabled = true;
         _zea.enabled = false;
@@ -1224,7 +1224,7 @@ public class Mis_Zea3 : Mission
           Main.Instance.Player.TheHealth.currentHealth = 30f;
           Main.Instance.Player.TheHealth.maxHealth = 100f;
           Main.Instance.GameplayMenu.UpdateHealth();
-          _gameplay.DisplaySubtitle("Heavy lung damage", this.VoiceLines[106], (Action) (() => _gameplay.DisplaySubtitle("had to replace them with some tin ones", this.VoiceLines[107], (Action) (() => _gameplay.DisplaySubtitle("Just my luck", this.VoiceLines[108], (Action) (() => _gameplay.DisplaySubtitle("Not the noisy kind I hope", this.VoiceLines[109], (Action) (() => _gameplay.DisplaySubtitle("Of course not, lol", this.VoiceLines[110], (Action) (() => _gameplay.DisplaySubtitle("The rest should heal on it's own", this.VoiceLines[111], (Action) (() => _gameplay.DisplaySubtitle("if we put Zea in the auxilary we can heal her by tomorrow-", this.VoiceLines[112 /*0x70*/], (Action) (() => _gameplay.DisplaySubtitle("No, we don't need her awake yet", this.VoiceLines[113], (Action) (() => _gameplay.DisplaySubtitle("Let her stay here until we finish a few other things", this.VoiceLines[114], (Action) (() => _gameplay.DisplaySubtitle("But she could help with-", this.VoiceLines[115], (Action) (() => _gameplay.DisplaySubtitle("It won't help, I got this", this.VoiceLines[116], (Action) (() => _gameplay.DisplaySubtitle("Well if you say so", this.VoiceLines[117], (Action) (() =>
+          _gameplay.DisplaySubtitle("Heavy lung damage", this.VoiceLines[106], (Action) (() => _gameplay.DisplaySubtitle("had to replace them with some tin ones", this.VoiceLines[107], (Action) (() => _gameplay.DisplaySubtitle("Just my luck", this.VoiceLines[108], (Action) (() => _gameplay.DisplaySubtitle("Not the noisy kind I hope", this.VoiceLines[109], (Action) (() => _gameplay.DisplaySubtitle("Of course not, lol", this.VoiceLines[110], (Action) (() => _gameplay.DisplaySubtitle("The rest should heal on it's own", this.VoiceLines[111], (Action) (() => _gameplay.DisplaySubtitle("if we put Zea in the auxilary we can heal her by tomorrow-", this.VoiceLines[112], (Action) (() => _gameplay.DisplaySubtitle("No, we don't need her awake yet", this.VoiceLines[113], (Action) (() => _gameplay.DisplaySubtitle("Let her stay here until we finish a few other things", this.VoiceLines[114], (Action) (() => _gameplay.DisplaySubtitle("But she could help with-", this.VoiceLines[115], (Action) (() => _gameplay.DisplaySubtitle("It won't help, I got this", this.VoiceLines[116], (Action) (() => _gameplay.DisplaySubtitle("Well if you say so", this.VoiceLines[117], (Action) (() =>
           {
             if (Main.Instance.FreeWorldPatch)
             {
@@ -1370,7 +1370,7 @@ public class Mis_Zea3 : Mission
     Main.Instance.GameplayMenu.TheScreenFader.FadeOut(1f, (Action) (() =>
     {
       Main.RunInNextFrame((Action) (() => Main.Instance.GameplayMenu.TheScreenFader.FadeIn(1f)));
-      _sephie.PlaceAt(this.Ely_spots[16 /*0x10*/]);
+      _sephie.PlaceAt(this.Ely_spots[16]);
       Main.Instance.Player.PlaceAt(this.Ely_spots[17]);
       Main.Instance.Player.AddMoveBlocker("Pils");
       this.Ely_spots[18].SetParent(_sephie.RightHandStuff);
@@ -1466,7 +1466,7 @@ public class Mis_Zea3 : Mission
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Main.Instance.MainThreads.Remove(new Action(this.InteractWithWar));
     this.CompleteGoal(2);
-    _gameplay.DisplaySubtitle("We found the ESB headquarters", this.VoiceLines[79], (Action) (() => _gameplay.DisplaySubtitle("And their leader is still in there", this.VoiceLines[80 /*0x50*/], (Action) (() => _gameplay.DisplaySubtitle("We are attacking now", this.VoiceLines[81], (Action) (() =>
+    _gameplay.DisplaySubtitle("We found the ESB headquarters", this.VoiceLines[79], (Action) (() => _gameplay.DisplaySubtitle("And their leader is still in there", this.VoiceLines[80], (Action) (() => _gameplay.DisplaySubtitle("We are attacking now", this.VoiceLines[81], (Action) (() =>
     {
       bool flag = false;
       for (int index = 0; index < Main.Instance.Player.WeaponInv.weapons.Count; ++index)
@@ -1584,8 +1584,8 @@ public class Mis_Zea3 : Mission
     this.Ely_spots[27].gameObject.SetActive(false);
     this.Ely_spots[23].gameObject.SetActive(false);
     this.Ely_spots[30].gameObject.SetActive(false);
-    this.Ely_spots[31 /*0x1F*/].gameObject.SetActive(true);
-    this.Ely_spots[31 /*0x1F*/].GetComponentInChildren<Int_Turret>().Interact(Main.Instance.Player);
+    this.Ely_spots[31].gameObject.SetActive(true);
+    this.Ely_spots[31].GetComponentInChildren<Int_Turret>().Interact(Main.Instance.Player);
     Main.Instance.Player.Interacting = false;
     Main.Instance.Player.AddMoveBlocker("Quest");
     this.Ely_spots[34].gameObject.SetActive(false);
@@ -1671,7 +1671,7 @@ public class Mis_Zea3 : Mission
         {
           Main.Instance.GameplayMenu.TheScreenFader.FadeIn(1f);
           Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
-          this.Ely_spots[24].PlaceAt(this.Ely_spots[32 /*0x20*/]);
+          this.Ely_spots[24].PlaceAt(this.Ely_spots[32]);
           this.Ely_spots[37].gameObject.SetActive(true);
           this.Zea2.MainWindZone.enabled = false;
           this.Zea2.MainWindZone.Sound.Stop();
@@ -1769,7 +1769,7 @@ public class Mis_Zea3 : Mission
         ++this.TankTripState;
         this.Ely_spots[42].gameObject.SetActive(true);
         this.Ely_spots[62].gameObject.SetActive(true);
-        this.Ely_spots[63 /*0x3F*/].gameObject.SetActive(true);
+        this.Ely_spots[63].gameObject.SetActive(true);
         break;
       case 7:
         if ((double) this._TankTime <= 75.0)
@@ -1784,7 +1784,7 @@ public class Mis_Zea3 : Mission
         this.Ely_spots[59].GetComponent<Animation>().Play();
         this.Ely_spots[59].Find("Plane.000/Plane.004").gameObject.SetActive(false);
         this.Ely_spots[59].Find("Plane.002/Plane.003").gameObject.SetActive(false);
-        this.Ely_spots[64 /*0x40*/].gameObject.SetActive(true);
+        this.Ely_spots[64].gameObject.SetActive(true);
         break;
       case 9:
         if ((double) this._TankTime <= 92.0)
@@ -1808,7 +1808,7 @@ public class Mis_Zea3 : Mission
         if ((double) this._TankTime <= 98.5999984741211)
           break;
         ++this.TankTripState;
-        Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[96 /*0x60*/]);
+        Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[96]);
         break;
       case 13:
         if ((double) this._TankTime <= 100.0)
@@ -1828,7 +1828,7 @@ public class Mis_Zea3 : Mission
         ++this.TankTripState;
         Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[90]);
         break;
-      case 16 /*0x10*/:
+      case 16:
         if ((double) this._TankTime <= 117.0)
           break;
         ++this.TankTripState;
@@ -1876,7 +1876,7 @@ public class Mis_Zea3 : Mission
           break;
         ++this.TankTripState;
         Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[88]);
-        this.Ely_spots[48 /*0x30*/].gameObject.SetActive(false);
+        this.Ely_spots[48].gameObject.SetActive(false);
         this.Zea2.HeadQuarters_BeforeAndAfter[1].SetActive(true);
         this.Zea2.HeadQuarters_BeforeAndAfter[3].SetActive(true);
         break;

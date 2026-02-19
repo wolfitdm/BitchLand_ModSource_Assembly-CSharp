@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Int_Storage
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -21,9 +21,23 @@ public class Int_Storage : int_Lockable
   public Transform DropSpot;
   public bool AllowMoney;
 
-  public bool Full => this.StorageItems.Count >= this.StorageMax;
+  public bool Full
+  {
+    get
+    {
+      this.CheckForNullItems();
+      return this.StorageItems.Count >= this.StorageMax;
+    }
+  }
 
-  public bool Empty => this.StorageItems.Count == 0;
+  public bool Empty
+  {
+    get
+    {
+      this.CheckForNullItems();
+      return this.StorageItems.Count == 0;
+    }
+  }
 
   public override void Interact(Person person)
   {
@@ -45,6 +59,10 @@ public class Int_Storage : int_Lockable
       this.Sound.clip = Main.Instance.DoorLocked;
       this.Sound.Play();
     }
+  }
+
+  public virtual void AddRemainingIngredientsFrom(Int_Storage storage)
+  {
   }
 
   public virtual void AddItem(GameObject item, Vector3 pos, Vector3 rot)
@@ -111,6 +129,7 @@ public class Int_Storage : int_Lockable
 
   public virtual bool HasItem(string itemName)
   {
+    this.CheckForNullItems();
     for (int index = 0; index < this.StorageItems.Count; ++index)
     {
       if (this.StorageItems[index].name == itemName)
@@ -121,6 +140,7 @@ public class Int_Storage : int_Lockable
 
   public virtual bool HasItem(GameObject item)
   {
+    this.CheckForNullItems();
     for (int index = 0; index < this.StorageItems.Count; ++index)
     {
       if ((UnityEngine.Object) this.StorageItems[index] == (UnityEngine.Object) item)
@@ -131,6 +151,7 @@ public class Int_Storage : int_Lockable
 
   public virtual bool HasAnyOfItems(params string[] itemNames)
   {
+    this.CheckForNullItems();
     for (int index1 = 0; index1 < itemNames.Length; ++index1)
     {
       for (int index2 = 0; index2 < this.StorageItems.Count; ++index2)
@@ -145,6 +166,7 @@ public class Int_Storage : int_Lockable
   public virtual List<GameObject> GetOfItem(string itemName)
   {
     List<GameObject> ofItem = new List<GameObject>();
+    this.CheckForNullItems();
     for (int index = 0; index < this.StorageItems.Count; ++index)
     {
       if (this.StorageItems[index].name == itemName)
@@ -156,6 +178,7 @@ public class Int_Storage : int_Lockable
   public virtual List<GameObject> GetOfItems(params string[] itemNames)
   {
     List<GameObject> ofItems = new List<GameObject>();
+    this.CheckForNullItems();
     for (int index1 = 0; index1 < itemNames.Length; ++index1)
     {
       for (int index2 = 0; index2 < this.StorageItems.Count; ++index2)
@@ -170,6 +193,7 @@ public class Int_Storage : int_Lockable
   public virtual List<GameObject> GetItemsOfType(e_ResourceType ingredientType)
   {
     List<GameObject> itemsOfType = new List<GameObject>();
+    this.CheckForNullItems();
     for (int index = 0; index < this.StorageItems.Count; ++index)
     {
       int_ResourceItem componentInChildren = this.StorageItems[index].GetComponentInChildren<int_ResourceItem>(true);
@@ -179,9 +203,23 @@ public class Int_Storage : int_Lockable
     return itemsOfType;
   }
 
+  public virtual void CheckForNullItems()
+  {
+label_0:
+    for (int index = 0; index < this.StorageItems.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.StorageItems[index] == (UnityEngine.Object) null)
+      {
+        this.StorageItems.RemoveAt(index);
+        goto label_0;
+      }
+    }
+  }
+
   public override string[] sd_SaveData(char SlitChar = ':')
   {
     List<string> stringList = new List<string>();
+    this.CheckForNullItems();
     stringList.AddRange((IEnumerable<string>) base.sd_SaveData(SlitChar));
     stringList.Add(this.StorageItems.Count.ToString());
     for (int index = 0; index < this.StorageItems.Count; ++index)
@@ -251,7 +289,7 @@ public class Int_Storage : int_Lockable
       }
       catch (Exception ex)
       {
-        Main.Log($"{ex.Message}\n{ex.StackTrace}");
+        Main.Log(ex.Message + "\n" + ex.StackTrace);
       }
     }
   }

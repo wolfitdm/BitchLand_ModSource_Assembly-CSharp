@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: WeaponSystem
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -137,23 +137,29 @@ public class WeaponSystem : MonoBehaviour
           component2.int_Drag.Interact(Main.Instance.Player);
           return;
         }
-        Interactible component3 = hitInfo.transform.GetComponent<Interactible>();
-        if ((Object) component3 != (Object) null && (component3.CanInteract && component3.PlayerCanInteract || Main.Instance.PeopleFollowingPlayer.Count > 0 && (Object) component3.InteractingPerson == (Object) Main.Instance.PeopleFollowingPlayer[0]))
+        InteractRedirect component3 = hitInfo.transform.GetComponent<InteractRedirect>();
+        if ((Object) component3 != (Object) null && !component3.Disabled && (component3.Redirect.FullCheckCanInteract(Main.Instance.Player) || Main.Instance.PeopleFollowingPlayer.Count > 0 && (Object) component3.Redirect.InteractingPerson == (Object) Main.Instance.PeopleFollowingPlayer[0]))
         {
-          this.ShowPromptFor(component3);
+          this.ShowPromptFor(component3.Redirect);
           return;
         }
-        InteractRedirect component4 = hitInfo.transform.GetComponent<InteractRedirect>();
-        if ((Object) component4 != (Object) null && !component4.Disabled && (component4.Redirect.CanInteract && component4.Redirect.PlayerCanInteract || Main.Instance.PeopleFollowingPlayer.Count > 0 && (Object) component4.Redirect.InteractingPerson == (Object) Main.Instance.PeopleFollowingPlayer[0]))
+        Interactible[] components1 = hitInfo.transform.GetComponents<Interactible>();
+        for (int index = 0; index < components1.Length; ++index)
         {
-          this.ShowPromptFor(component4.Redirect);
-          return;
+          if ((Object) components1[index] != (Object) null && (components1[index].FullCheckCanInteract(Main.Instance.Player) || Main.Instance.PeopleFollowingPlayer.Count > 0 && (Object) components1[index].InteractingPerson == (Object) Main.Instance.PeopleFollowingPlayer[0]))
+          {
+            this.ShowPromptFor(components1[index]);
+            return;
+          }
         }
-        Interactible component5 = hitInfo.transform.root.GetComponent<Interactible>();
-        if ((Object) component5 != (Object) null && (component5.CanInteract && component5.PlayerCanInteract || Main.Instance.PeopleFollowingPlayer.Count > 0 && (Object) component5.InteractingPerson == (Object) Main.Instance.PeopleFollowingPlayer[0]))
+        Interactible[] components2 = hitInfo.transform.root.GetComponents<Interactible>();
+        for (int index = 0; index < components2.Length; ++index)
         {
-          this.ShowPromptFor(component5);
-          return;
+          if ((Object) components2[index] != (Object) null && (components2[index].FullCheckCanInteract(Main.Instance.Player) || Main.Instance.PeopleFollowingPlayer.Count > 0 && (Object) components2[index].InteractingPerson == (Object) Main.Instance.PeopleFollowingPlayer[0]))
+          {
+            this.ShowPromptFor(components2[index]);
+            return;
+          }
         }
       }
       this.IntLookingAt = (Interactible) null;
@@ -169,15 +175,40 @@ public class WeaponSystem : MonoBehaviour
   {
     this.IntLookingAt = interactible;
     Main.Instance.GameplayMenu.Crossair.SetActive(true);
+    Main.Instance.GameplayMenu.NewMultiOption.SetActive(false);
+    if (interactible is bl_MinableObject)
+    {
+      bl_MinableObject blMinableObject = (bl_MinableObject) interactible;
+      if (blMinableObject.AlwaysShowPrompt || blMinableObject.CheckCanInteract(Main.Instance.Player))
+        interactible.InteractText = blMinableObject.PromptWhenAvailable;
+      else if (!blMinableObject.AlwaysShowPrompt)
+      {
+        interactible.InteractText = string.Empty;
+        goto label_6;
+      }
+      else
+        goto label_6;
+    }
     Main.Instance.GameplayMenu.PickupText.text = interactible.InteractText;
     Main.Instance.GameplayMenu.PromptIcon.sprite = Main.Instance.PromptIcons[interactible.InteractIcon];
     Main.Instance.GameplayMenu.PromptIcon.enabled = interactible.InteractIcon != 0;
-    Main.Instance.GameplayMenu.NewMultiOption.SetActive(false);
+label_6:
     if (interactible is MultiInteractible)
     {
       MultiInteractible multiInteractible = (MultiInteractible) interactible;
       if (multiInteractible.NewMulti)
       {
+        if (multiInteractible.RelayInteractText)
+        {
+          for (int index = 0; index < multiInteractible.Parts.Length; ++index)
+          {
+            if ((Object) multiInteractible.Parts[index] != (Object) null && multiInteractible.Parts[index].CheckCanInteract(Main.Instance.Player))
+            {
+              Main.Instance.GameplayMenu.PickupText.text = multiInteractible.Parts[index].InteractText;
+              break;
+            }
+          }
+        }
         Interactible interactible1 = (Interactible) null;
         for (int index = 1; index < multiInteractible.Parts.Length; ++index)
         {
@@ -190,7 +221,7 @@ public class WeaponSystem : MonoBehaviour
         if ((Object) interactible1 != (Object) null)
         {
           Main.Instance.GameplayMenu.NewMultiOption.SetActive(true);
-          Main.Instance.GameplayMenu.NewMultiOption_text.text = "More options";
+          Main.Instance.GameplayMenu.NewMultiOption_text.text = !multiInteractible.RelayExtraInteractText ? "More options" : interactible1.InteractText;
           if (Input.GetKeyUp(KeyCode.F))
           {
             Main.Instance.GameplayMenu.Crossair.SetActive(false);
@@ -225,7 +256,7 @@ public class WeaponSystem : MonoBehaviour
         else
         {
           Main.Instance.GameplayMenu.NewMultiOption.SetActive(true);
-          Main.Instance.GameplayMenu.NewMultiOption_text.text = $"Ask {Main.Instance.PeopleFollowingPlayer[0].Name} to use";
+          Main.Instance.GameplayMenu.NewMultiOption_text.text = "Ask " + Main.Instance.PeopleFollowingPlayer[0].Name + " to use";
           if (Input.GetKeyUp(KeyCode.F))
           {
             Main.Instance.GameplayMenu.Crossair.SetActive(false);
@@ -261,7 +292,7 @@ public class WeaponSystem : MonoBehaviour
       else
       {
         Main.Instance.GameplayMenu.NewMultiOption.SetActive(true);
-        Main.Instance.GameplayMenu.NewMultiOption_text.text = $"Ask {Main.Instance.PeopleFollowingPlayer[0].Name} to use";
+        Main.Instance.GameplayMenu.NewMultiOption_text.text = "Ask " + Main.Instance.PeopleFollowingPlayer[0].Name + " to use";
         if (Input.GetKeyUp(KeyCode.F))
         {
           Main.Instance.GameplayMenu.Crossair.SetActive(false);

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_ThirdPersonUserControl
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 using UnityEngine.AI;
@@ -236,6 +236,11 @@ public class bl_ThirdPersonUserControl : MonoBehaviour
         if ((Object) Main.Instance.SpawnedPeople[index] != (Object) null && (Object) Main.Instance.SpawnedPeople[index].LookAtPlayer != (Object) null)
           Main.Instance.SpawnedPeople[index].LookAtPlayer.playerTransform = value ? this.m_Cam : Main.Instance.Player.Head;
       }
+      for (int index = 0; index < Main.Instance.SpawnedPeople_World.Count; ++index)
+      {
+        if ((Object) Main.Instance.SpawnedPeople_World[index] != (Object) null && (Object) Main.Instance.SpawnedPeople_World[index].LookAtPlayer != (Object) null)
+          Main.Instance.SpawnedPeople_World[index].LookAtPlayer.playerTransform = value ? this.m_Cam : Main.Instance.Player.Head;
+      }
       Main.Instance.Player.LookAtPlayer.playerTransform = this.m_Cam;
     }
   }
@@ -278,10 +283,13 @@ public class bl_ThirdPersonUserControl : MonoBehaviour
 
   public void Update()
   {
-    if ((double) this.transform.position.y < -50.0)
-      this.transform.position = Vector3.zero;
+    if ((double) this.transform.position.y < -100.0)
+    {
+      this.m_Character.m_Rigidbody.velocity = Vector3.zero;
+      this.transform.position = this.ResetSpot.position;
+    }
     Vector3 vector3 = this.m_Character.m_Rigidbody.velocity;
-    if ((double) vector3.magnitude > 10.0)
+    if ((double) vector3.magnitude > 50.0)
       this.m_Character.m_Rigidbody.velocity = Vector3.zero;
     if (Input.GetKeyUp(KeyCode.Tab))
       this.FirstPerson = !this.FirstPerson;
@@ -319,6 +327,11 @@ public class bl_ThirdPersonUserControl : MonoBehaviour
         Main.Instance.Player.ShitOnFloor();
       else
         Debug.Log((object) "Not enough need to evacuate");
+    }
+    if (Input.GetKeyUp(KeyCode.F1))
+    {
+      Main.Instance.GameplayMenu.OpenJournal();
+      Main.Instance.GameplayMenu.SelectHowTo();
     }
     switch (this.m_Character.StandState)
     {

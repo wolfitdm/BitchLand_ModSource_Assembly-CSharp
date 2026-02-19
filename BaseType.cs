@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: BaseType
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -33,6 +33,11 @@ public class BaseType : MonoBehaviour
   public List<GameObject> PrefabsMale_UnderwearLower = new List<GameObject>();
   public List<GameObject> _NiceHairs = new List<GameObject>();
   public List<Dressable> _NiceHairsChance = new List<Dressable>();
+  public bool _OW_SetWorkStates;
+  public float _OW_StartTime = 0.15f;
+  public float _OW_EndTime = 0.85f;
+  public bool _OW_SetEnterWork;
+  public bool _OW_SetExitWork;
 
   public Person_Type_menu ThisType_menu
   {
@@ -40,10 +45,14 @@ public class BaseType : MonoBehaviour
     {
       switch (this.ThisType)
       {
+        case Person_Type.Prisioner:
+          return Person_Type_menu.Prisioner;
         case Person_Type.Worker:
           return Person_Type_menu.Worker;
         case Person_Type.Civilian:
           return Person_Type_menu.Civilian;
+        case Person_Type.HigherCivilian:
+          return Person_Type_menu.Royal;
         case Person_Type.Army:
           return Person_Type_menu.Army;
         case Person_Type.Royal:
@@ -98,7 +107,10 @@ public class BaseType : MonoBehaviour
     if ((!this.DontColorMales || !(person is Guy)) && this.HairColors != null && this.HairColors.Length != 0 && Random.Range(0, 100) > this.NaturalHairColorChance)
       person.DyedHairColor = this.HairColors[Random.Range(0, this.HairColors.Length)];
     person.Init();
-    Main.Instance.SpawnedPeopleOfType[(int) this.ThisType].Add(person);
+    if (Main.Instance.OpenWorld)
+      Main.Instance.SpawnedPeopleOfType[(int) this.ThisType].Add(person);
+    else
+      Main.Instance.SpawnedPeopleOfType_World[(int) this.ThisType].Add(person);
     if (!addHair || !((Object) person.CurrentHair != (Object) null) || (double) Random.Range(0.0f, 1f) <= 0.5)
       return;
     switch (person.CurrentHair.ReverseAxis)
@@ -121,5 +133,49 @@ public class BaseType : MonoBehaviour
       return;
     Debug.Log((object) ("Seen with TempAggro " + otherPerson.Name));
     person.StartFighting(otherPerson, otherPerson.TempAggroMelee(this.ThisType));
+  }
+
+  public virtual void GetAssignedto(Person person)
+  {
+    if ((Object) person.PersonType != (Object) this)
+      person.PersonType.GetUnAssigned(person);
+    person.PersonType = this;
+  }
+
+  public virtual void GetUnAssigned(Person person)
+  {
+    person.FreeScheduleTasks.Clear();
+    person.WorkScheduleTasks.Clear();
+  }
+
+  public virtual bool BehaviourPass(Person person) => false;
+
+  public virtual bool BehaviourPass_Free(Person person) => false;
+
+  public virtual bool BehaviourPass_Work(Person person) => false;
+
+  public virtual void FixedUpdate()
+  {
+    if (!this._OW_SetWorkStates || !Main.Instance.OpenWorld)
+      return;
+    if (!this._OW_SetEnterWork && ((double) Main.Instance.DayCycle.timeOfDay < (double) this._OW_StartTime || (double) Main.Instance.DayCycle.timeOfDay > (double) this._OW_EndTime))
+    {
+      this._OW_SetEnterWork = true;
+      this._OW_SetExitWork = false;
+      for (int index = 0; index < Main.Instance.SpawnedPeople_World.Count; ++index)
+      {
+        if ((Object) Main.Instance.SpawnedPeople_World[index].PersonType == (Object) this)
+          Main.Instance.SpawnedPeople_World[index].State = Person_State.Work;
+      }
+    }
+    if (this._OW_SetExitWork || (double) Main.Instance.DayCycle.timeOfDay <= (double) this._OW_StartTime || (double) Main.Instance.DayCycle.timeOfDay >= (double) this._OW_EndTime)
+      return;
+    this._OW_SetEnterWork = false;
+    this._OW_SetExitWork = true;
+    for (int index = 0; index < Main.Instance.SpawnedPeople_World.Count; ++index)
+    {
+      if ((Object) Main.Instance.SpawnedPeople_World[index].PersonType == (Object) this)
+        Main.Instance.SpawnedPeople_World[index].State = Person_State.Free;
+    }
   }
 }

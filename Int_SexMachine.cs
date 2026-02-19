@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Int_SexMachine
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -49,44 +49,72 @@ public class Int_SexMachine : int_Lockable
     }
   }
 
+  public override bool CheckCanInteract(Person person)
+  {
+    int num = base.CheckCanInteract(person) ? 1 : 0;
+    if (!person.IsPlayer)
+      return num != 0;
+    if (!this.PlayerOwned)
+      return num != 0;
+    if ((UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
+    {
+      if (this.Locked)
+      {
+        this.InteractText = "Unlock";
+        return num != 0;
+      }
+      this.InteractText = "Lock";
+      return num != 0;
+    }
+    this.InteractText = "Use";
+    return num != 0;
+  }
+
   public override void Interact(Person person)
   {
-    if (this.Locked)
-      return;
-    this.DoForSeconds = person._PersonalityData.HowLongWantsSex;
-    base.Interact(person);
-    this.InteractingPerson.enabled = false;
-    this.InteractingPerson._Rigidbody.isKinematic = true;
-    if (this.InteractingPerson.IsPlayer)
+    if (person.IsPlayer && this.PlayerOwned && (UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
     {
-      this.InteractingPerson.UserControl.FirstPerson = false;
-      Main.Instance.GameplayMenu.QLeave.SetActive(true);
-      Main.Instance.GameplayMenu.QLeave.transform.Find("a/Text").GetComponent<Text>().text = "Leave";
+      this.Locked = !this.Locked;
     }
-    this.InteractingPerson.AddMoveBlocker("SexMachine");
-    this.InteractingPerson.transform.SetParent(this.Pos);
-    this.InteractingPerson.transform.position = this.Pos.position;
-    this.InteractingPerson.transform.rotation = this.Pos.rotation;
-    this.InteractingPerson.Anim.Play(this.Anim_idle);
-    this.InteractingPerson.Masturbating = true;
-    this.InteractingPerson.HavingSex = true;
-    this.InteractingPerson.SexMultiplier = this.SexIntensity;
-    if (this.InteractingPerson.IsPlayer && this.CenterCam)
+    else
+    {
+      if (this.Locked || (UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
+        return;
+      this.DoForSeconds = person._PersonalityData.HowLongWantsSex;
+      base.Interact(person);
+      this.InteractingPerson.enabled = false;
+      this.InteractingPerson._Rigidbody.isKinematic = true;
+      if (this.InteractingPerson.IsPlayer)
+      {
+        this.InteractingPerson.UserControl.FirstPerson = false;
+        Main.Instance.GameplayMenu.QLeave.SetActive(true);
+        Main.Instance.GameplayMenu.QLeave.transform.Find("a/Text").GetComponent<Text>().text = "Leave";
+      }
+      this.InteractingPerson.AddMoveBlocker("SexMachine");
+      this.InteractingPerson.transform.SetParent(this.Pos);
+      this.InteractingPerson.transform.position = this.Pos.position;
+      this.InteractingPerson.transform.rotation = this.Pos.rotation;
+      this.InteractingPerson.Anim.Play(this.Anim_idle);
+      this.InteractingPerson.Masturbating = true;
+      this.InteractingPerson.HavingSex = true;
+      this.InteractingPerson.SexMultiplier = this.SexIntensity;
+      if (this.InteractingPerson.IsPlayer && this.CenterCam)
+        Main.RunInNextFrame((Action) (() =>
+        {
+          Main.Instance.Player.UserControl.ThirdCamPositionType = bl_ThirdPersonUserControl.e_ThirdCamPositionType.Back;
+          Main.Instance.Player.UserControl.Pivot.position = new Vector3(Main.Instance.Player.UserControl.Pivot.position.x, Main.Instance.Player.ActualHips.position.y, Main.Instance.Player.UserControl.Pivot.position.z);
+        }), 5);
+      this.InteractingPerson.CallWhenHighCol.Add(new Action(this.RefreshPoseAnim));
       Main.RunInNextFrame((Action) (() =>
       {
-        Main.Instance.Player.UserControl.ThirdCamPositionType = bl_ThirdPersonUserControl.e_ThirdCamPositionType.Back;
-        Main.Instance.Player.UserControl.Pivot.position = new Vector3(Main.Instance.Player.UserControl.Pivot.position.x, Main.Instance.Player.ActualHips.position.y, Main.Instance.Player.UserControl.Pivot.position.z);
-      }), 5);
-    this.InteractingPerson.CallWhenHighCol.Add(new Action(this.RefreshPoseAnim));
-    Main.RunInNextFrame((Action) (() =>
-    {
-      if (!((UnityEngine.Object) this.HipsSpot != (UnityEngine.Object) null))
+        if (!((UnityEngine.Object) this.HipsSpot != (UnityEngine.Object) null))
+          return;
+        Main.AdjustCharacterPosition(person.transform, this.HipsSpot, person.ActualHips);
+      }), 2);
+      if (!this.AutoActivateOnUse)
         return;
-      Main.AdjustCharacterPosition(person.transform, this.HipsSpot, person.ActualHips);
-    }), 2);
-    if (!this.AutoActivateOnUse)
-      return;
-    this.Activate();
+      this.Activate();
+    }
   }
 
   public virtual void Activate()
@@ -126,6 +154,7 @@ public class Int_SexMachine : int_Lockable
     this.InteractingPerson.SexMultiplier = 1f;
     this.InteractingPerson.RemoveMoveBlocker("SexMachine");
     this.InteractingPerson.CallWhenHighCol.Remove(new Action(this.RefreshPoseAnim));
+    this.InteractingPerson = (Person) null;
   }
 
   public void Update()

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: MultiInteractible
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ public class MultiInteractible : Interactible
 {
   [Header(" - MultiInteractible -")]
   public bool NewMulti;
+  public bool RelayInteractText;
+  public bool RelayExtraInteractText;
   public bool QuickRelayFix;
   public SaveableBehaviour RelaySavingData;
   public Interactible[] Parts;
@@ -55,7 +57,11 @@ public class MultiInteractible : Interactible
       {
         if (this.Parts[index1].CanInteract && this.Parts[index1].CheckCanInteract(Main.Instance.Player))
         {
-          valueTupleList.Add((this.Parts[index1], 0, this.Parts[index1].InteractText));
+          (Interactible, int, string) valueTuple1;
+          valueTuple1.Item1 = this.Parts[index1];
+          valueTuple1.Item2 = 0;
+          valueTuple1.Item3 = this.Parts[index1].InteractText;
+          valueTupleList.Add(valueTuple1);
           if (this.Parts[index1]._AvailableUses != null && this.Parts[index1]._AvailableUses.Length > 1)
           {
             for (int index2 = 1; index2 < this.Parts[index1]._AvailableUses.Length; ++index2)
@@ -63,7 +69,13 @@ public class MultiInteractible : Interactible
               if (this.Parts[index1]._AvailableUses[index2])
               {
                 if (index1 + index2 < 8)
-                  valueTupleList.Add((this.Parts[index1], index2, this.Parts[index1]._InteractTexts[index2]));
+                {
+                  (Interactible, int, string) valueTuple2;
+                  valueTuple2.Item1 = this.Parts[index1];
+                  valueTuple2.Item2 = 0;
+                  valueTuple2.Item3 = this.Parts[index1].InteractText;
+                  valueTupleList.Add(valueTuple2);
+                }
                 else
                   goto label_15;
               }
@@ -107,9 +119,17 @@ label_15:
         Main.Instance.GameplayMenu.ItemOptions[index].SetActive(false);
     }
     if (this._PartsToUse == null || this._PartsToUse.Count == 0)
+    {
+      if (!this.Parts[part].CanInteract || !this.Parts[part].CheckCanInteract(person))
+        return;
       this.Parts[part].Interact(person);
+    }
     else
+    {
+      if (!this._PartsToUse[part].CanInteract || !this._PartsToUse[part].CheckCanInteract(person))
+        return;
       this._PartsToUse[part].InteractEx(this._PartsUseIndex[part], person);
+    }
   }
 
   public override void StopInteracting()

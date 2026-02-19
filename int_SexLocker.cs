@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_SexLocker
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -20,34 +20,43 @@ public class int_SexLocker : Int_SexMachine
 
   public override void Interact(Person person)
   {
-    base.Interact(person);
-    person.Anim.Play(this.Anim_Active);
-    Main.RunInNextFrame((Action) (() =>
+    if (person.IsPlayer && this.PlayerOwned && (UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
     {
-      Main.AdjustCharacterPosition(person.transform, this.HandsPos, person.HandLeft.transform);
-      Main.AdjustCharacterPosition(this.FeetPos, person.FootLeft.transform, this.FeetPos);
-      if (person is Girl)
-        (person as Girl).GirlPhysics = true;
-      if (!person.IsPlayer)
+      this.Locked = !this.Locked;
+    }
+    else
+    {
+      if (this.Locked)
         return;
-      Main.Instance.Player.UserControl.ThirdCamPositionType = bl_ThirdPersonUserControl.e_ThirdCamPositionType.Back;
-      Main.Instance.Player.UserControl.Pivot.position = new Vector3(Main.Instance.Player.UserControl.Pivot.position.x, Main.Instance.Player.ActualHips.position.y, Main.Instance.Player.UserControl.Pivot.position.z);
-    }), 2);
-    Main.RunInNextFrame((Action) (() =>
-    {
-      Main.AdjustCharacterPosition(person.transform, this.HandsPos, person.HandLeft.transform);
-      Main.AdjustCharacterPosition(this.FeetPos, person.FootLeft.transform, this.FeetPos);
-    }), 20);
-    this.DildoPanties_spawned = person.DressClothe(this.DildoPanties);
-    this.enabled = true;
-    if (!this.LowerNeck_temp)
-      return;
-    this.LowerNeck();
+      base.Interact(person);
+      person.Anim.Play(this.Anim_Active);
+      Main.RunInNextFrame((Action) (() =>
+      {
+        Main.AdjustCharacterPosition(person.transform, this.HandsPos, person.HandLeft.transform);
+        Main.AdjustCharacterPosition(this.FeetPos, person.FootLeft.transform, this.FeetPos);
+        if (person is Girl)
+          (person as Girl).GirlPhysics = true;
+        if (!person.IsPlayer)
+          return;
+        Main.Instance.Player.UserControl.ThirdCamPositionType = bl_ThirdPersonUserControl.e_ThirdCamPositionType.Back;
+        Main.Instance.Player.UserControl.Pivot.position = new Vector3(Main.Instance.Player.UserControl.Pivot.position.x, Main.Instance.Player.ActualHips.position.y, Main.Instance.Player.UserControl.Pivot.position.z);
+      }), 2);
+      Main.RunInNextFrame((Action) (() =>
+      {
+        Main.AdjustCharacterPosition(person.transform, this.HandsPos, person.HandLeft.transform);
+        Main.AdjustCharacterPosition(this.FeetPos, person.FootLeft.transform, this.FeetPos);
+      }), 20);
+      this.DildoPanties_spawned = person.DressClothe(this.DildoPanties);
+      this.enabled = true;
+      if (!this.LowerNeck_temp)
+        return;
+      this.LowerNeck();
+    }
   }
 
   public override void StopInteracting()
   {
-    if ((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null || !this.BeingUsed)
+    if ((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null || this.Locked || !this.BeingUsed)
       return;
     if (this.InteractingPerson is Girl)
       (this.InteractingPerson as Girl).GirlPhysics = false;

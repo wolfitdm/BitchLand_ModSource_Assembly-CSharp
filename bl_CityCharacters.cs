@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_CityCharacters
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -60,6 +60,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Hadley.Fertility = 0.9f;
         this.Hadley.Energy = 100f;
         this.Hadley.NoEnergyLoss = true;
+        this.Hadley.CantBeRestrained = true;
         this.HadleyMission.InitHadley();
         Main.Instance.GameplayMenu.MapTrackers[3] = this.Hadley.transform;
         return;
@@ -71,6 +72,7 @@ public class bl_CityCharacters : MonoBehaviour
         objectOfType.Beth = this.Beth;
         this.Beth.ThisPersonInt.StartTalkMono = (MonoBehaviour) objectOfType;
         this.Beth.ThisPersonInt.StartTalkFunc = "BethTalk";
+        this.Beth.CantBeRestrained = true;
         Object.FindObjectOfType<bethtraker>().GetComponent<int_basicSit>().Interact(this.Beth);
         return;
       case 255748530:
@@ -80,6 +82,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Carol.Fertility = 2f;
         this.Carol.Energy = 100f;
         this.Carol.NoEnergyLoss = true;
+        this.Carol.CantBeRestrained = true;
         (this.Carol as Girl).PhisicsOnlyOnInSex = true;
         (this.Carol as Girl).GirlPhysics = false;
         Main.Instance.GameplayMenu.MapTrackers[2] = this.Carol.transform;
@@ -96,6 +99,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Zea.StoryModeFertility = 1f;
         this.Zea.Energy = 100f;
         this.Zea.NoEnergyLoss = true;
+        this.Zea.CantBeRestrained = true;
         this.Zea.States[17] = false;
         this.Zea.States[18] = false;
         this.Zea.States[19] = false;
@@ -105,7 +109,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Zea.States[13] = false;
         this.Zea.States[14] = false;
         this.Zea.States[15] = false;
-        this.Zea.States[16 /*0x10*/] = false;
+        this.Zea.States[16] = false;
         this.Zea.States[21] = false;
         this.Zea._DirtySkin = false;
         this.Zea.SetBodyTexture();
@@ -128,7 +132,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Xoxa.States[13] = false;
         this.Xoxa.States[14] = false;
         this.Xoxa.States[15] = false;
-        this.Xoxa.States[16 /*0x10*/] = false;
+        this.Xoxa.States[16] = false;
         this.Xoxa.States[21] = false;
         this.Xoxa._DirtySkin = false;
         this.Xoxa.SetBodyTexture();
@@ -138,6 +142,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Xoxa.ThisPersonInt.StartTalkMono = (MonoBehaviour) this.XoxaMis;
         this.Xoxa.VoicePitch = 1.06f;
         this.Xoxa.Fertility = 1.5f;
+        this.Xoxa.CantBeRestrained = true;
         if (!((Object) this.Xoxa.CurrentHair == (Object) null))
           return;
         for (int index = 0; index < Main.Instance.Prefabs_Hair.Count; ++index)
@@ -155,6 +160,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Sia = person;
         this.Sia.Fertility = 1f;
         this.Sia.CantBeHit = true;
+        this.Sia.CantBeRestrained = true;
         (this.Sia as Girl).PhisicsOnlyOnInSex = true;
         (this.Sia as Girl).GirlPhysics = false;
         this.Sia.Favor = 10000;
@@ -177,6 +183,11 @@ public class bl_CityCharacters : MonoBehaviour
         this.Maylenne.HasCondomPut = true;
         this.Maylenne.Energy = 100f;
         this.Maylenne.NoEnergyLoss = true;
+        this.Maylenne.CantBeRestrained = true;
+        if ((double) UI_Customize.FutaChanceValue != 0.0)
+          return;
+        ((Girl) this.Maylenne).Futa = false;
+        this.Maylenne.HasPenis = false;
         return;
       case 1991636261:
         if (!(name == "Ana"))
@@ -185,6 +196,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Ana.CantBeHit = true;
         this.Ana.Energy = 100f;
         this.Ana.NoEnergyLoss = true;
+        this.Ana.CantBeRestrained = true;
         return;
       case 2036296499:
         if (!(name == "Sephie"))
@@ -198,6 +210,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.War.StoryModeFertility = 1f;
         this.War.Favor = 10000;
         this.War.CantBeHit = true;
+        this.War.CantBeRestrained = true;
         (this.War as Girl).PhisicsOnlyOnInSex = true;
         (this.War as Girl).GirlPhysics = false;
         (this.War as Girl).NoBoobPhysicsOnThisOne = true;
@@ -218,6 +231,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Sadie.RefreshColors();
         this.Sadie.Energy = 100f;
         this.Sadie.NoEnergyLoss = true;
+        this.Sadie.CantBeRestrained = true;
         this.Sadie.PlayerKnowsName = true;
         this.Sadie.ThisPersonInt.SetDefaultInteraction();
         this.Sadie.TheHealth.AlwaysDie = true;
@@ -240,7 +254,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Lai.States[13] = false;
         this.Lai.States[14] = false;
         this.Lai.States[15] = false;
-        this.Lai.States[16 /*0x10*/] = false;
+        this.Lai.States[16] = false;
         this.Lai.States[21] = false;
         this.Lai._DirtySkin = false;
         this.Lai.SetBodyTexture();
@@ -258,6 +272,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Ely.Energy = 100f;
         this.Ely.NoEnergyLoss = true;
         this.Ely.VoicePitch = 0.96f;
+        this.Ely.CantBeRestrained = true;
         return;
       case 3919353448:
         if (!(name == "Sarah"))
@@ -270,6 +285,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Sarah.CantBeHit = true;
         this.Sarah.Energy = 100f;
         this.Sarah.NoEnergyLoss = true;
+        this.Sarah.CantBeRestrained = true;
         return;
       default:
         return;
@@ -282,5 +298,10 @@ public class bl_CityCharacters : MonoBehaviour
     this.Merussy.VoicePitch = 0.98f;
     this.Merussy.Energy = 100f;
     this.Merussy.NoEnergyLoss = true;
+    this.Merussy.CantBeRestrained = true;
+    if ((double) UI_Customize.FutaChanceValue != 0.0)
+      return;
+    ((Girl) this.Merussy).Futa = false;
+    this.Merussy.HasPenis = false;
   }
 }

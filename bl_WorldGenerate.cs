@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_WorldGenerate
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,10 +44,10 @@ public class bl_WorldGenerate : MonoBehaviour
   {
     System.Random random = new System.Random(seed);
     Transform transform1 = (Transform) null;
-    int maxExclusive1 = 64 /*0x40*/;
-    int maxExclusive2 = 64 /*0x40*/;
+    int maxExclusive1 = 64;
+    int maxExclusive2 = 64;
     this.NewChunks = new ChunkGenerateData[maxExclusive1, maxExclusive2];
-    int num1 = 30;
+    int num1 = 120;
     int minInclusive1 = 5;
     int maxExclusive3 = 20;
     for (int index1 = 0; index1 < maxExclusive1; ++index1)
@@ -316,7 +316,8 @@ public class bl_WorldGenerate : MonoBehaviour
                 this.NewChunks[index8, index9].WorldChunkType = e_WorldChunkType.Up1_corner_0_2_X;
                 goto case e_WorldChunkType.Up1_corner_0_2_X;
               }
-              continue;
+              else
+                continue;
             case e_WorldChunkType.Up1_corner_0_2_X:
               if (flag5 & flag8)
               {
@@ -451,8 +452,8 @@ public class bl_WorldGenerate : MonoBehaviour
     }
     for (int index12 = 0; index12 < 3; ++index12)
     {
-      int num13 = UnityEngine.Random.Range(5, 25);
-      int num14 = UnityEngine.Random.Range(5, 25);
+      int num13 = UnityEngine.Random.Range(0, maxExclusive1);
+      int num14 = UnityEngine.Random.Range(0, maxExclusive1);
       int num15 = num13 + UnityEngine.Random.Range(5, 10);
       int num16 = num14 + UnityEngine.Random.Range(5, 10);
       for (int index13 = num13; index13 < num15; ++index13)
@@ -464,12 +465,12 @@ public class bl_WorldGenerate : MonoBehaviour
         }
       }
     }
-    for (int index15 = 0; index15 < 5; ++index15)
+    for (int index15 = 0; index15 < 10; ++index15)
     {
-      int num17 = UnityEngine.Random.Range(1, 31 /*0x1F*/);
-      int num18 = UnityEngine.Random.Range(1, 31 /*0x1F*/);
-      int num19 = num17 + UnityEngine.Random.Range(10, 20);
-      int num20 = num18 + UnityEngine.Random.Range(10, 20);
+      int num17 = UnityEngine.Random.Range(0, maxExclusive1);
+      int num18 = UnityEngine.Random.Range(0, maxExclusive2);
+      int num19 = num17 + UnityEngine.Random.Range(10, 30);
+      int num20 = num18 + UnityEngine.Random.Range(10, 30);
       for (int index16 = num17; index16 < num19; ++index16)
       {
         for (int index17 = num18; index17 < num20; ++index17)
@@ -532,7 +533,8 @@ label_191:
             --index20;
             if (index20 <= 0)
               goto label_191;
-            break;
+            else
+              break;
         }
       }
     }
@@ -661,9 +663,9 @@ label_191:
         chunkGenerateDataList2.RemoveAt(index27);
       }
     }
-    for (int index28 = 16 /*0x10*/; index28 < maxExclusive1 - 1; ++index28)
+    for (int index28 = 16; index28 < maxExclusive1 - 1; ++index28)
     {
-      for (int index29 = 16 /*0x10*/; index29 < maxExclusive2 - 1; ++index29)
+      for (int index29 = 16; index29 < maxExclusive2 - 1; ++index29)
       {
         if (this.NewChunks[index28, index29].WorldChunkType == e_WorldChunkType.Plain && !this.NewChunks[index28, index29].Road)
         {
@@ -703,7 +705,7 @@ label_265:
         transform2.transform.position = startingPos + new Vector3((float) (index30 * 27), (float) (this.NewChunks[index30, index31].Height * 9), (float) (index31 * 27));
         transform2.transform.eulerAngles = new Vector3(-90f, 0.0f, (float) (90 * this.NewChunks[index30, index31].Rot));
         transform2.localScale = new Vector3(100f, this.NewChunks[index30, index31].Reverse ? -100f : 100f, 100f);
-        transform2.name = $"Chunk_{index30.ToString()}_{index31.ToString()}";
+        transform2.name = "Chunk_" + index30.ToString() + "_" + index31.ToString();
         bl_WorldChunk component1 = transform2.gameObject.GetComponent<bl_WorldChunk>();
         component1.XCordinate = index30;
         component1.YCordinate = index31;

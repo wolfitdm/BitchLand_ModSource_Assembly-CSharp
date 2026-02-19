@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: job_Clinic
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -79,13 +79,13 @@ public class job_Clinic : MonoBehaviour
     }
     if ((UnityEngine.Object) _npcFemalePreg != (UnityEngine.Object) null)
     {
-      _gameplay.AddChatOption($"(Abortion) {_npcFemalePreg.Name} is pregnant, can you get rid of it?", (Action) (() => Main.Instance.GameplayMenu.TheScreenFader.FadeOut(1f, (Action) (() =>
+      _gameplay.AddChatOption("(Abortion) " + _npcFemalePreg.Name + " is pregnant, can you get rid of it?", (Action) (() => Main.Instance.GameplayMenu.TheScreenFader.FadeOut(1f, (Action) (() =>
       {
         Main.RunInNextFrame((Action) (() => Main.Instance.GameplayMenu.TheScreenFader.FadeIn(1f)));
         _npcFemalePreg.GiveBirth();
         this.Doctor.ThisPersonInt.EndTheChat();
       }))));
-      _gameplay.AddChatOption($"(500bn) {_npcFemalePreg.Name} is pregnant, can you help them give birth?", (Action) (() =>
+      _gameplay.AddChatOption("(500bn) " + _npcFemalePreg.Name + " is pregnant, can you help them give birth?", (Action) (() =>
       {
         if (!this.PodAvailable())
         {

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Customize
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -22,6 +22,7 @@ public class UI_Customize : UI_Menu
   public Person DisplayPersonMale;
   public Person DisplayPersonMale2;
   public Person PresetLoaderNPC_F;
+  public Transform CharacterRotRoot;
   public Color AmbientLight;
   public Image rot;
   public Toggle Clothes;
@@ -31,6 +32,8 @@ public class UI_Customize : UI_Menu
   public GameObject DisableInPresets;
   public Dropdown CustomMenuList;
   public GameObject[] CustomMenus;
+  public Dropdown WorldSize;
+  public InputField WorldSeed;
   public GameObject Warning;
   public GameObject ScatQuestion;
   public Dropdown GenderSettings;
@@ -1160,18 +1163,12 @@ public class UI_Customize : UI_Menu
     this.RemoveCurrentHair();
     this.DisplayPerson.DressClothe(Main.Instance.Prefabs_Hair[this.HairList.value]);
     if (!this.DURINGGAMEPLAY)
-      this.DisplayPerson.CurrentHair.gameObject.layer = 16 /*0x10*/;
+      this.DisplayPerson.CurrentHair.gameObject.layer = 16;
     if ((UnityEngine.Object) this.DisplayPersonMale != (UnityEngine.Object) null)
     {
       this.DisplayPersonMale.DressClothe(Main.Instance.Prefabs_Hair[this.HairList.value]);
-      if (!this.DURINGGAMEPLAY)
-        this.DisplayPersonMale.CurrentHair.gameObject.layer = 16 /*0x10*/;
-    }
-    if ((UnityEngine.Object) this.DisplayPersonMale2 != (UnityEngine.Object) null)
-    {
-      this.DisplayPersonMale2.DressClothe(Main.Instance.Prefabs_Hair[this.HairList.value]);
-      if (!this.DURINGGAMEPLAY)
-        this.DisplayPersonMale2.CurrentHair.gameObject.layer = 16 /*0x10*/;
+      if (!this.DURINGGAMEPLAY && (UnityEngine.Object) this.DisplayPersonMale.CurrentHair != (UnityEngine.Object) null)
+        this.DisplayPersonMale.CurrentHair.gameObject.layer = 16;
     }
     this.Click_UpdateHairColor();
   }
@@ -1598,6 +1595,8 @@ public class UI_Customize : UI_Menu
   {
     UI_Customize.FutaChanceValue = this.FutaChanceSlider.value;
     this.FutaChanceText.text = (this.FutaChanceSlider.value * 100f).ToString("##0") + "%";
+    if ((this.FutaChanceSlider.value * 100f).ToString("##0") == "0")
+      UI_Customize.FutaChanceValue = 0.0f;
     Main.Instance.GlobalVars.Set("FutaChance", UI_Customize.FutaChanceValue.ToString("0.0##"));
   }
 
@@ -1708,8 +1707,19 @@ public class UI_Customize : UI_Menu
     this.DisplayPerson._FaceSkinStates = new bool[0];
     this.DisplayPerson._DontLoadClothing = !loadClothing;
     this.DisplayPerson.LoadFromFile(filename);
+    this.DisplayPerson.WorkJob = (bl_WorkJobManager) null;
+    this.DisplayPerson.JobIndex = 0;
+    this.DisplayPerson.InteractingWith = (Interactible) null;
+    this.DisplayPerson.Interacting = false;
     this.DisplayPerson.Inited = false;
     this.DisplayPerson.Init();
+    if ((UnityEngine.Object) this.DisplayPerson.InteractingWith != (UnityEngine.Object) null)
+    {
+      this.DisplayPerson.InteractingWith.StopInteracting();
+      if (this.DisplayPerson is Girl)
+        ((Girl) this.DisplayPerson).UnattatchBoobsToHands();
+    }
+    this.DisplayPerson.transform.SetParent(this.CharacterRotRoot);
     this.Futa.isOn = this.DisplayPerson.HasPenis;
     this.PenisSize.value = this.DisplayPerson.Penis.transform.localScale.x;
     this.DisplayPerson.transform.localPosition = Vector3.zero;
@@ -1788,9 +1798,9 @@ public class UI_Customize : UI_Menu
   {
     string str1;
     if (this.InPresets)
-      str1 = $"{Main.AssetsFolder}/Characters/{(this.Female.isOn ? $"Girls/{(this.PresetsFace ? "Face" : "Body")}Presets/" : $"Guys/{(this.PresetsFace ? "Face" : "Body")}Presets/")}{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss_")}{UnityEngine.Random.Range(0, 999).ToString()}.png";
+      str1 = Main.AssetsFolder + "/Characters/" + (this.Female.isOn ? "Girls/" + (this.PresetsFace ? "Face" : "Body") + "Presets/" : "Guys/" + (this.PresetsFace ? "Face" : "Body") + "Presets/") + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss_") + UnityEngine.Random.Range(0, 999).ToString() + ".png";
     else
-      str1 = $"{Main.AssetsFolder}/Characters/{(this.Female.isOn ? "Girls/" : "Guys/")}{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss_")}{UnityEngine.Random.Range(0, 999).ToString()}.png";
+      str1 = Main.AssetsFolder + "/Characters/" + (this.Female.isOn ? "Girls/" : "Guys/") + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss_") + UnityEngine.Random.Range(0, 999).ToString() + ".png";
     string str2 = str1 + "dara";
     this.TakeFaceScreenshot(str1);
     if (this.Female.isOn)
@@ -1890,7 +1900,7 @@ public class UI_Customize : UI_Menu
         (byte) 68,
         (byte) 174,
         (byte) 66,
-        (byte) 96 /*0x60*/,
+        (byte) 96,
         (byte) 130
       };
       fileStream.Write(buffer, 0, buffer.Length);
@@ -1917,7 +1927,7 @@ public class UI_Customize : UI_Menu
 
   private static bool IsPngFile(byte[] pngHeader)
   {
-    return pngHeader[0] == (byte) 137 && pngHeader[1] == (byte) 80 /*0x50*/ && pngHeader[2] == (byte) 78 && pngHeader[3] == (byte) 71 && pngHeader[4] == (byte) 13 && pngHeader[5] == (byte) 10 && pngHeader[6] == (byte) 26 && pngHeader[7] == (byte) 10;
+    return pngHeader[0] == (byte) 137 && pngHeader[1] == (byte) 80 && pngHeader[2] == (byte) 78 && pngHeader[3] == (byte) 71 && pngHeader[4] == (byte) 13 && pngHeader[5] == (byte) 10 && pngHeader[6] == (byte) 26 && pngHeader[7] == (byte) 10;
   }
 
   private static uint CalculateCrc(byte[] chunkTypeBytes, byte[] chunkData)
@@ -1951,7 +1961,7 @@ public class UI_Customize : UI_Menu
 
   public void Open_LoadCharacterList()
   {
-    string path = !this.InPresets ? (this.CurrentLoadFolderGirls ? Main.AssetsFolder + "/Characters/Girls/" : Main.AssetsFolder + "/Characters/Guys/") : (this.CurrentLoadFolderGirls ? $"{Main.AssetsFolder}/Characters/Girls/{(this.PresetsFace ? "Face" : "Body")}Presets/" : $"{Main.AssetsFolder}/Characters/Guys/{(this.PresetsFace ? "Face" : "Body")}Presets/");
+    string path = !this.InPresets ? (this.CurrentLoadFolderGirls ? Main.AssetsFolder + "/Characters/Girls/" : Main.AssetsFolder + "/Characters/Guys/") : (this.CurrentLoadFolderGirls ? Main.AssetsFolder + "/Characters/Girls/" + (this.PresetsFace ? "Face" : "Body") + "Presets/" : Main.AssetsFolder + "/Characters/Guys/" + (this.PresetsFace ? "Face" : "Body") + "Presets/");
     for (int index = 0; index < this.CharacterEntries.Count; ++index)
       UnityEngine.Object.Destroy((UnityEngine.Object) this.CharacterEntries[index]);
     this.CharacterEntries2.Clear();
@@ -1970,7 +1980,7 @@ public class UI_Customize : UI_Menu
 
   public void Click_OpenInFolder()
   {
-    Application.OpenURL($"file://{Main.AssetsFolder}/Characters/");
+    Application.OpenURL("file://" + Main.AssetsFolder + "/Characters/");
   }
 
   public void Click_LoadSelectedCharacter()
@@ -2013,8 +2023,8 @@ public class UI_Customize : UI_Menu
   public void Click_SaveNPC()
   {
     Person relationship = Main.Instance.GameplayMenu.Relationships[Main.Instance.GameplayMenu._SelectedRelsPerson];
-    string sourceFileName = $"{Main.AssetsFolder}/Saves/{relationship.WorldSaveID}.png";
-    string str1 = $"{Main.AssetsFolder}/Characters/{(relationship is Girl ? "Girls/" : "Guys/")}{relationship.WorldSaveID}.png";
+    string sourceFileName = Main.AssetsFolder + "/Saves/" + relationship.WorldSaveID + ".png";
+    string str1 = Main.AssetsFolder + "/Characters/" + (relationship is Girl ? "Girls/" : "Guys/") + relationship.WorldSaveID + ".png";
     string str2 = str1 + "dara";
     File.Copy(sourceFileName, str1);
     relationship.SaveToFile(str2);
@@ -2055,30 +2065,30 @@ public class UI_Customize : UI_Menu
     {
       case 1:
         this.DisplayPersonMale.DressClothe(Main.Instance.Prefabs_Beards[0]);
-        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16;
         this.DisplayPersonMale2.DressClothe(Main.Instance.Prefabs_Beards[0]);
-        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16;
         this.Click_UpdateHairColor();
         break;
       case 2:
         this.DisplayPersonMale.DressClothe(Main.Instance.Prefabs_Beards[1]);
-        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16;
         this.DisplayPersonMale2.DressClothe(Main.Instance.Prefabs_Beards[1]);
-        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16;
         this.Click_UpdateHairColor();
         break;
       case 3:
         this.DisplayPersonMale.DressClothe(Main.Instance.Prefabs_Beards[2]);
-        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16;
         this.DisplayPersonMale2.DressClothe(Main.Instance.Prefabs_Beards[2]);
-        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16;
         this.Click_UpdateHairColor();
         break;
       case 4:
         this.DisplayPersonMale.DressClothe(Main.Instance.Prefabs_Beards[3]);
-        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale.CurrentBeard.gameObject.layer = 16;
         this.DisplayPersonMale2.DressClothe(Main.Instance.Prefabs_Beards[3]);
-        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16 /*0x10*/;
+        this.DisplayPersonMale2.CurrentBeard.gameObject.layer = 16;
         this.Click_UpdateHairColor();
         break;
     }
@@ -2180,8 +2190,8 @@ public class UI_Customize : UI_Menu
       case 28:
         this.FaceStateToggles[30].SetIsOnWithoutNotify(false);
         this.DisplayPerson.States[30] = false;
-        this.FaceStateToggles[31 /*0x1F*/].SetIsOnWithoutNotify(false);
-        this.DisplayPerson.States[31 /*0x1F*/] = false;
+        this.FaceStateToggles[31].SetIsOnWithoutNotify(false);
+        this.DisplayPerson.States[31] = false;
         this.FaceStateToggles[29].SetIsOnWithoutNotify(false);
         this.DisplayPerson.States[29] = false;
         break;
@@ -2192,10 +2202,10 @@ public class UI_Customize : UI_Menu
       case 30:
         this.FaceStateToggles[28].SetIsOnWithoutNotify(false);
         this.DisplayPerson.States[28] = false;
-        this.FaceStateToggles[31 /*0x1F*/].SetIsOnWithoutNotify(false);
-        this.DisplayPerson.States[31 /*0x1F*/] = false;
+        this.FaceStateToggles[31].SetIsOnWithoutNotify(false);
+        this.DisplayPerson.States[31] = false;
         break;
-      case 31 /*0x1F*/:
+      case 31:
         this.FaceStateToggles[28].SetIsOnWithoutNotify(false);
         this.DisplayPerson.States[28] = false;
         this.FaceStateToggles[30].SetIsOnWithoutNotify(false);
@@ -2269,7 +2279,7 @@ public class UI_Customize : UI_Menu
   public void Slide_HeightChange()
   {
     this.DisplayPerson.transform.localScale = new Vector3(this.HeightSlider.value, this.HeightSlider.value, this.HeightSlider.value);
-    this.HeightText.text = $"Height ({(this.DisplayPerson.transform.localScale.y + 0.75f).ToString("##.##")}m / {UI_Gameplay.MetersToFeetAndInches(this.DisplayPerson.transform.localScale.y + 0.75f)})";
+    this.HeightText.text = "Height (" + (this.DisplayPerson.transform.localScale.y + 0.75f).ToString("##.##") + "m / " + UI_Gameplay.MetersToFeetAndInches(this.DisplayPerson.transform.localScale.y + 0.75f) + ")";
     this.DisplayPerson.Height = this.HeightSlider.value;
     if ((UnityEngine.Object) this.DisplayPersonMale != (UnityEngine.Object) null)
       this.DisplayPersonMale.Height = this.HeightSlider.value;
@@ -2481,4 +2491,6 @@ public class UI_Customize : UI_Menu
   public void Click_LoadPresetFace() => this.LoadPresetopen(true);
 
   public void Click_LoadPresetBody() => this.LoadPresetopen(false);
+
+  public void On_WorldSize() => bl_SectionGenerate2.SmallWorld = this.WorldSize.value == 1;
 }

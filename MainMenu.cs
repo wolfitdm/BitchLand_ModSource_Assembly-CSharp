@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: MainMenu
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -110,7 +110,7 @@ public class MainMenu : UI_Menu
     Main.Instance.Lights.transform.localEulerAngles = this.LightsAngle;
     Time.timeScale = 1f;
     DateTime result = new DateTime();
-    DateTime.TryParse("2026/01/01", out result);
+    DateTime.TryParse("2026/06/01", out result);
     this.BuildIsOld.SetActive(result < DateTime.Now);
     this.ModsButton.SetActive(!Main.Instance.FreeWorldPatch);
     switch (UI_Settings._SpeedrunValue)
@@ -212,7 +212,7 @@ public class MainMenu : UI_Menu
         }
         else
         {
-          str = $"{str}{strArray[index]}\n";
+          str = str + strArray[index] + "\n";
           ++num;
         }
       }
@@ -277,7 +277,7 @@ public class MainMenu : UI_Menu
     if (displayGirl.childCount == 0)
     {
       _girl = Main.Spawn(Main.Instance.PersonPrefab, this.DisplayGirls[this.CurrentDisplayGirl]).GetComponent<Girl>();
-      _girl.LoadFromFile($"{Main.AssetsFolder}/Characters/MainMenu/{displayGirl.name}.png");
+      _girl.LoadFromFile(Main.AssetsFolder + "/Characters/MainMenu/" + displayGirl.name + ".png");
       _girl.transform.localEulerAngles = Vector3.zero;
       _girl.transform.localPosition = Vector3.zero;
       _girl.AddMoveBlocker("mainmenudisplay");
@@ -290,7 +290,7 @@ public class MainMenu : UI_Menu
       _girl.A_Standing = "boobs1";
       this.CurrentGirlText.text = displayGirl.name;
       _girl.transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
-      string path = $"{Main.AssetsFolder}/Characters/MainMenu/{displayGirl.name}.txt";
+      string path = Main.AssetsFolder + "/Characters/MainMenu/" + displayGirl.name + ".txt";
       bool flag = false;
       if (File.Exists(path))
       {
@@ -319,7 +319,7 @@ public class MainMenu : UI_Menu
                       GameObject gameObject = Main.Spawn(this._Clothes[index1], Main.Instance.DisabledObjects);
                       int_PickableClothingPackage componentInChildren = gameObject.GetComponentInChildren<int_PickableClothingPackage>(true);
                       if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null)
-                        componentInChildren.ClothingData = $":{strArray3[1]}:RGBA(0.000, 0.000, 0.000, 0.000)";
+                        componentInChildren.ClothingData = ":" + strArray3[1] + ":RGBA(0.000, 0.000, 0.000, 0.000)";
                       this._Clothes[index1] = gameObject;
                       break;
                     }

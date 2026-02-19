@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_WorldChunk
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +14,7 @@ public class bl_WorldChunk : MonoBehaviour
   public int YCordinate;
   public e_WorldChunkType ThisType;
   public ChunkGenerateData ThisData;
+  public bool CanUseFoundations;
   public bool top;
   public bool down;
   public bool left;
@@ -28,6 +29,7 @@ public class bl_WorldChunk : MonoBehaviour
   public bool CornerSides;
   [Space]
   public GameObject[] asd;
+  public bl_SpawnableProp[] Asds;
   public int MinProps;
   public int MaxProps;
   public int PerFrame;
@@ -46,21 +48,27 @@ public class bl_WorldChunk : MonoBehaviour
 
   public void OnSpawnChunk()
   {
-    if (this.ThisData.Structure != 0)
+    if (this.ThisData.Structure != 0 || this.MaxProps == 0 || this.Asds.Length == 0)
       return;
-    if (true)
+    int num1 = Random.Range(this.MinProps, this.MaxProps);
+    for (int index1 = 0; index1 < num1; ++index1)
     {
-      int num1 = Random.Range(this.MinProps, this.MaxProps);
-      for (int index = 0; index < num1; ++index)
-      {
-        Transform transform = Object.Instantiate<GameObject>(this.asd[Random.Range(0, this.asd.Length)]).transform;
-        transform.SetParent(this.transform);
-        transform.localPosition = new Vector3(Random.Range(-0.125f, 0.125f), Random.Range(-0.125f, 0.125f), 0.0f);
-        transform.localEulerAngles = new Vector3((float) Random.Range(0, 360), 90f, 90f);
-        float num2 = Random.Range(3f / 1000f, 0.01f);
-        transform.localScale = new Vector3(num2, num2, num2);
-      }
+      int index2 = Random.Range(0, this.Asds.Length);
+      Transform transform = Object.Instantiate<GameObject>(this.Asds[index2].Asd).transform;
+      transform.SetParent(this.transform);
+      transform.localPosition = new Vector3(Random.Range(-0.13f, 0.13f), Random.Range(-0.13f, 0.13f), 0.0f);
+      transform.localEulerAngles = new Vector3((float) Random.Range(0, 360), 90f, 90f);
+      float num2 = Random.Range(this.Asds[index2].MinScale, this.Asds[index2].MaxScale) / 100f;
+      transform.localScale = new Vector3(num2, num2, num2);
     }
+  }
+
+  public void OnDespawnChunk()
+  {
+  }
+
+  public void ChunkObtainLODs()
+  {
     Renderer[] componentsInChildren = this.GetComponentsInChildren<Renderer>(false);
     for (int index = 0; index < componentsInChildren.Length; ++index)
     {
@@ -79,13 +87,9 @@ public class bl_WorldChunk : MonoBehaviour
     this.SetLowLod();
   }
 
-  public void OnDespawnChunk()
-  {
-  }
-
   public void Start() => this.PerFrame = Random.Range(10, 20);
 
-  private void Update()
+  private void FixedUpdate()
   {
     if (++this.FramesPassed < this.PerFrame)
       return;
@@ -133,26 +137,44 @@ public class bl_WorldChunk : MonoBehaviour
   {
     this.CurrentLOD = 2;
     for (int index = 0; index < this.HighRens.Count; ++index)
-      this.HighRens[index].enabled = true;
+    {
+      if ((Object) this.HighRens[index] != (Object) null)
+        this.HighRens[index].enabled = true;
+    }
     for (int index = 0; index < this.LowRens.Count; ++index)
-      this.LowRens[index].enabled = false;
+    {
+      if ((Object) this.LowRens[index] != (Object) null)
+        this.LowRens[index].enabled = false;
+    }
   }
 
   public void SetLowLod()
   {
     this.CurrentLOD = 1;
     for (int index = 0; index < this.HighRens.Count; ++index)
-      this.HighRens[index].enabled = false;
+    {
+      if ((Object) this.HighRens[index] != (Object) null)
+        this.HighRens[index].enabled = false;
+    }
     for (int index = 0; index < this.LowRens.Count; ++index)
-      this.LowRens[index].enabled = true;
+    {
+      if ((Object) this.LowRens[index] != (Object) null)
+        this.LowRens[index].enabled = true;
+    }
   }
 
   public void SetCullLod()
   {
     this.CurrentLOD = 0;
     for (int index = 0; index < this.HighRens.Count; ++index)
-      this.HighRens[index].enabled = false;
+    {
+      if ((Object) this.HighRens[index] != (Object) null)
+        this.HighRens[index].enabled = false;
+    }
     for (int index = 0; index < this.LowRens.Count; ++index)
-      this.LowRens[index].enabled = false;
+    {
+      if ((Object) this.LowRens[index] != (Object) null)
+        this.LowRens[index].enabled = false;
+    }
   }
 }

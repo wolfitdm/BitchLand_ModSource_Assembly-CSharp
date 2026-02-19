@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Person
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using DitzelGames.FastIK;
 using System;
@@ -25,6 +25,7 @@ public class Person : SaveableBehaviour
   public bool UnparentOnStart;
   public Animator Anim;
   public NavMeshAgent navMesh;
+  public float NavmeshProxDistance = 0.2f;
   public Rigidbody _Rigidbody;
   public Vision Eyes;
   public Transform EyesSpot;
@@ -42,6 +43,9 @@ public class Person : SaveableBehaviour
   public Collider[] ViewCols;
   public List<string> Perks = new List<string>();
   public Main.bl_Dictionary<string, string> SaveableVars = new Main.bl_Dictionary<string, string>();
+  public int_bed OwnBed;
+  public bool CantBeRestrained;
+  public bool Leashed;
   public bl_HangZone Home;
   [Obsolete]
   public Transform HomeSpot;
@@ -53,6 +57,7 @@ public class Person : SaveableBehaviour
   public bool _DontLoadInteraction;
   public bool _DontLoadClothing;
   public List<Person.TempAggroStruct> TempAggroToType = new List<Person.TempAggroStruct>();
+  public List<string> CullBlockers = new List<string>();
   public List<string> MoveBlockers = new List<string>();
   public bool _CanRun = true;
   public List<string> RunBlockers = new List<string>();
@@ -193,6 +198,7 @@ public class Person : SaveableBehaviour
   public Person Parent2;
   public bool IsPlayerDescendant;
   public int Favor;
+  public float TrainingValue;
   public float StoryModeFertility;
   public float Fertility;
   public intsafe _SexSkills;
@@ -238,9 +244,11 @@ public class Person : SaveableBehaviour
   public List<Person.ScheduleTask> FreeScheduleTasks = new List<Person.ScheduleTask>();
   public List<Person.ScheduleTask> WorkScheduleTasks = new List<Person.ScheduleTask>();
   public Person.ScheduleTask CurrentScheduleTask;
+  public bool _ISWAITINGFORSCHEDULENAVMESH;
   public bool Do_Schedule_GoingToTargetThread;
   public int _PathRedo;
   public float _TimeGoingToTarget;
+  public float _DistanceToTarget;
   public float RandActionTimer;
   public Action WhileDoingAction;
   public List<Action> RuntimeActions = new List<Action>();
@@ -252,6 +260,9 @@ public class Person : SaveableBehaviour
   public float DecideTimer;
   public bool _ShootBlind;
   public float CombatDistance = 50f;
+  public float CombatWaitingTimerMax = 15f;
+  public float CombatWaitingTimer;
+  public float CombatVelocityCheckTimer = 15f;
   public bool EndingCombat;
   public SpawnedSexScene HavingSex_Scene;
   public Person HavingSexWith;
@@ -345,6 +356,7 @@ public class Person : SaveableBehaviour
   public bool CinematicCharacter;
   public bool _CantBeForced;
   public List<Action> CallWhenHighCol = new List<Action>();
+  public bool _FullCulled;
   public bool _DirtySkin;
   public Texture2D MainBodyTex;
   public Texture2D MainFaceTex;
@@ -364,6 +376,9 @@ public class Person : SaveableBehaviour
   public bool Doing_MeleeHit;
   private bool _Punched;
   private Person _personPunching;
+  public Vector3 TempLivingSpace;
+  public bl_HangZone _TempLivingSpace_hang;
+  public List<string> EscapeBlockers = new List<string>();
   private Quaternion turning_targetRotation;
   private Transform turning_target;
   public e_ClothingCondition ClothingCondition;
@@ -374,11 +389,44 @@ public class Person : SaveableBehaviour
     set => this.TheHealth.Audio = value;
   }
 
+  public bool Restrained
+  {
+    get
+    {
+      if (this.CantBeRestrained)
+        return false;
+      for (int index = 0; index < this.EquippedClothes.Count; ++index)
+      {
+        if (this.EquippedClothes[index].Restrains)
+        {
+          this.PersonType = Main.Instance.PersonTypes[2];
+          this.TempLivingSpace = this.transform.position;
+          this.WeaponInv.DropAllWeapons();
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  public bool BlindFolded
+  {
+    get
+    {
+      for (int index = 0; index < this.EquippedClothes.Count; ++index)
+      {
+        if (this.EquippedClothes[index].BlindFolds)
+          return true;
+      }
+      return false;
+    }
+  }
+
   public string HomeAddress => !((UnityEngine.Object) this.Home != (UnityEngine.Object) null) ? "None" : this.Home.name;
 
   public void SaveOnThisPlay()
   {
-    string filename = $"{Main.Instance.CurrentSavePath}{this.WorldSaveID}.chr";
+    string filename = Main.Instance.CurrentSavePath + this.WorldSaveID + ".chr";
     if (this.IsPlayer)
       filename = !(this is Girl) ? Main.Instance.CurrentSavePath + "Player_m.chr" : Main.Instance.CurrentSavePath + "Player.chr";
     this.SaveToFile(filename);
@@ -414,7 +462,7 @@ public class Person : SaveableBehaviour
         for (int index = 1; index < this.EquippedClothes.Count; ++index)
         {
           if (this.EquippedClothes[index].BodyPart != DressableType.BackPack)
-            str = $"{str};{this.EquippedClothes[index].sv_SaveData()}";
+            str = str + ";" + this.EquippedClothes[index].sv_SaveData();
         }
         writer.Write(str);
       }
@@ -604,7 +652,7 @@ public class Person : SaveableBehaviour
           this.Personality = Personality_Type.Casual;
           this.Fetishes.Clear();
           reader.BaseStream.Seek((long) offset, SeekOrigin.Begin);
-          long num1 = reader.BaseStream.Length - 16L /*0x10*/;
+          long num1 = reader.BaseStream.Length - 16L;
           string str1 = reader.ReadString();
           this.WorldSaveID = reader.ReadString();
           this.Name = reader.ReadString().Replace("NPC_", "");
@@ -1106,10 +1154,17 @@ label_20:
       }
       else if (value)
       {
-        this.navMesh.enabled = true;
-        if (this.navMesh.isOnNavMesh)
-          this.navMesh.isStopped = false;
-        this.SetDestination(this._Destination);
+        if (this.MoveBlockers.Count != 0)
+        {
+          Debug.LogError((object) "FUFUFUFUFUCCKKKD YOUYOUYURYOURYOURY");
+        }
+        else
+        {
+          if (this.navMesh.isOnNavMesh)
+            this.navMesh.isStopped = false;
+          this.navMesh.enabled = true;
+          this.SetDestination(this._Destination);
+        }
       }
       else
       {
@@ -1185,11 +1240,26 @@ label_20:
     }
   }
 
+  public void AddCullBlocker(string blockerID)
+  {
+    if (this.CullBlockers.Contains(blockerID))
+      return;
+    this.CullBlockers.Add(blockerID);
+  }
+
+  public void RemoveCullBlocker(string blockerID)
+  {
+    if (!this.CullBlockers.Contains(blockerID))
+      return;
+    this.CullBlockers.Remove(blockerID);
+  }
+
+  public bool CanCull => this.CullBlockers.Count == 0;
+
   public void AddMoveBlocker(string blockerID)
   {
-    if (this.MoveBlockers.Contains(blockerID))
-      return;
-    this.MoveBlockers.Add(blockerID);
+    if (!this.MoveBlockers.Contains(blockerID))
+      this.MoveBlockers.Add(blockerID);
     this.CanMove = false;
   }
 
@@ -1226,6 +1296,10 @@ label_20:
       return;
     this.CanRun = true;
   }
+
+  public bool Unlocked_Storage_Vag => this.Perks.Contains("Vaginal Storage");
+
+  public bool Unlocked_Storage_Anal => this.Perks.Contains("Anal Storage");
 
   public bool Masturbating
   {
@@ -1286,8 +1360,8 @@ label_20:
       this._States = value;
       if (this._SkinStates == null || this._SkinStates.Length != 15)
         this._SkinStates = new bool[15];
-      if (this._FaceSkinStates == null || this._FaceSkinStates.Length != 16 /*0x10*/)
-        this._FaceSkinStates = new bool[16 /*0x10*/];
+      if (this._FaceSkinStates == null || this._FaceSkinStates.Length != 16)
+        this._FaceSkinStates = new bool[16];
       this._SkinStates[1] = this._States[0];
       this._SkinStates[2] = this._States[2];
       this._SkinStates[3] = this._States[3];
@@ -1295,7 +1369,7 @@ label_20:
       this._SkinStates[8] = this._States[13];
       this._SkinStates[9] = this._States[14];
       this._SkinStates[10] = this._States[15];
-      this._SkinStates[11] = this._States[16 /*0x10*/];
+      this._SkinStates[11] = this._States[16];
       this._SkinStates[4] = this._States[17];
       this._SkinStates[5] = this._States[18];
       this._SkinStates[6] = this._States[19];
@@ -1306,11 +1380,11 @@ label_20:
       this._FaceSkinStates[2] = this._States[27];
       this._FaceSkinStates[15] = this._States[8];
       this._FaceSkinStates[11] = this._States[26];
-      this._FaceSkinStates[3] = this._States[32 /*0x20*/];
+      this._FaceSkinStates[3] = this._States[32];
       this._FaceSkinStates[5] = this._States[28];
       this._FaceSkinStates[7] = this._States[29];
       this._FaceSkinStates[6] = this._States[30];
-      this._FaceSkinStates[4] = this._States[31 /*0x1F*/];
+      this._FaceSkinStates[4] = this._States[31];
       this._FaceSkinStates[12] = this._States[23];
       this._FaceSkinStates[13] = this._States[24];
       this._FaceSkinStates[14] = this._States[25];
@@ -1323,8 +1397,8 @@ label_20:
         this._States = new bool[34];
       if (this._SkinStates == null || this._SkinStates.Length != 15)
         this._SkinStates = new bool[15];
-      if (this._FaceSkinStates == null || this._FaceSkinStates.Length != 16 /*0x10*/)
-        this._FaceSkinStates = new bool[16 /*0x10*/];
+      if (this._FaceSkinStates == null || this._FaceSkinStates.Length != 16)
+        this._FaceSkinStates = new bool[16];
       return this._States;
     }
   }
@@ -1378,6 +1452,12 @@ label_20:
     get => this._ArmySkills.Value;
   }
 
+  public bool ClassLocked
+  {
+    set => this.SaveableVars.Set(nameof (ClassLocked), value ? "1" : "0");
+    get => this.SaveableVars.Get(nameof (ClassLocked)) == "1";
+  }
+
   public override void Start()
   {
     this.Init();
@@ -1397,7 +1477,12 @@ label_20:
       this._CustomFaceSkinStates = new bool[Main.Instance._CustomFaceSkinsName.Count];
     if (this.UnparentOnStart)
       this.transform.SetParent((Transform) null, true);
-    if (!Main.Instance.SpawnedPeople.Contains(this))
+    if (Main.Instance.OpenWorld)
+    {
+      if (!Main.Instance.SpawnedPeople_World.Contains(this))
+        Main.Instance.SpawnedPeople_World.Add(this);
+    }
+    else if (!Main.Instance.SpawnedPeople.Contains(this))
       Main.Instance.SpawnedPeople.Add(this);
     if (this._States.Length != 34)
     {
@@ -1429,7 +1514,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Any[index2] != (UnityEngine.Object) null && Main.Instance.Prefabs_Any[index2].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Any[index2];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index3 = 0; index3 < Main.Instance.Prefabs_Bodies.Count; ++index3)
@@ -1437,7 +1522,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Bodies[index3] != (UnityEngine.Object) null && Main.Instance.Prefabs_Bodies[index3].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Bodies[index3];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index4 = 0; index4 < Main.Instance.Prefabs_Garter.Count; ++index4)
@@ -1445,7 +1530,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Garter[index4] != (UnityEngine.Object) null && Main.Instance.Prefabs_Garter[index4].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Garter[index4];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index5 = 0; index5 < Main.Instance.Prefabs_Hair.Count; ++index5)
@@ -1453,7 +1538,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Hair[index5] != (UnityEngine.Object) null && Main.Instance.Prefabs_Hair[index5].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Hair[index5];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index6 = 0; index6 < Main.Instance.Prefabs_Hat.Count; ++index6)
@@ -1461,7 +1546,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Hat[index6] != (UnityEngine.Object) null && Main.Instance.Prefabs_Hat[index6].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Hat[index6];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index7 = 0; index7 < Main.Instance.Prefabs_Heads.Count; ++index7)
@@ -1469,7 +1554,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Heads[index7] != (UnityEngine.Object) null && Main.Instance.Prefabs_Heads[index7].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Heads[index7];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index8 = 0; index8 < Main.Instance.Prefabs_Pants.Count; ++index8)
@@ -1477,7 +1562,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Pants[index8] != (UnityEngine.Object) null && Main.Instance.Prefabs_Pants[index8].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Pants[index8];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index9 = 0; index9 < Main.Instance.Prefabs_Shoes.Count; ++index9)
@@ -1485,7 +1570,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Shoes[index9] != (UnityEngine.Object) null && Main.Instance.Prefabs_Shoes[index9].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Shoes[index9];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index10 = 0; index10 < Main.Instance.Prefabs_Socks.Count; ++index10)
@@ -1493,7 +1578,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Socks[index10] != (UnityEngine.Object) null && Main.Instance.Prefabs_Socks[index10].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Socks[index10];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index11 = 0; index11 < Main.Instance.Prefabs_Top.Count; ++index11)
@@ -1501,7 +1586,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Top[index11] != (UnityEngine.Object) null && Main.Instance.Prefabs_Top[index11].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Top[index11];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index12 = 0; index12 < Main.Instance.Prefabs_UnderwearLower.Count; ++index12)
@@ -1509,7 +1594,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_UnderwearLower[index12] != (UnityEngine.Object) null && Main.Instance.Prefabs_UnderwearLower[index12].name == assetName)
         {
           prefab = Main.Instance.Prefabs_UnderwearLower[index12];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index13 = 0; index13 < Main.Instance.Prefabs_UnderwearTop.Count; ++index13)
@@ -1517,7 +1602,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_UnderwearTop[index13] != (UnityEngine.Object) null && Main.Instance.Prefabs_UnderwearTop[index13].name == assetName)
         {
           prefab = Main.Instance.Prefabs_UnderwearTop[index13];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index14 = 0; index14 < Main.Instance.Prefabs_Beards.Count; ++index14)
@@ -1525,7 +1610,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Beards[index14] != (UnityEngine.Object) null && Main.Instance.Prefabs_Beards[index14].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Beards[index14];
-          goto label_94;
+          goto label_97;
         }
       }
       for (int index15 = 0; index15 < Main.Instance.AllPrefabs.Count; ++index15)
@@ -1533,17 +1618,17 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.AllPrefabs[index15] != (UnityEngine.Object) null && Main.Instance.AllPrefabs[index15].name == assetName)
         {
           prefab = Main.Instance.AllPrefabs[index15];
-          goto label_94;
+          goto label_97;
         }
       }
       prefab = Main.Instance.SpawnFromCustomBundle(assetName);
       int num = (UnityEngine.Object) prefab != (UnityEngine.Object) null ? 1 : 0;
-label_94:
+label_97:
       if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
       {
         if (assetName != "invmouthopen2")
         {
-          Debug.LogError((object) $"Missing Asset> {this.Name} > {assetName}");
+          Debug.LogError((object) ("Missing Asset> " + this.Name + " > \"" + assetName + "\""));
           Main.Instance.GameplayMenu.MissingModsNotif.SetActive(true);
         }
       }
@@ -1568,16 +1653,56 @@ label_94:
     this.OnFinallyInited.Clear();
   }
 
-  public void SetDestination(Transform destination) => this.SetDestination(destination.position);
+  public void SetDestination_off(Transform destination)
+  {
+    this.SetDestination_off(destination.position);
+  }
+
+  public void SetDestination_off(Vector3 destination)
+  {
+  }
+
+  public void SetDestination_off(NavMeshPath path, Vector3 destination)
+  {
+  }
+
+  public bool HasPathTo(Vector3 destination)
+  {
+    if (this.navMesh.isOnNavMesh)
+    {
+      NavMeshPath path = new NavMeshPath();
+      this.navMesh.CalculatePath(destination, path);
+      if (path.status == NavMeshPathStatus.PathComplete)
+        return true;
+    }
+    return false;
+  }
+
+  public void SetDestination(Transform target) => this.SetDestination(target.position);
 
   public void SetDestination(Vector3 destination)
   {
-    if (this.navMesh.isOnNavMesh)
-      this.navMesh.isStopped = false;
+    if (!(destination != Vector3.zero))
+      return;
     this._Destination = destination;
-    if (!(this._Destination != Vector3.zero) || !this.navMesh.isOnNavMesh)
+    Main.Instance.MainThreads.Add(new Action(this.ThreadWaitForFuckingNavMesh));
+  }
+
+  public void SetDestination(NavMeshPath path, Vector3 destination)
+  {
+    this.SetDestination(destination);
+  }
+
+  public void ThreadWaitForFuckingNavMesh()
+  {
+    if ((UnityEngine.Object) this.navMesh == (UnityEngine.Object) null)
+      return;
+    if (this.navMesh.isOnNavMesh && this.navMesh.isStopped)
+      this.navMesh.isStopped = false;
+    if (!this.navMesh.isOnNavMesh)
       return;
     this.navMesh.SetDestination(this._Destination);
+    Main.Instance.MainThreads.Remove(new Action(this.ThreadWaitForFuckingNavMesh));
   }
 
   public void ShitOnFloor()
@@ -1967,9 +2092,9 @@ label_94:
     this.SetHighLod();
     Camera camera = gameObject.AddComponent<Camera>();
     camera.nearClipPlane = 0.1f;
-    camera.targetTexture = new RenderTexture(256 /*0x0100*/, 256 /*0x0100*/, 24);
+    camera.targetTexture = new RenderTexture(256, 256, 24);
     camera.Render();
-    Texture2D tex = new Texture2D(256 /*0x0100*/, 256 /*0x0100*/, TextureFormat.RGB24, false);
+    Texture2D tex = new Texture2D(256, 256, TextureFormat.RGB24, false);
     RenderTexture.active = camera.targetTexture;
     tex.ReadPixels(new Rect(0.0f, 0.0f, (float) camera.targetTexture.width, (float) camera.targetTexture.height), 0, 0);
     tex.Apply();
@@ -1980,12 +2105,17 @@ label_94:
 
   public void CreatePersonRelationship()
   {
-    string str = $"{Main.AssetsFolder}/Saves/{this.WorldSaveID}.png";
+    string str = Main.AssetsFolder + "/Saves/" + this.WorldSaveID + ".png";
     if (!File.Exists(str))
       this.TakeFaceScreenshot(str);
     if (Main.Instance.GameplayMenu.Relationships.Contains(this))
       return;
     Main.Instance.GameplayMenu.Relationships.Add(this);
+  }
+
+  public void overrideProfilePic()
+  {
+    this.TakeFaceScreenshot(Main.AssetsFolder + "/Saves/" + this.WorldSaveID + ".png");
   }
 
   public bool CharacterVisible
@@ -2014,7 +2144,7 @@ label_94:
     Renderer[] componentsInChildren = this.transform.GetComponentsInChildren<Renderer>(true);
     for (int index = 0; index < componentsInChildren.Length; ++index)
     {
-      if ((UnityEngine.Object) this.LodRen != (UnityEngine.Object) componentsInChildren[index] && componentsInChildren[index].gameObject.layer != 512 /*0x0200*/)
+      if ((UnityEngine.Object) this.LodRen != (UnityEngine.Object) componentsInChildren[index] && componentsInChildren[index].gameObject.layer != 512)
         componentsInChildren[index].enabled = value;
     }
   }
@@ -2076,7 +2206,7 @@ label_94:
     bool flag2 = false;
     List<e_Fetish> list = Enum.GetValues(typeof (e_Fetish)).Cast<e_Fetish>().ToList<e_Fetish>();
     list.Remove(e_Fetish.MAX);
-    Person.Shuffle<e_Fetish>(list);
+    Person.Shuffle<e_Fetish>(ref list);
     for (int index = 0; index < num2; ++index)
     {
       if (list[index] == e_Fetish.Clean || list[index] == e_Fetish.Dirty)
@@ -2116,7 +2246,7 @@ label_94:
     return component;
   }
 
-  public static void Shuffle<T>(List<T> list)
+  public static void Shuffle<T>(ref List<T> list)
   {
     int count = list.Count;
     System.Random random = new System.Random();
@@ -2157,7 +2287,11 @@ label_94:
       }
       int_Dragable component1 = this.RagdollParts[index].GetComponent<int_Dragable>();
       if ((bool) (UnityEngine.Object) component1)
-        component1.CanInteract = false;
+      {
+        component1.AddBlocker("alive");
+        if ((UnityEngine.Object) component1.DragSpot != (UnityEngine.Object) null)
+          component1.StopInteracting();
+      }
       MultiInteractible component2 = this.RagdollParts[index].GetComponent<MultiInteractible>();
       if ((UnityEngine.Object) component2 != (UnityEngine.Object) null)
         component2.AddBlocker("Awake");
@@ -2176,6 +2310,23 @@ label_94:
       this.HeadCol.enabled = true;
     this.LookAtPlayer.Disable = false;
     this.LookAtPlayer.EnableIfNotEnabled();
+    for (int index = 0; index < this.EquippedClothes.Count; ++index)
+      this.EquippedClothes[index].SetIKs();
+    this.transform.eulerAngles = new Vector3(0.0f, this.transform.eulerAngles.y, 0.0f);
+    if (!this.IsPlayer)
+      Main.RunInNextFrame((Action) (() =>
+      {
+        this.navMesh.enabled = false;
+        Main.RunInNextFrame((Action) (() =>
+        {
+          if (this.Interacting || this.HavingSex)
+            return;
+          this.navMesh.enabled = true;
+        }), 5);
+      }), 2);
+    if (!((UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null))
+      return;
+    this.ThisPersonInt.RestrainedCheck();
   }
 
   public void StartRagdoll() => this.StartRagdoll(false);
@@ -2190,6 +2341,8 @@ label_94:
       else
         this.HavingSex_Scene.EndSex();
     }
+    if (this.Leashed && (UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null)
+      this.ThisPersonInt.Unleash();
     if (this.IsPlayer)
       Main.Instance.Player.UserControl.FirstPerson = false;
     this.enabled = false;
@@ -2212,7 +2365,7 @@ label_94:
           component1.enabled = true;
         int_Dragable component2 = this.RagdollParts[index].GetComponent<int_Dragable>();
         if ((UnityEngine.Object) component2 != (UnityEngine.Object) null)
-          component2.CanInteract = true;
+          component2.RemoveBlocker("alive");
         MultiInteractible component3 = this.RagdollParts[index].GetComponent<MultiInteractible>();
         if ((UnityEngine.Object) component3 != (UnityEngine.Object) null)
         {
@@ -2220,14 +2373,14 @@ label_94:
           if (this.PlayerKnowsName && (UnityEngine.Object) this.PersonType != (UnityEngine.Object) null)
           {
             if (incapacitatedText)
-              component3.InteractText = $"(Incapacitated){this.Name} ({this.PersonType.ThisType.ToString()})";
+              component3.InteractText = "(Incapacitated)" + this.Name + " (" + this.PersonType.ThisType.ToString() + ")";
             else
-              component3.InteractText = $"(Dead){this.Name} ({this.PersonType.ThisType.ToString()})";
+              component3.InteractText = "(Dead)" + this.Name + " (" + this.PersonType.ThisType.ToString() + ")";
           }
           else if (incapacitatedText)
-            component3.InteractText = $"(Incapacitated) ({this.PersonType.ThisType.ToString()})";
+            component3.InteractText = "(Incapacitated) (" + this.PersonType.ThisType.ToString() + ")";
           else
-            component3.InteractText = $"(Dead) ({this.PersonType.ThisType.ToString()})";
+            component3.InteractText = "(Dead) (" + this.PersonType.ThisType.ToString() + ")";
         }
       }
     }
@@ -2247,10 +2400,13 @@ label_94:
       this.GetComponent<Rigidbody>().isKinematic = true;
     this.LookAtPlayer.Disable = true;
     this.LookAtPlayer.enabled = false;
-    if (!((UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null))
-      return;
-    this.ThisPersonInt.ThisPerson.RagdollManager.OnBecomeRagdoll();
-    this.ThisPersonInt.ThisPerson.RagdollManager.enabled = true;
+    if ((UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null)
+    {
+      this.ThisPersonInt.ThisPerson.RagdollManager.OnBecomeRagdoll();
+      this.ThisPersonInt.ThisPerson.RagdollManager.enabled = true;
+    }
+    for (int index = 0; index < this.EquippedClothes.Count; ++index)
+      this.EquippedClothes[index].UnsetIKs();
   }
 
   public void UpdateAnim()
@@ -2573,79 +2729,91 @@ label_94:
   {
     if (this.TheHealth.dead || this.TheHealth.Incapacitated || this.HavingSex)
       return;
-    this.InCombat = true;
-    if (this.CurrentScheduleTask != null)
-      this.InterruptTask();
-    this.CurrentScheduleTask = (Person.ScheduleTask) null;
-    if ((UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
-      this.InteractingWith.StopInteracting();
-    if (this.HavingSex)
+    if (this.Restrained)
     {
-      if ((UnityEngine.Object) this.HavingSex_Scene == (UnityEngine.Object) Main.Instance.SexScene.PlayerSex)
-        Main.Instance.SexScene.EndSexScene();
-      else
-        this.HavingSex_Scene.EndSex();
-    }
-    if (this.IsPlayer)
-      return;
-    if ((UnityEngine.Object) person == (UnityEngine.Object) null)
-    {
-      this.EnemyFighting = (Health) null;
-      this.CombatState = Person_CombatState.Searching;
+      if (this.Leashed)
+        return;
+      this.RunAway();
     }
     else
     {
-      this.EnemyFighting = person.GetComponent<Health>();
-      this.CombatState = Person_CombatState.Firing;
-      if (this.EnemyFighting.isPlayer)
+      this.InCombat = true;
+      this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+      this.AddCullBlocker("fighting");
+      if (this.CurrentScheduleTask != null)
+        this.InterruptTask();
+      this.CurrentScheduleTask = (Person.ScheduleTask) null;
+      if ((UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
+        this.InteractingWith.StopInteracting();
+      if (this.HavingSex)
       {
-        this.Favor -= 50;
-        Main.RunInNextFrame((Action) (() =>
-        {
-          switch (this.PersonType.ThisType)
-          {
-            case Person_Type.Worker:
-            case Person_Type.Civilian:
-              this.StartCoroutine(Main.Instance.StartCombatWithArmy());
-              break;
-            case Person_Type.HigherCivilian:
-            case Person_Type.Army:
-            case Person_Type.Royal:
-              this.StartCoroutine(Main.Instance.StartCombatWithEveryone());
-              break;
-          }
-        }));
+        if ((UnityEngine.Object) this.HavingSex_Scene == (UnityEngine.Object) Main.Instance.SexScene.PlayerSex)
+          Main.Instance.SexScene.EndSexScene();
+        else
+          this.HavingSex_Scene.EndSex();
       }
-    }
-    this.LookAtPlayer.Disable = true;
-    this.RandActionTimer = 3f;
-    if (!melee)
-    {
-      if ((UnityEngine.Object) this.WeaponInv.CurrentWeapon == (UnityEngine.Object) null)
+      if (this.IsPlayer)
+        return;
+      if ((UnityEngine.Object) person == (UnityEngine.Object) null)
       {
-        for (int index = 0; index < this.WeaponInv.weapons.Count; ++index)
+        this.EnemyFighting = (Health) null;
+        this.CombatState = Person_CombatState.Searching;
+      }
+      else
+      {
+        this.EnemyFighting = person.GetComponent<Health>();
+        this.CombatState = Person_CombatState.Firing;
+        if (this.EnemyFighting.isPlayer)
         {
-          if ((UnityEngine.Object) this.WeaponInv.weapons[index] != (UnityEngine.Object) null)
+          this.Favor -= 50;
+          Main.RunInNextFrame((Action) (() =>
           {
-            this.WeaponInv.SetActiveWeapon(index);
-            goto label_25;
-          }
+            switch (this.PersonType.ThisType)
+            {
+              case Person_Type.Worker:
+              case Person_Type.Civilian:
+                this.StartCoroutine(Main.Instance.StartCombatWithArmy());
+                break;
+              case Person_Type.HigherCivilian:
+              case Person_Type.Army:
+              case Person_Type.Royal:
+                this.StartCoroutine(Main.Instance.StartCombatWithEveryone());
+                break;
+            }
+          }));
         }
-        this.SpawnSphereTrigger();
       }
+      this.LookAtPlayer.Disable = true;
+      this.RandActionTimer = 3f;
+      if (!melee)
+      {
+        if ((UnityEngine.Object) this.WeaponInv.CurrentWeapon == (UnityEngine.Object) null)
+        {
+          for (int index = 0; index < this.WeaponInv.weapons.Count; ++index)
+          {
+            if ((UnityEngine.Object) this.WeaponInv.weapons[index] != (UnityEngine.Object) null)
+            {
+              this.WeaponInv.SetActiveWeapon(index);
+              goto label_29;
+            }
+          }
+          this.SpawnSphereTrigger();
+        }
+      }
+      else if ((UnityEngine.Object) this.WeaponInv.CurrentWeapon != (UnityEngine.Object) null)
+        this.WeaponInv.CurrentWeapon.Holdster();
+label_29:
+      if (!((UnityEngine.Object) this.WeaponInv.CurrentWeapon != (UnityEngine.Object) null))
+        return;
+      this.WeaponInv.CurrentWeapon.fireTimer = UnityEngine.Random.Range(-1.5f, -0.5f);
     }
-    else if ((UnityEngine.Object) this.WeaponInv.CurrentWeapon != (UnityEngine.Object) null)
-      this.WeaponInv.CurrentWeapon.Holdster();
-label_25:
-    if (!((UnityEngine.Object) this.WeaponInv.CurrentWeapon != (UnityEngine.Object) null))
-      return;
-    this.WeaponInv.CurrentWeapon.fireTimer = UnityEngine.Random.Range(-1.5f, -0.5f);
   }
 
   public void StopFighting(bool EndEnemy = true)
   {
     if (EndEnemy && (UnityEngine.Object) this.EnemyFighting != (UnityEngine.Object) null)
       this.EnemyFighting.PersonComponent.StopFighting(false);
+    this.RemoveCullBlocker("fighting");
     this.EnemyFighting = (Health) null;
     this.InCombat = false;
     this.CombatState = Person_CombatState.Firing;
@@ -2684,6 +2852,10 @@ label_25:
           IDName = "GoGetWeapon",
           ActionPlace = weapon.transform,
           RunTo = true,
+          CanBeInterrupted = true,
+          NoMoveChecker = true,
+          NoMoveTimer = 4f,
+          WhenNoMove = (Action) (() => this.CompleteScheduleTask(true)),
           OnArrive = (Action) (() =>
           {
             this.WeaponInv.PickupWeapon(weapon.gameObject);
@@ -2701,7 +2873,7 @@ label_25:
 
   public bool CurrentTaskIsNull()
   {
-    return this.CurrentScheduleTask == null || this.CurrentScheduleTask.IDName == null || this.CurrentScheduleTask.IDName.Length == 0 || (UnityEngine.Object) this.CurrentScheduleTask.ActionPlace == (UnityEngine.Object) null;
+    return this.CurrentScheduleTask == null || this.CurrentScheduleTask.IDName == null || this.CurrentScheduleTask.IDName.Length == 0 || (UnityEngine.Object) this.CurrentScheduleTask.ActionPlace == (UnityEngine.Object) null && this.CurrentScheduleTask.ActionPlacePosition == Vector3.zero;
   }
 
   public void InterruptTask()
@@ -2734,34 +2906,59 @@ label_25:
     this.CompleteScheduleTask(false);
   }
 
+  public void ScheduleDecide_wait()
+  {
+    if (this._ISWAITINGFORSCHEDULENAVMESH)
+      return;
+    this._ISWAITINGFORSCHEDULENAVMESH = true;
+    Main.Instance.MainThreads.Add(new Action(this.ThreadWaitForFuckingNavMesh_ScheduleDecide));
+  }
+
+  public void ThreadWaitForFuckingNavMesh_ScheduleDecide()
+  {
+    if ((UnityEngine.Object) this.navMesh == (UnityEngine.Object) null)
+      return;
+    if (this.navMesh.isOnNavMesh && this.navMesh.isStopped)
+      this.navMesh.isStopped = false;
+    if (!this.navMesh.isOnNavMesh)
+      return;
+    this.ScheduleDecide();
+  }
+
   public void ScheduleDecide()
   {
     if (this.DEBUG)
       Debug.LogError((object) "ScheduleDecide()");
+    this._ISWAITINGFORSCHEDULENAVMESH = false;
+    if (Main.Instance.MainThreads.Contains(new Action(this.ThreadWaitForFuckingNavMesh_ScheduleDecide)))
+      Main.Instance.MainThreads.Remove(new Action(this.ThreadWaitForFuckingNavMesh_ScheduleDecide));
     this.DecideTimer = UnityEngine.Random.Range(5f, 10f);
     if (!this.CurrentTaskIsNull() || this.TheHealth.dead || this.TheHealth.Incapacitated || !this.CanMove)
       return;
-    if (this.State == Person_State.Free)
+    switch (this.State)
     {
-      for (int index = 0; index < this.FreeScheduleTasks.Count; ++index)
-      {
-        if (this.FreeScheduleTasks[index].CanStart())
+      case Person_State.Free:
+        for (int index = 0; index < this.FreeScheduleTasks.Count; ++index)
         {
-          this.StartScheduleTask(this.FreeScheduleTasks[index]);
-          break;
+          if (this.FreeScheduleTasks[index].CanStart())
+          {
+            this.StartScheduleTask(this.FreeScheduleTasks[index]);
+            break;
+          }
         }
-      }
-    }
-    else
-    {
-      for (int index = 0; index < this.WorkScheduleTasks.Count; ++index)
-      {
-        if (this.WorkScheduleTasks[index].CanStart())
+        break;
+      case Person_State.Work:
+        for (int index = 0; index < this.WorkScheduleTasks.Count; ++index)
         {
-          this.StartScheduleTask(this.WorkScheduleTasks[index]);
-          break;
+          if (this.WorkScheduleTasks[index].CanStart())
+          {
+            this.StartScheduleTask(this.WorkScheduleTasks[index]);
+            break;
+          }
         }
-      }
+        if (!Main.Instance.OpenWorld)
+          break;
+        goto case Person_State.Free;
     }
   }
 
@@ -2784,33 +2981,39 @@ label_25:
   {
     if (notIfContains && this.HasScheduleTask(task.IDName))
       return;
+    if (this.DEBUG)
+      Debug.Log((object) ("AddFreeScheduleTask -> " + task.IDName));
     this.FreeScheduleTasks.Add(task);
-    this.ScheduleDecide();
+    this.ScheduleDecide_wait();
   }
 
   public void AddWorkScheduleTask(Person.ScheduleTask task, bool notIfContains = false)
   {
     if (notIfContains && this.HasScheduleTask(task.IDName))
       return;
+    if (this.DEBUG)
+      Debug.Log((object) ("AddWorkScheduleTask -> " + task.IDName));
     this.WorkScheduleTasks.Add(task);
-    this.ScheduleDecide();
+    this.ScheduleDecide_wait();
   }
 
   public void StartScheduleTask(Person.ScheduleTask task)
   {
     if (this.DEBUG)
-      Debug.LogError((object) "ScheduleDecide()");
+      Debug.LogError((object) ("StartScheduleTask() -> " + task.IDName));
     if (this.IsPlayer)
       return;
+    if (this.DEBUG)
+      Debug.LogError((object) ("previous CurrentTaskIsNull() -> " + this.CurrentTaskIsNull().ToString()));
     if (!this.CurrentTaskIsNull())
       this.InterruptTask();
     if (this.TheHealth.dead || this.TheHealth.Incapacitated)
       return;
-    this.CurrentScheduleTask = task;
+    if (this.DEBUG)
+      Debug.LogError((object) ("Interacting -> " + this.Interacting.ToString()));
     if (this.Interacting)
       this.InteractingWith.StopInteracting();
-    this.navMesh.enabled = true;
-    this.navMesh.isStopped = false;
+    this.CurrentScheduleTask = task;
     if (this.CurrentScheduleTask == null)
     {
       Debug.LogError((object) (this.Name + " null task"));
@@ -2818,10 +3021,15 @@ label_25:
     }
     else
     {
-      this.SetDestination(this.CurrentScheduleTask.ActionPlace.position);
+      if ((UnityEngine.Object) this.CurrentScheduleTask.ActionPlace == (UnityEngine.Object) null)
+        this.SetDestination(this.CurrentScheduleTask.ActionPlacePosition);
+      else
+        this.SetDestination(this.CurrentScheduleTask.ActionPlace.position);
       this.navMesh.speed = task.RunTo ? 4f : 1f;
       this.CurrentScheduleTask.State = 1;
       this.Do_Schedule_GoingToTargetThread = true;
+      if (this.DEBUG)
+        Debug.LogError((object) ("CurrentScheduleTask.OnStartGoing != null -> " + (this.CurrentScheduleTask.OnStartGoing != null).ToString()));
       if (this.CurrentScheduleTask.OnStartGoing == null)
         return;
       this.CurrentScheduleTask.OnStartGoing();
@@ -2839,7 +3047,17 @@ label_25:
     {
       if (this.CurrentScheduleTask.WhileGoing != null)
         this.CurrentScheduleTask.WhileGoing();
-      if ((double) Vector2.Distance(new Vector2(this.transform.position.x, this.transform.position.z), new Vector2(this.CurrentScheduleTask.ActionPlace.position.x, this.CurrentScheduleTask.ActionPlace.position.z)) <= (double) this.navMesh.stoppingDistance)
+      if (this.CurrentScheduleTask.NoMoveChecker && this.CurrentLOD != 0 && (double) this.navMesh.velocity.magnitude < 0.10000000149011612)
+      {
+        this.CurrentScheduleTask.NoMoveTimer -= Time.deltaTime;
+        if ((double) this.CurrentScheduleTask.NoMoveTimer < 0.0)
+        {
+          this.CurrentScheduleTask.WhenNoMove();
+          return;
+        }
+      }
+      this._DistanceToTarget = Vector2.Distance(new Vector2(this.transform.position.x, this.transform.position.z), !((UnityEngine.Object) this.CurrentScheduleTask.ActionPlace == (UnityEngine.Object) null) ? new Vector2(this.CurrentScheduleTask.ActionPlace.position.x, this.CurrentScheduleTask.ActionPlace.position.z) : new Vector2(this.CurrentScheduleTask.ActionPlacePosition.x, this.CurrentScheduleTask.ActionPlacePosition.z));
+      if ((double) this._DistanceToTarget <= (double) this.NavmeshProxDistance)
       {
         if (this.navMesh.enabled)
           this.navMesh.isStopped = true;
@@ -2870,16 +3088,22 @@ label_25:
     this._TimeGoingToTarget = 0.0f;
     this.WhileDoingAction = (Action) null;
     this.Do_Schedule_GoingToTargetThread = false;
-    if (this.CurrentTaskIsNull())
-      return;
-    if (this.CurrentScheduleTask.OnFinish != null)
-      this.CurrentScheduleTask.OnFinish();
-    this.FreeScheduleTasks.Remove(this.CurrentScheduleTask);
-    this.WorkScheduleTasks.Remove(this.CurrentScheduleTask);
+    if (this.CurrentScheduleTask != null && this.CurrentScheduleTask.IDName != null && this.CurrentScheduleTask.IDName.Length > 0)
+    {
+      this.FreeScheduleTasks.Remove(this.CurrentScheduleTask);
+      this.WorkScheduleTasks.Remove(this.CurrentScheduleTask);
+    }
+    if (!this.CurrentTaskIsNull())
+    {
+      if (this.CurrentScheduleTask.OnFinish != null)
+        this.CurrentScheduleTask.OnFinish();
+      this.FreeScheduleTasks.Remove(this.CurrentScheduleTask);
+      this.WorkScheduleTasks.Remove(this.CurrentScheduleTask);
+    }
     this.CurrentScheduleTask = (Person.ScheduleTask) null;
     if (!decideAfter)
       return;
-    this.ScheduleDecide();
+    this.ScheduleDecide_wait();
   }
 
   public void SexUpdate()
@@ -2940,8 +3164,6 @@ label_25:
       return;
     if (!this.InCombat || this.IsPlayer)
     {
-      if (this.DEBUG)
-        Debug.Log((object) "!InCombat");
       if (!this.TEMP_SEXUPDATE_OFF)
         this.SexUpdate();
       if (!this.TEMP_RUNTIME_OFF)
@@ -2956,29 +3178,65 @@ label_25:
     {
       if (!this.IsPlayer)
       {
-        if (this.DEBUG)
-          Debug.Log((object) ("WhileDoingAction == null" + (this.WhileDoingAction == null).ToString()));
         if (this.WhileDoingAction != null)
           this.WhileDoingAction();
-        switch (this.State)
+        if (this.CurrentLOD == 0 && this._FullCulled)
+          return;
+        if (this.CanMove && (!this.CurrentTaskIsNull() || !this.PersonType.BehaviourPass(this)))
         {
-          case Person_State.Free:
-            if (this.DEBUG)
-              Debug.Log((object) "Person_State.Free:");
-            if (this.CurrentTaskIsNull())
-            {
-              if (this.DEBUG)
-                Debug.Log((object) "(CurrentTaskIsNull())");
-              if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null)
+          switch (this.State)
+          {
+            case Person_State.Free:
+              if (this.CurrentTaskIsNull() && !this.PersonType.BehaviourPass_Free(this) && (UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null)
               {
-                if (this.DEBUG)
-                  Debug.Log((object) "(CurrentZone != null)");
-                Interactible _int = this.CurrentZone.PickThingToDo(this);
-                if ((UnityEngine.Object) _int != (UnityEngine.Object) null)
+                Vector3 _wonder = Vector3.zero;
+                NavMeshPath path = new NavMeshPath();
+                Interactible _int = this.CurrentZone.PickThingToDo(this, out _wonder, out path);
+                if ((UnityEngine.Object) _int != (UnityEngine.Object) null || _wonder != Vector3.zero)
                 {
-                  if (this.DEBUG)
-                    Debug.Log((object) "(_int != null)");
                   this.RandActionTimer = UnityEngine.Random.Range(5f, 50f);
+                  if ((UnityEngine.Object) _int == (UnityEngine.Object) null)
+                  {
+                    this.AddFreeScheduleTask(new Person.ScheduleTask()
+                    {
+                      IDName = "WonderInZone",
+                      ActionPlacePosition = _wonder,
+                      RunTo = false,
+                      CanBeInterrupted = true,
+                      WhileDoing = (Action) (() =>
+                      {
+                        this.RandActionTimer -= Time.deltaTime;
+                        if ((double) this.RandActionTimer > 0.0)
+                          return;
+                        this.RandActionTimer = UnityEngine.Random.Range(5f, 50f);
+                        if ((UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
+                        {
+                          if (this.InteractingWith.NPCOnFinishInteract == null)
+                          {
+                            this.InteractingWith.StopInteracting();
+                            this.CompleteScheduleTask();
+                          }
+                          else
+                            this.InteractingWith.StopInteracting();
+                        }
+                        else
+                          this.CompleteScheduleTask();
+                      }),
+                      OnArrive = (Action) (() =>
+                      {
+                        if (this.PrisionerEscapeCheck())
+                          return;
+                        GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[264]);
+                        gameObject.transform.position = _wonder;
+                        gameObject.transform.eulerAngles = new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360f), 0.0f);
+                        Interactible component = gameObject.GetComponent<Interactible>();
+                        component.NPCOnFinishInteract = new Action(this.CompleteScheduleTask);
+                        component.Interact(this);
+                      }),
+                      OnStartGoing = (Action) (() => this.PrisionerEscapeCheck())
+                    }, true);
+                    break;
+                  }
                   this.AddFreeScheduleTask(new Person.ScheduleTask()
                   {
                     IDName = "DoSomethingInZone",
@@ -3006,6 +3264,13 @@ label_25:
                     }),
                     OnArrive = (Action) (() =>
                     {
+                      if ((UnityEngine.Object) _int == (UnityEngine.Object) null)
+                      {
+                        GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[264]);
+                        gameObject.transform.position = _wonder;
+                        gameObject.transform.eulerAngles = new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360f), 0.0f);
+                        _int = gameObject.GetComponent<Interactible>();
+                      }
                       if (_int.CanInteract)
                       {
                         _int.NPCOnFinishInteract = new Action(this.CompleteScheduleTask);
@@ -3020,8 +3285,11 @@ label_25:
                 break;
               }
               break;
-            }
-            break;
+            case Person_State.Work:
+              if (!Main.Instance.OpenWorld || !this.CurrentTaskIsNull() || this.PersonType.BehaviourPass_Work(this) || this.WorkScheduleTasks.Count != 0 || this.CurrentScheduleTask != null && this.CurrentScheduleTask.IDName != null && this.CurrentScheduleTask.IDName.Length != 0)
+                break;
+              goto case Person_State.Free;
+          }
         }
         if (this.Do_Schedule_GoingToTargetThread)
           this.Schedule_GoingToTargetThread();
@@ -3031,12 +3299,12 @@ label_25:
       this.HandleCombat();
     if (!this.Interacting && !this.TEMP_HANDLEANIMS_OFF)
       this.UpdateAnim();
-    if (this.InCombat || !this.CurrentTaskIsNull())
+    if (this.IsPlayer || this.InCombat || !this.CurrentTaskIsNull())
       return;
     this.DecideTimer -= Time.deltaTime;
     if ((double) this.DecideTimer > 0.0)
       return;
-    this.ScheduleDecide();
+    this.ScheduleDecide_wait();
   }
 
   public void AddGoHome()
@@ -3176,7 +3444,7 @@ label_25:
             this.navMesh.enabled = true;
             this.navMesh.speed = 4f;
             this.navMesh.isStopped = false;
-            this.navMesh.destination = this.EnemyFighting.transform.position;
+            this.SetDestination(this.EnemyFighting.transform.position);
           }
         }
         else
@@ -3195,6 +3463,8 @@ label_25:
         if ((this._ShootBlind ? 1 : (this.Eyes.CanSee(this.EnemyFighting.PersonComponent.MainCol, Color.green) ? 1 : 0)) != 0)
         {
           this.CombatState = Person_CombatState.Firing;
+          this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+          this.CombatVelocityCheckTimer = this.CombatWaitingTimerMax;
           this.transform.LookAt(this.EnemyFighting.transform);
           this.EnemyLastKnownPosition = this.EnemyFighting.transform.position;
           if ((double) Vector3.Distance(this.EnemyFighting.transform.position, this.transform.position) >= 50.0)
@@ -3208,19 +3478,38 @@ label_25:
           if ((double) Vector3.Distance(this.EnemyLastKnownPosition, this.transform.position) > 0.10000000149011612)
           {
             this.CombatState = Person_CombatState.GoingTolastKnownPosition;
+            this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+            if ((double) this.navMesh.velocity.magnitude <= 0.0099999997764825821)
+            {
+              this.CombatVelocityCheckTimer -= Time.deltaTime;
+              if ((double) this.CombatVelocityCheckTimer <= 0.0)
+              {
+                this.EnemyFighting = (Health) null;
+                return;
+              }
+            }
             if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
               return;
             this.navMesh.enabled = true;
             this.navMesh.speed = 4f;
             this.navMesh.isStopped = false;
-            this.navMesh.destination = this.EnemyLastKnownPosition;
+            this.SetDestination(this.EnemyLastKnownPosition);
           }
           else
           {
             this.CombatState = Person_CombatState.Waiting;
-            if (!this.navMesh.enabled)
-              return;
-            this.navMesh.isStopped = true;
+            this.CombatVelocityCheckTimer = this.CombatWaitingTimerMax;
+            this.CombatWaitingTimer -= Time.deltaTime;
+            if ((double) this.CombatWaitingTimer <= 0.0)
+            {
+              this.EnemyFighting = (Health) null;
+            }
+            else
+            {
+              if (!this.navMesh.enabled)
+                return;
+              this.navMesh.isStopped = true;
+            }
           }
         }
       }
@@ -3230,13 +3519,59 @@ label_25:
           return;
         if ((double) Vector3.Distance(this.EnemyFighting.transform.position, this.transform.position) > 1.0)
         {
-          this.CombatState = Person_CombatState.ChasingAndFiring;
-          if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
-            return;
-          this.navMesh.enabled = true;
-          this.navMesh.speed = 4f;
-          this.navMesh.isStopped = false;
-          this.navMesh.destination = this.EnemyFighting.transform.position;
+          if (this.Eyes.CanSee(this.EnemyFighting.PersonComponent.MainCol, Color.green))
+          {
+            this.CombatState = Person_CombatState.ChasingAndFiring;
+            this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+            this.CombatVelocityCheckTimer = this.CombatWaitingTimerMax;
+            this.EnemyLastKnownPosition = this.EnemyFighting.transform.position;
+            if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
+              return;
+            this.navMesh.enabled = true;
+            this.navMesh.speed = 4f;
+            this.navMesh.isStopped = false;
+            this.SetDestination(this.EnemyFighting.transform.position);
+          }
+          else
+          {
+            if (!(this.EnemyLastKnownPosition != Vector3.zero))
+              return;
+            if ((double) Vector3.Distance(this.EnemyLastKnownPosition, this.transform.position) > 0.10000000149011612)
+            {
+              this.CombatState = Person_CombatState.GoingTolastKnownPosition;
+              this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+              if ((double) this.navMesh.velocity.magnitude <= 0.0099999997764825821)
+              {
+                this.CombatVelocityCheckTimer -= Time.deltaTime;
+                if ((double) this.CombatVelocityCheckTimer <= 0.0)
+                {
+                  this.EnemyFighting = (Health) null;
+                  return;
+                }
+              }
+              if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
+                return;
+              this.navMesh.enabled = true;
+              this.navMesh.speed = 4f;
+              this.navMesh.isStopped = false;
+              this.SetDestination(this.EnemyLastKnownPosition);
+            }
+            else
+            {
+              this.CombatState = Person_CombatState.Waiting;
+              this.CombatWaitingTimer -= Time.deltaTime;
+              if ((double) this.CombatWaitingTimer <= 0.0)
+              {
+                this.EnemyFighting = (Health) null;
+              }
+              else
+              {
+                if (!this.navMesh.enabled)
+                  return;
+                this.navMesh.isStopped = true;
+              }
+            }
+          }
         }
         else
         {
@@ -3254,13 +3589,59 @@ label_25:
           return;
         if ((double) Vector3.Distance(this.EnemyFighting.transform.position, this.transform.position) > 1.0)
         {
-          this.CombatState = Person_CombatState.ChasingAndFiring;
-          if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
-            return;
-          this.navMesh.enabled = true;
-          this.navMesh.speed = 4f;
-          this.navMesh.isStopped = false;
-          this.navMesh.destination = this.EnemyFighting.transform.position;
+          if (this.Eyes.CanSee(this.EnemyFighting.PersonComponent.MainCol, Color.green))
+          {
+            this.CombatState = Person_CombatState.ChasingAndFiring;
+            this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+            this.CombatVelocityCheckTimer = this.CombatWaitingTimerMax;
+            this.EnemyLastKnownPosition = this.EnemyFighting.transform.position;
+            if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
+              return;
+            this.navMesh.enabled = true;
+            this.navMesh.speed = 4f;
+            this.navMesh.isStopped = false;
+            this.SetDestination(this.EnemyFighting.transform.position);
+          }
+          else
+          {
+            if (!(this.EnemyLastKnownPosition != Vector3.zero))
+              return;
+            if ((double) Vector3.Distance(this.EnemyLastKnownPosition, this.transform.position) > 0.10000000149011612)
+            {
+              this.CombatState = Person_CombatState.GoingTolastKnownPosition;
+              this.CombatWaitingTimer = this.CombatWaitingTimerMax;
+              if ((double) this.navMesh.velocity.magnitude <= 0.0099999997764825821)
+              {
+                this.CombatVelocityCheckTimer -= Time.deltaTime;
+                if ((double) this.CombatVelocityCheckTimer <= 0.0)
+                {
+                  this.EnemyFighting = (Health) null;
+                  return;
+                }
+              }
+              if (this.NoMoveInCombat || !this.navMesh.gameObject.activeSelf)
+                return;
+              this.navMesh.enabled = true;
+              this.navMesh.speed = 4f;
+              this.navMesh.isStopped = false;
+              this.SetDestination(this.EnemyLastKnownPosition);
+            }
+            else
+            {
+              this.CombatState = Person_CombatState.Waiting;
+              this.CombatWaitingTimer -= Time.deltaTime;
+              if ((double) this.CombatWaitingTimer <= 0.0)
+              {
+                this.EnemyFighting = (Health) null;
+              }
+              else
+              {
+                if (!this.navMesh.enabled)
+                  return;
+                this.navMesh.isStopped = true;
+              }
+            }
+          }
         }
         else
         {
@@ -3292,9 +3673,16 @@ label_25:
     this.GainSexXP(this.Perks.Contains("Longer Orgasm") ? 250 : 100);
     if ((double) this.SexMAddictionultiplier < 2.0)
       this.SexMAddictionultiplier += 0.01f;
+    if ((UnityEngine.Object) this.PersonType != (UnityEngine.Object) null && this.PersonType.ThisType == Person_Type.Prisioner)
+    {
+      ++this.TrainingValue;
+      if (this.Fetishes.Contains(e_Fetish.Masochist))
+        ++this.TrainingValue;
+    }
     if ((UnityEngine.Object) this.HavingSexWith != (UnityEngine.Object) null)
     {
-      this.Favor += 5;
+      if (this.HavingSexWith.IsPlayer)
+        this.Favor += 5;
       if ((UnityEngine.Object) this.HavingSex_Scene.Leading == (UnityEngine.Object) this)
       {
         if (this.HasPenis && !this.HasCondomPut && this.HavingSexWith is Girl)
@@ -3702,13 +4090,20 @@ label_25:
           }
           if ((UnityEngine.Object) headStuff == (UnityEngine.Object) null)
           {
-            Debug.LogError((object) $"Could not find AttatchBone \"{componentInChildren2.AttatchBone}\"");
+            Debug.LogError((object) ("Could not find AttatchBone \"" + componentInChildren2.AttatchBone + "\""));
             break;
           }
           gameObject.transform.SetParent(headStuff);
-          gameObject.transform.localPosition = componentInChildren2.AttatchPos;
-          gameObject.transform.localEulerAngles = componentInChildren2.AttatchRot;
-          gameObject.transform.localScale = componentInChildren2.AttatchScl;
+          if (this is Girl || componentInChildren2.Male_AttatchPos == Vector3.zero && componentInChildren2.Male_AttatchRot == Vector3.zero)
+          {
+            gameObject.transform.localPosition = componentInChildren2.AttatchPos;
+            gameObject.transform.localEulerAngles = componentInChildren2.AttatchRot;
+            gameObject.transform.localScale = componentInChildren2.AttatchScl;
+            break;
+          }
+          gameObject.transform.localPosition = componentInChildren2.Male_AttatchPos;
+          gameObject.transform.localEulerAngles = componentInChildren2.Male_AttatchRot;
+          gameObject.transform.localScale = componentInChildren2.Male_AttatchScl;
           break;
       }
     }
@@ -3718,6 +4113,8 @@ label_25:
       this.RefreshColors();
     componentInChildren2.OnDressed();
     this.GetClothingCondition();
+    if ((UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null && this.CanMove)
+      this.ThisPersonInt.RestrainedCheck();
     return componentInChildren2.gameObject;
   }
 
@@ -3874,6 +4271,8 @@ label_25:
       UnityEngine.Object.Destroy((UnityEngine.Object) clothe.gameObject);
     }
     this.GetClothingCondition();
+    if ((UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null && this.CanMove)
+      this.ThisPersonInt.RestrainedCheck();
     return gameObject;
   }
 
@@ -3943,16 +4342,14 @@ label_25:
 
   public virtual void SetHighLod()
   {
-    if (this.DEBUG)
-      Debug.LogError((object) nameof (SetHighLod));
     this.RemoveMoveBlocker("InCullLOD");
     this.CurrentLOD = 2;
+    this._FullCulled = false;
     if (!this.TheHealth.dead && !this.TheHealth.Incapacitated)
     {
       this.Anim.enabled = true;
-      this.navMesh.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
       if ((UnityEngine.Object) this.Eyes != (UnityEngine.Object) null)
-        this.Eyes.Quality = Vision.VisionQuality.High;
+        this.Eyes.OnHighLod();
       this.LookAtPlayer.EnableIfNotEnabled();
       if ((UnityEngine.Object) this.PersonalityData != (UnityEngine.Object) null)
         this.ApplyFaceBlendShapeData(Main.Instance.BlendShapesDatas[(int) this.PersonalityData.FaceBlendshape]);
@@ -3988,16 +4385,16 @@ label_25:
 
   public virtual void SetLowLod()
   {
-    if (this.DEBUG)
-      Debug.LogError((object) nameof (SetLowLod));
+    if (this.CurrentLOD == 1)
+      return;
     this.RemoveMoveBlocker("InCullLOD");
     this.CurrentLOD = 1;
+    this._FullCulled = false;
     if (!this.TheHealth.dead && !this.TheHealth.Incapacitated)
       this.Anim.enabled = true;
     this.CharacterVisible = true;
-    this.navMesh.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
     if ((UnityEngine.Object) this.Eyes != (UnityEngine.Object) null)
-      this.Eyes.Quality = Vision.VisionQuality.Low;
+      this.Eyes.OnLowLOD();
     this.LookAtPlayer.enabled = false;
     this.Penis.SetActive(false);
     this.MainBody.enabled = false;
@@ -4029,11 +4426,11 @@ label_25:
 
   public virtual void SetCullLod(bool fullCull = false)
   {
-    if (this.DEBUG)
-      Debug.LogError((object) nameof (SetCullLod));
     if (this.Name.Length == 0)
-    {
       Debug.LogError((object) "SetCullLod on nameless");
+    else if (!this.CanCull)
+    {
+      this.SetLowLod();
     }
     else
     {
@@ -4050,6 +4447,7 @@ label_25:
           ((Girl) this).ResetPhysicsPos();
       }
       this.MainBody.enabled = false;
+      this._FullCulled = fullCull;
       if (fullCull)
       {
         this.MainBodyLowPoly.enabled = false;
@@ -4059,11 +4457,10 @@ label_25:
         this.MainBodyLowPoly.enabled = true;
         this.MainBodyLowPoly.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
       }
-      this.navMesh.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
       if ((double) Vector2.Distance(new Vector2(this.transform.position.x, this.transform.position.z), new Vector2(Main.Instance.Player.transform.position.x, Main.Instance.Player.transform.position.z)) > 25.0 && this.State == Person_State.Free && this.CurrentScheduleTask != null && !this.CurrentScheduleTask.KeepPathEnabled)
         this.AddMoveBlocker("InCullLOD");
       if ((UnityEngine.Object) this.Eyes != (UnityEngine.Object) null)
-        this.Eyes.Quality = Vision.VisionQuality.None;
+        this.Eyes.OnCull();
       if (!((UnityEngine.Object) this.CurrentFeet != (UnityEngine.Object) null))
         return;
       this.CurrentFeetMesh.enabled = false;
@@ -4121,7 +4518,7 @@ label_25:
         this.MainBodyTex = Main.MergeTextures(this.MainBodyTex, Main.Instance.Tex_BodySkin[9]);
       if (this.States[15])
         this.MainBodyTex = Main.MergeTextures(this.MainBodyTex, Main.Instance.Tex_BodySkin[10]);
-      if (this.States[16 /*0x10*/])
+      if (this.States[16])
         this.MainBodyTex = Main.MergeTextures(this.MainBodyTex, Main.Instance.Tex_BodySkin[11]);
       Main.Instance.TexBody_Container2.TryAdd(this.sBodyTexIndex, this.MainBodyTex);
     }
@@ -4179,7 +4576,7 @@ label_25:
     }
     else
     {
-      this.CustomMainBodyTex = Main.Instance.Tex_BodySkin[16 /*0x10*/];
+      this.CustomMainBodyTex = Main.Instance.Tex_BodySkin[16];
       for (int index = 0; index < this._CustomSkinStates.Length; ++index)
       {
         if (this._CustomSkinStates[index])
@@ -4190,7 +4587,7 @@ label_25:
     if ((UnityEngine.Object) this.CustomMainBodyTex != (UnityEngine.Object) null)
       this.MainBody.materials[0].SetTexture("_Layer1", (Texture) this.CustomMainBodyTex);
     else
-      this.MainBody.materials[0].SetTexture("_Layer1", (Texture) Main.Instance.Tex_BodySkin[16 /*0x10*/]);
+      this.MainBody.materials[0].SetTexture("_Layer1", (Texture) Main.Instance.Tex_BodySkin[16]);
     this.sCustomFaceTexIndex = string.Empty;
     for (int index = 0; index < this._CustomFaceSkinStates.Length; ++index)
     {
@@ -4362,7 +4759,10 @@ label_25:
       for (int index1 = 0; index1 < 10; ++index1)
       {
         for (int index2 = 0; index2 < Main.Instance.SpawnedPeopleOfType[index1].Count; ++index2)
-          Main.Instance.SpawnedPeopleOfType[index1][index2].Eyes.RemoveFlagger("OnSeeAttack");
+        {
+          if ((UnityEngine.Object) Main.Instance.SpawnedPeopleOfType[index1][index2].Eyes != (UnityEngine.Object) null)
+            Main.Instance.SpawnedPeopleOfType[index1][index2].Eyes.RemoveFlagger("OnSeeAttack");
+        }
       }
     }), 5f);
   }
@@ -4410,7 +4810,7 @@ label_25:
             this.PersonThrowingDown.States[15] = true;
             break;
           case 5:
-            this.PersonThrowingDown.States[16 /*0x10*/] = true;
+            this.PersonThrowingDown.States[16] = true;
             break;
         }
         if ((double) this.Energy < 5.0)
@@ -4431,25 +4831,248 @@ label_25:
               this.PersonThrowingDown.StartFighting(this);
               break;
             default:
-              Transform transform = this.transform;
-              if ((UnityEngine.Object) this.Home != (UnityEngine.Object) null && this.Home.SexSpots != null && this.Home.SexSpots.Count > 0)
-                transform = this.Home.SexSpots[UnityEngine.Random.Range(0, this.Home.SexSpots.Count)];
-              else if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null && this.CurrentZone.SexSpots != null && this.CurrentZone.SexSpots.Count > 0)
-                transform = this.CurrentZone.SexSpots[UnityEngine.Random.Range(0, this.CurrentZone.SexSpots.Count)];
-              else if ((UnityEngine.Object) this.Home != (UnityEngine.Object) null && (UnityEngine.Object) this.Home.Location != (UnityEngine.Object) null)
-                transform = this.Home.Location;
-              else if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null && (UnityEngine.Object) this.CurrentZone.Location != (UnityEngine.Object) null)
-                transform = this.CurrentZone.Location;
-              this.PersonThrowingDown.StartScheduleTask(new Person.ScheduleTask()
-              {
-                IDName = "escape",
-                ActionPlace = transform,
-                RunTo = true
-              });
+              this.PersonThrowingDown.RunAway();
               break;
           }
         }
       });
+  }
+
+  public bl_HangZone TempLivingSpace_hang
+  {
+    set => this._TempLivingSpace_hang = value;
+    get
+    {
+      if ((UnityEngine.Object) this._TempLivingSpace_hang == (UnityEngine.Object) null)
+      {
+        this._TempLivingSpace_hang = this.gameObject.GetComponent<bl_HangZone>();
+        if ((UnityEngine.Object) this._TempLivingSpace_hang == (UnityEngine.Object) null)
+          this._TempLivingSpace_hang = this.gameObject.AddComponent<bl_HangZone>();
+      }
+      this._TempLivingSpace_hang.AllowWondering = true;
+      this._TempLivingSpace_hang.DistanceSize = (UnityEngine.Object) this.Eyes == (UnityEngine.Object) null ? 10f : this.Eyes.CalcRoomSize();
+      this._TempLivingSpace_hang.Location = this.transform;
+      this._TempLivingSpace_hang.PeopleInZone = new List<Person>()
+      {
+        this
+      };
+      this._TempLivingSpace_hang.ThingsToDo.Clear();
+      return this._TempLivingSpace_hang;
+    }
+  }
+
+  public void MakePrisionerHang()
+  {
+  }
+
+  public void MakeWorkerHang()
+  {
+    if ((UnityEngine.Object) this._TempLivingSpace_hang == (UnityEngine.Object) null)
+    {
+      this._TempLivingSpace_hang = this.gameObject.GetComponent<bl_HangZone>();
+      if ((UnityEngine.Object) this._TempLivingSpace_hang == (UnityEngine.Object) null)
+        this._TempLivingSpace_hang = this.gameObject.AddComponent<bl_HangZone>();
+    }
+    this._TempLivingSpace_hang.AllowWondering = true;
+    this._TempLivingSpace_hang.DistanceSize = 50f;
+    this._TempLivingSpace_hang.Location = this.transform;
+    this._TempLivingSpace_hang.PeopleInZone = new List<Person>()
+    {
+      this
+    };
+    this._TempLivingSpace_hang.ThingsToDo.Clear();
+  }
+
+  public bool CanRunAway(out Transform spot, out NavMeshPath path)
+  {
+    spot = (Transform) null;
+    path = (NavMeshPath) null;
+    if (this.EscapeBlockers.Count != 0 || this.BlindFolded)
+      return false;
+    Transform transform;
+    if ((UnityEngine.Object) this.Home != (UnityEngine.Object) null && this.Home.SexSpots != null && this.Home.SexSpots.Count > 0)
+      transform = this.Home.SexSpots[UnityEngine.Random.Range(0, this.Home.SexSpots.Count)];
+    else if ((UnityEngine.Object) this.Home != (UnityEngine.Object) null && (UnityEngine.Object) this.Home.Location != (UnityEngine.Object) null)
+    {
+      transform = this.Home.Location;
+    }
+    else
+    {
+      if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null && (UnityEngine.Object) this.CurrentZone.transform == (UnityEngine.Object) this.transform)
+        return false;
+      if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null && this.CurrentZone.SexSpots != null && this.CurrentZone.SexSpots.Count > 0)
+      {
+        transform = this.CurrentZone.SexSpots[UnityEngine.Random.Range(0, this.CurrentZone.SexSpots.Count)];
+      }
+      else
+      {
+        if (!((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null) || !((UnityEngine.Object) this.CurrentZone.Location != (UnityEngine.Object) null))
+          return false;
+        transform = this.CurrentZone.Location;
+      }
+    }
+    if (this.navMesh.enabled && this.navMesh.isOnNavMesh)
+    {
+      NavMeshPath path1 = new NavMeshPath();
+      this.navMesh.CalculatePath(transform.position, path1);
+      if (path1.status == NavMeshPathStatus.PathComplete)
+      {
+        spot = transform;
+        path = path1;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public bool RunAway()
+  {
+    bool flag = true;
+    if (this.EscapeBlockers.Count != 0)
+      return false;
+    switch (this.PersonalityData.EscapeRaction)
+    {
+      case e_EscapeRaction.Default_OnlyRun:
+        if (!this.Fetishes.Contains(e_Fetish.Masochist))
+          break;
+        goto case e_EscapeRaction.Scared_NoRun;
+      case e_EscapeRaction.Scared_NoRun:
+        flag = false;
+        break;
+      case e_EscapeRaction.Strong_FightsFirst:
+        if (!this.Restrained && !this.BlindFolded)
+        {
+          this.StartFighting(Main.Instance.Player);
+          break;
+        }
+        break;
+      case e_EscapeRaction.Depends_NotOnHighRel:
+        if (this.Favor > 90)
+          goto case e_EscapeRaction.Scared_NoRun;
+        else
+          goto case e_EscapeRaction.Default_OnlyRun;
+      case e_EscapeRaction.Depends_NotOnHighRel_fight:
+        if (this.Favor > 90)
+          goto case e_EscapeRaction.Scared_NoRun;
+        else
+          goto case e_EscapeRaction.Strong_FightsFirst;
+    }
+    if (!this.Restrained && this.BlindFolded)
+    {
+label_10:
+      for (int index = 0; index < this.EquippedClothes.Count; ++index)
+      {
+        if (this.EquippedClothes[index].BlindFolds)
+        {
+          this.UndressClothe(this.EquippedClothes[index]);
+          goto label_10;
+        }
+      }
+    }
+    Transform spot;
+    NavMeshPath path;
+    if (flag && this.CanRunAway(out spot, out path))
+    {
+      this.RunAway(spot, path);
+      return true;
+    }
+    if (this.TempLivingSpace != Vector3.zero)
+      this.CurrentZone = this.TempLivingSpace_hang;
+    return false;
+  }
+
+  public void RunAway(Transform spot, NavMeshPath path)
+  {
+    if (this.EscapeBlockers.Count != 0)
+      return;
+    this.CullBlockers.Add("escaping");
+    this.SetDestination(path, spot.position);
+    this.StartScheduleTask(new Person.ScheduleTask()
+    {
+      IDName = "escape",
+      ActionPlace = spot,
+      RunTo = true,
+      OnStartGoing = (Action) (() =>
+      {
+        if (!(this is Girl))
+          return;
+        this.PersonAudio.pitch = this.VoicePitch;
+        this.PersonAudio.PlayOneShot(Main.Instance.FemaleScream);
+      }),
+      OnArrive = (Action) (() =>
+      {
+        this.CullBlockers.Remove("escaping");
+        this.TempLivingSpace = Vector3.zero;
+        this.CompleteScheduleTask(false);
+        Main.Instance.PersonTypes[0].GetAssignedto(this);
+        this.Unrestrain();
+      })
+    });
+  }
+
+  public void Unrestrain()
+  {
+label_0:
+    for (int index = 0; index < this.EquippedClothes.Count; ++index)
+    {
+      if (this.EquippedClothes[index].Restrains)
+      {
+        this.UndressClothe(this.EquippedClothes[index]);
+        goto label_0;
+      }
+    }
+  }
+
+  public bool PrisionerEscapeCheck()
+  {
+    return this.CanMove && (UnityEngine.Object) this.PersonType != (UnityEngine.Object) null && this.PersonType.ThisType == Person_Type.Prisioner && (double) this.TrainingValue < 95.0 && this.RunAway();
+  }
+
+  public void StopFollowing()
+  {
+    if (this.IsPlayer || !Main.Instance.PeopleFollowingPlayer.Contains(this))
+      return;
+    if (this.Leashed)
+    {
+      this.ThisPersonInt.Unleash();
+    }
+    else
+    {
+      this.RemoveCullBlocker("Following");
+      Main.Instance.PeopleFollowingPlayer.Remove(this);
+      if (this.CurrentScheduleTask != null && this.CurrentScheduleTask.IDName == "FollowPlayer")
+      {
+        this.CompleteScheduleTask();
+        this.ThisPersonInt.SetDefaultChat();
+      }
+      this.RandActionTimer = 0.0f;
+      this.DecideTimer = 0.0f;
+    }
+  }
+
+  public void GetFreeTask()
+  {
+  }
+
+  public Person FindNearestPersonOfType(Person_Type type)
+  {
+    Collider[] colliderArray = Physics.OverlapSphere(this.transform.position, 100f);
+    float num1 = 1000f;
+    Person nearestPersonOfType = (Person) null;
+    for (int index = 0; index < colliderArray.Length; ++index)
+    {
+      Person componentInChildren = colliderArray[index].GetComponentInChildren<Person>();
+      if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null && !componentInChildren.Restrained)
+      {
+        float num2 = Vector2.Distance(new Vector2(this.transform.position.x, this.transform.position.z), new Vector2(componentInChildren.transform.position.x, componentInChildren.transform.position.z));
+        if ((double) num2 < (double) num1)
+        {
+          nearestPersonOfType = componentInChildren;
+          num1 = num2;
+        }
+      }
+    }
+    return nearestPersonOfType;
   }
 
   public void Kick(Person person)
@@ -4585,6 +5208,90 @@ label_25:
           break;
         Main.Instance.GameplayMenu.ShowNotification("You are now dressed: Sexy");
         break;
+    }
+  }
+
+  public void pickaxe() => this.PersonAudio.PlayOneShot(Main.Instance.PickAxeSound);
+
+  public Int_Storage GetStorageWith(GameObject obj)
+  {
+    if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null && this.CurrentBackpack.ThisStorage.HasItem(obj))
+      return this.CurrentBackpack.ThisStorage;
+    if ((UnityEngine.Object) this.Storage_Hands != (UnityEngine.Object) null && this.Storage_Hands.HasItem(obj))
+      return this.Storage_Hands;
+    if ((UnityEngine.Object) this.Storage_Vag != (UnityEngine.Object) null && this.Storage_Vag.HasItem(obj))
+      return this.Storage_Vag;
+    return (UnityEngine.Object) this.Storage_Anal != (UnityEngine.Object) null && this.Storage_Anal.HasItem(obj) ? this.Storage_Anal : (Int_Storage) null;
+  }
+
+  public int GetAmountOfResourcesInInv(e_ResourceType resource)
+  {
+    int ofResourcesInInv = 0;
+    if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null)
+      ofResourcesInInv += this.CurrentBackpack.ThisStorage.GetItemsOfType(resource).Count;
+    if ((UnityEngine.Object) this.Storage_Hands != (UnityEngine.Object) null)
+      ofResourcesInInv += this.Storage_Hands.GetItemsOfType(resource).Count;
+    if ((UnityEngine.Object) this.Storage_Vag != (UnityEngine.Object) null)
+      ofResourcesInInv += this.Storage_Vag.GetItemsOfType(resource).Count;
+    if ((UnityEngine.Object) this.Storage_Anal != (UnityEngine.Object) null)
+      ofResourcesInInv += this.Storage_Anal.GetItemsOfType(resource).Count;
+    return ofResourcesInInv;
+  }
+
+  public Int_Storage GetStorageWith(e_ResourceType resource)
+  {
+    if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null && this.CurrentBackpack.ThisStorage.GetItemsOfType(resource).Count != 0)
+      return this.CurrentBackpack.ThisStorage;
+    if ((UnityEngine.Object) this.Storage_Hands != (UnityEngine.Object) null && this.Storage_Hands.GetItemsOfType(resource).Count != 0)
+      return this.Storage_Hands;
+    if ((UnityEngine.Object) this.Storage_Vag != (UnityEngine.Object) null && this.Storage_Vag.GetItemsOfType(resource).Count != 0)
+      return this.Storage_Vag;
+    return (UnityEngine.Object) this.Storage_Anal != (UnityEngine.Object) null && this.Storage_Anal.GetItemsOfType(resource).Count != 0 ? this.Storage_Anal : (Int_Storage) null;
+  }
+
+  public void SeekBed()
+  {
+    if (!((UnityEngine.Object) this.OwnBed == (UnityEngine.Object) null))
+      return;
+    Collider[] colliderArray = Physics.OverlapSphere(this.transform.position, 50f);
+    for (int index1 = 0; index1 < colliderArray.Length; ++index1)
+    {
+      int_bed[] componentsInChildren = colliderArray[index1].GetComponentsInChildren<int_bed>();
+      for (int index2 = 0; index2 < componentsInChildren.Length; ++index2)
+      {
+        if ((UnityEngine.Object) componentsInChildren[index2].Owner == (UnityEngine.Object) null)
+        {
+          componentsInChildren[index2].MakeOwner(this);
+          return;
+        }
+      }
+      int_bed[] componentsInParent = colliderArray[index1].GetComponentsInParent<int_bed>();
+      for (int index3 = 0; index3 < componentsInParent.Length; ++index3)
+      {
+        if ((UnityEngine.Object) componentsInParent[index3].Owner == (UnityEngine.Object) null)
+        {
+          componentsInParent[index3].MakeOwner(this);
+          return;
+        }
+      }
+    }
+  }
+
+  public void PickUpItem(GameObject item)
+  {
+    if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null && !this.CurrentBackpack.ThisStorage.Full)
+      this.CurrentBackpack.ThisStorage.AddItem(item);
+    else if ((UnityEngine.Object) this.Storage_Hands != (UnityEngine.Object) null && !this.Storage_Hands.Full)
+      this.Storage_Hands.AddItem(item);
+    else if (this.Unlocked_Storage_Vag && (UnityEngine.Object) this.Storage_Vag != (UnityEngine.Object) null && !this.Storage_Vag.Full)
+    {
+      this.Storage_Vag.AddItem(item);
+    }
+    else
+    {
+      if (!this.Unlocked_Storage_Anal || !((UnityEngine.Object) this.Storage_Anal != (UnityEngine.Object) null) || this.Storage_Anal.Full)
+        return;
+      this.Storage_Anal.AddItem(item);
     }
   }
 
@@ -4727,6 +5434,10 @@ label_25:
     public float AutoStop;
     public int State;
     public bool RunTo;
+    public bool NoMoveChecker;
+    public float NoMoveTimer;
+    public Action WhenNoMove;
+    public Vector3 ActionPlacePosition;
     public Transform ActionPlace;
     public Action OnInterrupt_BeforeStart;
     public Action OnStartGoing;

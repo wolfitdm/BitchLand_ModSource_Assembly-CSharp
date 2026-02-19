@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Army
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -165,7 +165,7 @@ public class Mis_Army : Mission
                                   }
                                   else
                                   {
-                                    this.CurrentGoal = this.Goals[16 /*0x10*/];
+                                    this.CurrentGoal = this.Goals[16];
                                     if (this.CurrentGoal.Completed)
                                     {
                                       this.CurrentGoal = this.Goals[17];
@@ -234,7 +234,7 @@ public class Mis_Army : Mission
         this.Zea.States[13] = false;
         this.Zea.States[14] = false;
         this.Zea.States[15] = false;
-        this.Zea.States[16 /*0x10*/] = false;
+        this.Zea.States[16] = false;
         this.Zea.States[17] = false;
         this.Zea.States[18] = false;
         this.Zea.States[19] = false;
@@ -462,7 +462,7 @@ public class Mis_Army : Mission
         }
         else
         {
-          Main.Instance.AllMissions[16 /*0x10*/].CompleteGoal(1);
+          Main.Instance.AllMissions[16].CompleteGoal(1);
           Main.Instance.GameplayMenu.DisplaySubtitle("Are you brain damaged!?  How the fuck did you forgot basic training?", this.VoiceLines[0], (Action) (() =>
           {
             Main.Instance.GameplayMenu.EnableMove();
@@ -540,7 +540,7 @@ public class Mis_Army : Mission
   {
     this.LockerArea.SetActive(false);
     this.CompleteGoal(15);
-    this.AddGoal(16 /*0x10*/, true);
+    this.AddGoal(16, true);
     this.Locker27.gameObject.SetActive(true);
     Main.Instance.MainThreads.Add(new Action(this.Goal16));
     if (!((UnityEngine.Object) Main.Instance.Player.CurrentTop == (UnityEngine.Object) null) || !((UnityEngine.Object) Main.Instance.Player.CurrentPants == (UnityEngine.Object) null))
@@ -556,7 +556,7 @@ public class Mis_Army : Mission
   {
     if (!((UnityEngine.Object) Main.Instance.Player.CurrentTop == (UnityEngine.Object) null) || !((UnityEngine.Object) Main.Instance.Player.CurrentPants == (UnityEngine.Object) null))
       return;
-    this.CompleteGoal(16 /*0x10*/);
+    this.CompleteGoal(16);
     Main.Instance.MainThreads.Remove(new Action(this.Goal16));
     this.AddGoal(17, true);
     this.Locker27.gameObject.SetActive(true);

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: RandomNPCHere
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -24,6 +24,7 @@ public class RandomNPCHere : MonoBehaviour
   public bool OnlyGoodHair;
   public bool SpawnClean;
   public Person_Type TypeToSet = Person_Type.Max;
+  public List<string> AddRunawayBlockers = new List<string>();
   public Person_State StartingState;
   public bool AddHome;
   public bl_HangZone SpecificHome;
@@ -59,7 +60,7 @@ public class RandomNPCHere : MonoBehaviour
     set
     {
       if (this.DEBUG_GenderMix2)
-        Debug.LogError((object) $"{this.DEBUG_LogID} SpawnFemale = {value.ToString()}");
+        Debug.LogError((object) (this.DEBUG_LogID + " SpawnFemale = " + value.ToString()));
       this._SpawnFemale = value;
     }
     get => this._SpawnFemale;
@@ -74,7 +75,7 @@ public class RandomNPCHere : MonoBehaviour
       else if (this.NPCToLoad.StartsWith("M_"))
         this.SpawnFemale = false;
       this.PersonGenerated = this.SpawnFemale ? UnityEngine.Object.Instantiate<GameObject>(Main.Instance.PersonPrefab).GetComponent<Person>() : UnityEngine.Object.Instantiate<GameObject>(Main.Instance.PersonGuyPrefab).GetComponent<Person>();
-      string filename = this.FullPath ? this.NPCToLoad : $"{Main.AssetsFolder}/PreSaved/{this.NPCToLoad}";
+      string filename = this.FullPath ? this.NPCToLoad : Main.AssetsFolder + "/PreSaved/" + this.NPCToLoad;
       this.PersonGenerated._DontLoadClothing = !this.LoadClothes;
       this.PersonGenerated._DontLoadInteraction = this.DontLoadInteraction;
       this.PersonGenerated.LoadFromFile(filename);
@@ -84,14 +85,14 @@ public class RandomNPCHere : MonoBehaviour
     else if ((UnityEngine.Object) this.PersonGenerated == (UnityEngine.Object) null)
     {
       if (this.DEBUG_GenderMix)
-        Debug.LogError((object) $"{this.DEBUG_LogID} (SpawnAnyGender && AlwaysDefinedGenderIfPossible) {(this.SpawnAnyGender && this.AlwaysDefinedGenderIfPossible).ToString()}");
+        Debug.LogError((object) (this.DEBUG_LogID + " (SpawnAnyGender && AlwaysDefinedGenderIfPossible) " + (this.SpawnAnyGender && this.AlwaysDefinedGenderIfPossible).ToString()));
       if (this.SpawnAnyGender && this.AlwaysDefinedGenderIfPossible)
       {
         int num = Main.Instance.CustomizeMenu.GenderSettings.value;
         if (this.DEBUG_GenderMix)
         {
-          Debug.LogError((object) $"{this.DEBUG_LogID} _value {num.ToString()}");
-          Debug.LogError((object) $"{this.DEBUG_LogID} (_value != 2 && _value != 1) {(num != 2 && num != 1).ToString()}");
+          Debug.LogError((object) (this.DEBUG_LogID + " _value " + num.ToString()));
+          Debug.LogError((object) (this.DEBUG_LogID + " (_value != 2 && _value != 1) " + (num != 2 && num != 1).ToString()));
         }
         if (num != 2 && num != 1)
         {
@@ -101,9 +102,9 @@ public class RandomNPCHere : MonoBehaviour
       }
       if (this.DEBUG_GenderMix)
       {
-        Debug.LogError((object) $"{this.DEBUG_LogID} SpawnFemale {this.SpawnFemale.ToString()}");
-        Debug.LogError((object) $"{this.DEBUG_LogID} SpawnAnyGender {this.SpawnAnyGender.ToString()}");
-        Debug.LogError((object) $"{this.DEBUG_LogID} Person.GenderChance {Person.GenderChance.ToString()}");
+        Debug.LogError((object) (this.DEBUG_LogID + " SpawnFemale " + this.SpawnFemale.ToString()));
+        Debug.LogError((object) (this.DEBUG_LogID + " SpawnAnyGender " + this.SpawnAnyGender.ToString()));
+        Debug.LogError((object) (this.DEBUG_LogID + " Person.GenderChance " + Person.GenderChance.ToString()));
       }
       this.PersonGenerated = Person.GenerateRandom(female: this.SpawnFemale, randomgender: this.SpawnAnyGender, _DEBUG: this.DEBUG_GenderMix);
       this.PersonGenerated.transform.position = this.transform.position;
@@ -119,6 +120,7 @@ public class RandomNPCHere : MonoBehaviour
     this.PersonGenerated.SPAWN_noUglyHair = this.NoUglyHair;
     this.PersonGenerated.SPAWN_onlyGoodHair = this.OnlyGoodHair;
     this.PersonGenerated.State = this.StartingState;
+    this.PersonGenerated.EscapeBlockers.AddRange((IEnumerable<string>) this.AddRunawayBlockers);
     if (this.AddHome)
     {
       if ((bool) (UnityEngine.Object) this.SpecificHome)
@@ -164,7 +166,7 @@ public class RandomNPCHere : MonoBehaviour
         }
         catch (Exception ex)
         {
-          Debug.LogError((object) $"{ex?.ToString()}\n{ex.StackTrace}");
+          Debug.LogError((object) (ex?.ToString() + "\n" + ex.StackTrace));
         }
       }
     }
@@ -211,6 +213,6 @@ public class RandomNPCHere : MonoBehaviour
     if (methodInfo != (MethodInfo) null)
       methodInfo.Invoke((object) theScript, parameters);
     else
-      Debug.LogError((object) $"Method \"{methodName}\" not found");
+      Debug.LogError((object) ("Method \"" + methodName + "\" not found"));
   }
 }

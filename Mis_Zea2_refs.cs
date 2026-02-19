@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea2_refs
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -44,7 +44,7 @@ public class Mis_Zea2_refs : MonoBehaviour
     this.Zea3.Ely_spots[45] = this.Z3Objs[6];
     this.Zea3.Ely_spots[46] = this.Z3Objs[7];
     this.Zea3.Ely_spots[47] = this.Z3Objs[8];
-    this.Zea3.Ely_spots[48 /*0x30*/] = this.Z3Objs[9];
+    this.Zea3.Ely_spots[48] = this.Z3Objs[9];
     this.Zea3.Ely_spots[49] = this.Z3Objs[10];
     this.Zea3.Ely_spots[50] = this.Z3Objs[11];
     this.Zea3.Ely_spots[51] = this.Z3Objs[12];

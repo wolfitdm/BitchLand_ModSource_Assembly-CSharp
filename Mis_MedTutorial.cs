@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_MedTutorial
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -225,7 +225,7 @@ public class Mis_MedTutorial : Mission
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Person personChattingTo = _gameplay.PersonChattingTo;
     _gameplay.RemoveAllChatOptions();
-    _gameplay.AddChatOption("What's the Bleached color?", (Action) (() => _gameplay.DisplaySubtitle("Bleached hair is used on prisioners that are being processed and trained into future population for us", this.VoiceLines[16 /*0x10*/], new Action(this.SarahColrQuestion2))));
+    _gameplay.AddChatOption("What's the Bleached color?", (Action) (() => _gameplay.DisplaySubtitle("Bleached hair is used on prisioners that are being processed and trained into future population for us", this.VoiceLines[16], new Action(this.SarahColrQuestion2))));
     _gameplay.AddChatOption("What are the Purple and Pink colors?", (Action) (() => _gameplay.DisplaySubtitle("Those aren't our people, they're the ESB's", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("They're some tribe out there that attacks us for some reason only your dad knows, and doesn't tell anyone", this.VoiceLines[18], (Action) (() => _gameplay.DisplaySubtitle("They use those colors to avoid friendly fire between all of us", this.VoiceLines[19], (Action) (() => _gameplay.DisplaySubtitle("Good for us, they are easy to spot", this.VoiceLines[20], (Action) (() => _gameplay.DisplaySubtitle("Bad for us, if you spot them, there's gonna be a fight", this.VoiceLines[21], new Action(this.SarahColrQuestion2))))))))))));
     _gameplay.AddChatOption("What's the Orange color?", (Action) (() => _gameplay.DisplaySubtitle("That's the Royal class, it's our family, the rulers of this city", this.VoiceLines[22], (Action) (() => _gameplay.DisplaySubtitle("Although we don't usually use it too often because it stands out too much", this.VoiceLines[23], (Action) (() => _gameplay.DisplaySubtitle("Can't let the enemy know who's the important people, if they come in our city", this.VoiceLines[24], (Action) (() => _gameplay.DisplaySubtitle("Personally I look much sexier in this shock blue~  It's your dad's favourite *wink*", this.VoiceLines[25], new Action(this.SarahColrQuestion2))))))))));
     _gameplay.AddChatOption("Are there people without colored hair?", (Action) (() => _gameplay.DisplaySubtitle("Of course, either someone that just didn't colored their hair", this.VoiceLines[26], (Action) (() => _gameplay.DisplaySubtitle("But if it's out there, that'll be what we call a Wild", this.VoiceLines[27], (Action) (() => _gameplay.DisplaySubtitle("The Wild are people who aren't part of us, or of any tribe", this.VoiceLines[28], (Action) (() => _gameplay.DisplaySubtitle("That is, until you find them and convert them into one of us", this.VoiceLines[29], new Action(this.SarahColrQuestion2))))))))));

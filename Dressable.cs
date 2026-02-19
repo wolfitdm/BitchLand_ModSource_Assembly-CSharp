@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Dressable
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +26,9 @@ public class Dressable : SaveableBehaviour
   public int CasualPoints;
   public int SexyPoints;
   public bool NonRemovableOnThrowdown;
+  public bool Restrains;
+  public bool BlindFolds;
+  public bool HidesHair;
   public bool Ugly;
   public bool Good;
   public float RandChance;
@@ -37,6 +40,9 @@ public class Dressable : SaveableBehaviour
   public Vector3 AttatchPos;
   public Vector3 AttatchRot;
   public Vector3 AttatchScl = Vector3.one;
+  public Vector3 Male_AttatchPos;
+  public Vector3 Male_AttatchRot;
+  public Vector3 Male_AttatchScl = Vector3.one;
   public Axis ReverseAxis;
   public bool _Equipped;
   public Person PersonEquipped;
@@ -58,6 +64,7 @@ public class Dressable : SaveableBehaviour
   public Color NaturalColor;
   public Color DyedColor;
   public bool BeingUndressed;
+  public SexPose_IKSetting[] UsingIKs;
 
   public Renderer ThisRen
   {
@@ -144,15 +151,20 @@ public class Dressable : SaveableBehaviour
       this.PersonEquipped.UserControl.m_Character.StandState = this.PersonEquipped.UserControl.m_Character.StandState;
     }
     this.RefreshColors();
+    this.SetIKs();
   }
 
   public virtual void OnUndressed()
   {
     this.BeingUndressed = true;
-    if ((Object) this.PersonEquipped == (Object) null || !this.PersonEquipped.IsPlayer || (double) this.IncreasedHeight == 0.0)
+    if ((Object) this.PersonEquipped == (Object) null)
       return;
-    this.PersonEquipped.UserControl.m_Character.UsingStandingHeight = this.PersonEquipped.UserControl.m_Character.DefaultStandingHeight;
-    this.PersonEquipped.UserControl.m_Character.StandState = this.PersonEquipped.UserControl.m_Character.StandState;
+    if (this.PersonEquipped.IsPlayer && (double) this.IncreasedHeight != 0.0)
+    {
+      this.PersonEquipped.UserControl.m_Character.UsingStandingHeight = this.PersonEquipped.UserControl.m_Character.DefaultStandingHeight;
+      this.PersonEquipped.UserControl.m_Character.StandState = this.PersonEquipped.UserControl.m_Character.StandState;
+    }
+    this.UnsetIKs();
   }
 
   public virtual void SetLowLod()
@@ -220,5 +232,64 @@ public class Dressable : SaveableBehaviour
 
   public virtual void RefreshShapeWhileUnequipped()
   {
+  }
+
+  public void SetIKs()
+  {
+    if (this.PersonEquipped.TheHealth.dead || this.PersonEquipped.TheHealth.Incapacitated || this.UsingIKs == null || this.UsingIKs.Length == 0 || !((Object) this.PersonEquipped.LeftArmIK != (Object) null))
+      return;
+    for (int index = 0; index < this.UsingIKs.Length; ++index)
+    {
+      if ((Object) this.UsingIKs[index].tAttatchTo != (Object) null)
+      {
+        switch (this.UsingIKs[index].Limb)
+        {
+          case e_IKLimb.LeftArm:
+            this.PersonEquipped.LeftArmIK.enabled = true;
+            this.PersonEquipped.LeftArmIK.Target.SetParent(this.UsingIKs[index].tAttatchTo);
+            this.PersonEquipped.LeftArmIK.Target.localPosition = this.UsingIKs[index].Pos;
+            this.PersonEquipped.LeftArmIK.Target.localEulerAngles = this.UsingIKs[index].Rot;
+            this.PersonEquipped.LeftArmIK.Pole.localPosition = this.UsingIKs[index].PolePos;
+            continue;
+          case e_IKLimb.RightArm:
+            this.PersonEquipped.RightArmIK.enabled = true;
+            this.PersonEquipped.RightArmIK.Target.SetParent(this.UsingIKs[index].tAttatchTo);
+            this.PersonEquipped.RightArmIK.Target.localPosition = this.UsingIKs[index].Pos;
+            this.PersonEquipped.RightArmIK.Target.localEulerAngles = this.UsingIKs[index].Rot;
+            this.PersonEquipped.RightArmIK.Pole.localPosition = this.UsingIKs[index].PolePos;
+            continue;
+          case e_IKLimb.LeftLeg:
+            this.PersonEquipped.LeftLegIK.enabled = true;
+            this.PersonEquipped.LeftLegIK.Target.SetParent(this.UsingIKs[index].tAttatchTo);
+            this.PersonEquipped.LeftLegIK.Target.localPosition = this.UsingIKs[index].Pos;
+            this.PersonEquipped.LeftLegIK.Target.localEulerAngles = this.UsingIKs[index].Rot;
+            this.PersonEquipped.LeftLegIK.Pole.localPosition = this.UsingIKs[index].PolePos;
+            continue;
+          case e_IKLimb.RightLeg:
+            this.PersonEquipped.RightLegIK.enabled = true;
+            this.PersonEquipped.RightLegIK.Target.SetParent(this.UsingIKs[index].tAttatchTo);
+            this.PersonEquipped.RightLegIK.Target.localPosition = this.UsingIKs[index].Pos;
+            this.PersonEquipped.RightLegIK.Target.localEulerAngles = this.UsingIKs[index].Rot;
+            this.PersonEquipped.RightLegIK.Pole.localPosition = this.UsingIKs[index].PolePos;
+            continue;
+          default:
+            continue;
+        }
+      }
+    }
+  }
+
+  public void UnsetIKs()
+  {
+    if (this.UsingIKs == null || this.UsingIKs.Length == 0 || !((Object) this.PersonEquipped.LeftArmIK != (Object) null))
+      return;
+    this.PersonEquipped.LeftArmIK.enabled = false;
+    this.PersonEquipped.LeftArmIK.Target.SetParent(this.PersonEquipped.LeftArmIK.Pole.parent);
+    this.PersonEquipped.RightArmIK.enabled = false;
+    this.PersonEquipped.RightArmIK.Target.SetParent(this.PersonEquipped.LeftArmIK.Pole.parent);
+    this.PersonEquipped.LeftLegIK.enabled = false;
+    this.PersonEquipped.LeftLegIK.Target.SetParent(this.PersonEquipped.LeftArmIK.Pole.parent);
+    this.PersonEquipped.RightLegIK.enabled = false;
+    this.PersonEquipped.RightLegIK.Target.SetParent(this.PersonEquipped.LeftArmIK.Pole.parent);
   }
 }

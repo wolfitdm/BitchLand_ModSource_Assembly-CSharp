@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea1
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -115,7 +115,7 @@ public class Mis_Zea1 : Mission
     zea.States[13] = false;
     zea.States[14] = false;
     zea.States[15] = false;
-    zea.States[16 /*0x10*/] = false;
+    zea.States[16] = false;
     zea.States[17] = false;
     zea.States[18] = false;
     zea.States[19] = false;
@@ -559,7 +559,7 @@ public class Mis_Zea1 : Mission
                                   person.LookAtPlayer.Disable = false;
                                   person.LookAtPlayer.NonplayerTarget = Main.Instance.CityCharacters.Ana.Head;
                                   Main.Instance.CityCharacters.Ana.LookAtPlayer.NonplayerTarget = person.Head;
-                                  _gameplay.DisplaySubtitle("So this shithole is where you've been hanging, what happened to you?", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("Anyway, I need that tshirt, I can give you my top in exchange", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("That little top isn't gonna warm me in the cold nights, I want something better", this.VoiceLines[16 /*0x10*/], (Action) (() => _gameplay.DisplaySubtitle("Oh my fucking gawd, in the name of the glorious pussy", this.VoiceLines[17], (Action) (() =>
+                                  _gameplay.DisplaySubtitle("So this shithole is where you've been hanging, what happened to you?", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("Anyway, I need that tshirt, I can give you my top in exchange", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("That little top isn't gonna warm me in the cold nights, I want something better", this.VoiceLines[16], (Action) (() => _gameplay.DisplaySubtitle("Oh my fucking gawd, in the name of the glorious pussy", this.VoiceLines[17], (Action) (() =>
                                   {
                                     person.AP_Standing = "PistolCombatIdle";
                                     _gameplay.DisplaySubtitle("just gimme that already before I shoot you", this.VoiceLines[18], (Action) (() =>
@@ -705,7 +705,7 @@ public class Mis_Zea1 : Mission
       _gameplay.DisplaySubtitle("I look normal, I feel normal", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("it feels like I'm in a time from before the bombs", this.VoiceLines[30], (Action) (() =>
       {
         person.A_Standing = "PistolIdle";
-        _gameplay.DisplaySubtitle("I'mma treasure this tshirt, and this moment", this.VoiceLines[31 /*0x1F*/], (Action) (() => _gameplay.DisplaySubtitle("Thank you so much!", this.VoiceLines[32 /*0x20*/], (Action) (() =>
+        _gameplay.DisplaySubtitle("I'mma treasure this tshirt, and this moment", this.VoiceLines[31], (Action) (() => _gameplay.DisplaySubtitle("Thank you so much!", this.VoiceLines[32], (Action) (() =>
         {
           person.ResetAllShapes();
           person.A_Standing = "hipsSway2";
@@ -737,7 +737,7 @@ public class Mis_Zea1 : Mission
   {
     if (Main.Instance.AllMissions[8].CompletedMission && (Main.Instance.AllMissions[3].Goals[7].Completed || Main.Instance.Player is Guy) && !Main.Instance.CityCharacters.Zea.HavingSex)
       return true;
-    Debug.LogError((object) $"MissionCanStart() {Main.Instance.AllMissions[8].CompletedMission.ToString()} {Main.Instance.AllMissions[3].Goals[7].Completed.ToString()} {(!Main.Instance.CityCharacters.Zea.HavingSex).ToString()}");
+    Debug.LogError((object) ("MissionCanStart() " + Main.Instance.AllMissions[8].CompletedMission.ToString() + " " + Main.Instance.AllMissions[3].Goals[7].Completed.ToString() + " " + (!Main.Instance.CityCharacters.Zea.HavingSex).ToString()));
     return false;
   }
 

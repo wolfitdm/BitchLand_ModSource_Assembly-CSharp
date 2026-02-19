@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_ZeaMistake
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -386,7 +386,7 @@ public class Mis_ZeaMistake : Mission
     _gameplay.DisplaySubtitle("I've done something...", this.VoiceLines[15], (Action) (() =>
     {
       _zea.PlaceAt(this.Objs[12].transform);
-      _gameplay.DisplaySubtitle("...really bad", this.VoiceLines[16 /*0x10*/], (Action) (() => _gameplay.DisplaySubtitle("I-I didn't knew it was gonna be like this", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("I uhm... I feel weird", this.VoiceLines[18], (Action) (() => _gameplay.DisplaySubtitle("Can you...lay here with me for a bit", this.VoiceLines[19], (Action) (() =>
+      _gameplay.DisplaySubtitle("...really bad", this.VoiceLines[16], (Action) (() => _gameplay.DisplaySubtitle("I-I didn't knew it was gonna be like this", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("I uhm... I feel weird", this.VoiceLines[18], (Action) (() => _gameplay.DisplaySubtitle("Can you...lay here with me for a bit", this.VoiceLines[19], (Action) (() =>
       {
         _zea.PersonAudio.PlayOneShot(this.VoiceLines[38]);
         _zea.ThisPersonInt.EndTheChat();
@@ -483,7 +483,7 @@ public class Mis_ZeaMistake : Mission
           _gameplay.DisplaySubtitle("But you must go", this.VoiceLines[28], (Action) (() =>
           {
             _zea.LookAtPlayer.playerTransform = _lookspot;
-            _gameplay.DisplaySubtitle("I uhm", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("There's a thing you must find", this.VoiceLines[30], (Action) (() => _gameplay.DisplaySubtitle("In Sephie's lab", this.VoiceLines[31 /*0x1F*/], (Action) (() => _gameplay.DisplaySubtitle("Go there and look for uhm...\"Box 200\"", this.VoiceLines[32 /*0x20*/], (Action) (() =>
+            _gameplay.DisplaySubtitle("I uhm", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("There's a thing you must find", this.VoiceLines[30], (Action) (() => _gameplay.DisplaySubtitle("In Sephie's lab", this.VoiceLines[31], (Action) (() => _gameplay.DisplaySubtitle("Go there and look for uhm...\"Box 200\"", this.VoiceLines[32], (Action) (() =>
             {
               _zea.LookAtPlayer.playerTransform = Main.Instance.Player.UserControl.m_Cam;
               _gameplay.DisplaySubtitle("And take your time looking for it!", this.VoiceLines[33], (Action) (() => _gameplay.DisplaySubtitle("", this.VoiceLines[44], (Action) (() =>
@@ -512,7 +512,7 @@ public class Mis_ZeaMistake : Mission
     Main.Instance.Player.PersonAudio.PlayOneShot(this.VoiceLines[38]);
     Main.Instance.MainThreads.Remove(new Action(this.QStand_ZeaBed_Thread));
     Main.Instance.GameplayMenu.QLeave.SetActive(false);
-    Main.Instance.Player.PlaceAt(this.Objs[16 /*0x10*/].transform);
+    Main.Instance.Player.PlaceAt(this.Objs[16].transform);
     Main.Instance.Player.RemoveMoveBlocker("zeamist2");
     Main.Instance.Player._Rigidbody.isKinematic = false;
     Main.Instance.Player.UserControl.TheCam.m_Target = Main.Instance.Player.transform;
@@ -636,7 +636,7 @@ public class Mis_ZeaMistake : Mission
     Main.Instance.Player.PlaceAt(this.Objs[28].transform);
     this.Objs[29].SetActive(true);
     this.Objs[27].SetActive(false);
-    this.Objs[31 /*0x1F*/].SetActive(true);
+    this.Objs[31].SetActive(true);
     this.Invoke("MeetDad2", 4f);
     Main.Instance.CityCharacters.Zea.gameObject.SetActive(false);
   }
@@ -651,7 +651,7 @@ public class Mis_ZeaMistake : Mission
   public void MeetDad3()
   {
     this.Objs[30].SetActive(false);
-    this.Objs[32 /*0x20*/].SetActive(true);
+    this.Objs[32].SetActive(true);
     this.Invoke("StartDadTalk", 5f);
   }
 
@@ -659,11 +659,11 @@ public class Mis_ZeaMistake : Mission
   {
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Person _dad = Main.Instance.CityCharacters.Dad;
-    _gameplay.DisplaySubtitle("Welcome back", this.VoiceLines[47], (Action) (() => _gameplay.DisplaySubtitle("We haven't had a chance to talk since you've been back", this.VoiceLines[48 /*0x30*/], (Action) (() => _gameplay.DisplaySubtitle("So, the ESB blew up the army building, again", this.VoiceLines[61], (Action) (() => _gameplay.DisplaySubtitle("That's always their target", this.VoiceLines[62], (Action) (() => _gameplay.DisplaySubtitle("That's what they do in preparation to invade us", this.VoiceLines[73], (Action) (() => _gameplay.DisplaySubtitle("But we are gonna suprise them by invading them instead", this.VoiceLines[74], (Action) (() => _gameplay.DisplaySubtitle("The ESB are not an enemy btw", this.VoiceLines[63 /*0x3F*/], (Action) (() => _gameplay.DisplaySubtitle("We have worse enemies to focus on", this.VoiceLines[64 /*0x40*/], (Action) (() => _gameplay.DisplaySubtitle("But we should deal with the ESB by now anyway", this.VoiceLines[65], (Action) (() => _gameplay.DisplaySubtitle("they haven't been necessary for a while", this.VoiceLines[66], (Action) (() => _gameplay.DisplaySubtitle("But don't forget what they did, and then multiply it by 4 billion", this.VoiceLines[67], (Action) (() => _gameplay.DisplaySubtitle("for the next time, when we fight a real enemy", this.VoiceLines[68], (Action) (() => _gameplay.DisplaySubtitle("I will get War to setup a small team to counterattack the ESB", this.VoiceLines[69], (Action) (() => _gameplay.DisplaySubtitle("More than that won't be necessary", this.VoiceLines[70], (Action) (() => _gameplay.DisplaySubtitle("Go and sleep for some hours, and then go see Sephie", this.VoiceLines[71], (Action) (() => _gameplay.DisplaySubtitle("She will show you how a small team is all you need", this.VoiceLines[72], (Action) (() =>
+    _gameplay.DisplaySubtitle("Welcome back", this.VoiceLines[47], (Action) (() => _gameplay.DisplaySubtitle("We haven't had a chance to talk since you've been back", this.VoiceLines[48], (Action) (() => _gameplay.DisplaySubtitle("So, the ESB blew up the army building, again", this.VoiceLines[61], (Action) (() => _gameplay.DisplaySubtitle("That's always their target", this.VoiceLines[62], (Action) (() => _gameplay.DisplaySubtitle("That's what they do in preparation to invade us", this.VoiceLines[73], (Action) (() => _gameplay.DisplaySubtitle("But we are gonna suprise them by invading them instead", this.VoiceLines[74], (Action) (() => _gameplay.DisplaySubtitle("The ESB are not an enemy btw", this.VoiceLines[63], (Action) (() => _gameplay.DisplaySubtitle("We have worse enemies to focus on", this.VoiceLines[64], (Action) (() => _gameplay.DisplaySubtitle("But we should deal with the ESB by now anyway", this.VoiceLines[65], (Action) (() => _gameplay.DisplaySubtitle("they haven't been necessary for a while", this.VoiceLines[66], (Action) (() => _gameplay.DisplaySubtitle("But don't forget what they did, and then multiply it by 4 billion", this.VoiceLines[67], (Action) (() => _gameplay.DisplaySubtitle("for the next time, when we fight a real enemy", this.VoiceLines[68], (Action) (() => _gameplay.DisplaySubtitle("I will get War to setup a small team to counterattack the ESB", this.VoiceLines[69], (Action) (() => _gameplay.DisplaySubtitle("More than that won't be necessary", this.VoiceLines[70], (Action) (() => _gameplay.DisplaySubtitle("Go and sleep for some hours, and then go see Sephie", this.VoiceLines[71], (Action) (() => _gameplay.DisplaySubtitle("She will show you how a small team is all you need", this.VoiceLines[72], (Action) (() =>
     {
       Main.Instance.GameplayMenu.EndChat();
       _dad.gameObject.SetActive(false);
-      this.Objs[32 /*0x20*/].SetActive(false);
+      this.Objs[32].SetActive(false);
       Main.Instance.Player.RemoveMoveBlocker("dad");
       Main.Instance.Player.PlaceAt(this.Objs[37].transform);
       this.PrepareWarAfterDad();

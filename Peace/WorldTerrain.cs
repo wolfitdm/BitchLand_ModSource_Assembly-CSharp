@@ -1,24 +1,25 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Peace.WorldTerrain
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
 #nullable disable
-namespace Peace;
-
-[ExecuteInEditMode]
-public class WorldTerrain : MonoBehaviour
+namespace Peace
 {
-  public TerrainSystem terrainSystem;
-  public Vector2Int coords;
-
-  private void OnDestroy()
+  [ExecuteInEditMode]
+  public class WorldTerrain : MonoBehaviour
   {
-    if (!(bool) (Object) this.terrainSystem)
-      return;
-    this.terrainSystem.OnTerrainDeleted(this.coords);
+    public TerrainSystem terrainSystem;
+    public Vector2Int coords;
+
+    private void OnDestroy()
+    {
+      if (!(bool) (Object) this.terrainSystem)
+        return;
+      this.terrainSystem.OnTerrainDeleted(this.coords);
+    }
   }
 }

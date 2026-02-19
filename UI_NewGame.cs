@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_NewGame
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -32,6 +32,12 @@ public class UI_NewGame : UI_Menu
   public GameObject[] EasyMaleClothing;
   public BaseType[] PersonTypes;
   public GameObject SmallLoading;
+  public GameObject ExtraLoading;
+  public GameObject ExtraLoadingFirstTime;
+  public Slider ExtraLoadingSliderEpic;
+  public Slider ExtraLoadingSlider;
+  public Text ExtraLoadingText;
+  public Text ExtraLoadingTextTitle;
   public GameObject[] EnableWhenNewGame;
   public GameObject[] EnableAfterNewGame;
   public GameObject HardGameplayStuff;
@@ -252,34 +258,38 @@ public class UI_NewGame : UI_Menu
       if ((UnityEngine.Object) Main.Instance.DayCycle != (UnityEngine.Object) null)
         Main.Instance.DayCycle.ResetMidday();
       Main.Instance.Player.gameObject.SetActive(true);
-      int num1 = 0;
+      int num = 0;
       if ((UnityEngine.Object) Main.Instance.CustomizeMenu != (UnityEngine.Object) null)
       {
-        num1 = Main.Instance.CustomizeMenu.GenderSettings.value;
-        Main.Instance.GlobalVars.Set("GenderSettings", num1.ToString());
+        num = Main.Instance.CustomizeMenu.GenderSettings.value;
+        Main.Instance.GlobalVars.Set("GenderSettings", num.ToString());
       }
-      double num2;
-      switch (num1)
+      switch (num)
       {
         case 0:
-          num2 = 0.5;
+          Person.GenderChance = 0.5f;
+          break;
+        case 1:
+          Person.GenderChance = 0.0f;
+          break;
+        case 2:
+          Person.GenderChance = 1f;
           break;
         case 3:
-          num2 = 0.10000000149011612;
+          Person.GenderChance = 0.1f;
           break;
-        default:
-          num2 = 0.89999997615814209;
+        case 4:
+          Person.GenderChance = 0.9f;
           break;
       }
-      Person.GenderChance = (float) num2;
       Debug.Log((object) ("2------------- " + this.DificultySelected.ToString()));
       if (this.DificultySelected == 3)
       {
         RandomNPCHere[] componentsInChildren = this.Hard_PeopleToSpawn.GetComponentsInChildren<RandomNPCHere>(true);
         for (int index = 0; index < componentsInChildren.Length; ++index)
         {
-          componentsInChildren[index].SpawnAnyGender = num1 == 0 || num1 == 3 || num1 == 4;
-          componentsInChildren[index].SpawnFemale = num1 == 1;
+          componentsInChildren[index].SpawnAnyGender = num == 0 || num == 3 || num == 4;
+          componentsInChildren[index].SpawnFemale = num == 1;
         }
         if ((UnityEngine.Object) this.Hard_PeopleToSpawn != (UnityEngine.Object) null)
           this.Hard_PeopleToSpawn.SetActive(true);
@@ -292,15 +302,13 @@ public class UI_NewGame : UI_Menu
         RandomNPCHere[] randomNpcHereArray = !((UnityEngine.Object) this.Med_PeopleToSpawn != (UnityEngine.Object) null) ? UnityEngine.Object.FindObjectsOfType<RandomNPCHere>(true) : this.Med_PeopleToSpawn.GetComponentsInChildren<RandomNPCHere>(true);
         for (int index = 0; index < randomNpcHereArray.Length; ++index)
         {
-          randomNpcHereArray[index].SpawnAnyGender = num1 == 0 || num1 == 3 || num1 == 4;
-          randomNpcHereArray[index].SpawnFemale = num1 == 1;
+          randomNpcHereArray[index].SpawnAnyGender = num == 0 || num == 3 || num == 4;
+          randomNpcHereArray[index].SpawnFemale = num == 1;
         }
         if ((UnityEngine.Object) this.Med_PeopleToSpawn != (UnityEngine.Object) null)
           this.Med_PeopleToSpawn.SetActive(true);
         if ((UnityEngine.Object) this.Med_PeopleToSpawn_Specials != (UnityEngine.Object) null)
           this.Med_PeopleToSpawn_Specials.SetActive(true);
-        for (int index = 0; index < bl_WorldStructure.WorldStructures.Count; ++index)
-          bl_WorldStructure.WorldStructures[index].SpawnNPCs();
         Debug.Log((object) "4-------------");
       }
       Main.Instance.PreloadCam.SetActive(false);

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: SpawnedSexScene
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -189,7 +189,7 @@ public class SpawnedSexScene : MonoBehaviour
         person.Money += _profit * 2;
       person.GainWorkXP(1000);
       if (this.Person1.IsPlayer || this.Person2.IsPlayer)
-        Main.RunInSeconds((Action) (() => Main.Instance.GameplayMenu.ShowNotification($"Received {_profit.ToString()} Bitch Notes")), 1f);
+        Main.RunInSeconds((Action) (() => Main.Instance.GameplayMenu.ShowNotification("Received " + _profit.ToString() + " Bitch Notes")), 1f);
     }
     if (this.OnSexEnd == null)
       return;
@@ -509,6 +509,8 @@ public class SpawnedSexScene : MonoBehaviour
     if (person.IsPlayer)
     {
       person._Rigidbody.isKinematic = true;
+      person.UserControl.enabled = false;
+      person.UserControl.m_Character.enabled = false;
       if (!person.DirtySkin && (double) person.transform.position.y < 0.5)
       {
         ++person._TimesHadSexClean;
@@ -585,6 +587,7 @@ public class SpawnedSexScene : MonoBehaviour
     person.SexPoseHasNoArousalIncrease = false;
     if (person.IsPlayer)
     {
+      person.UserControl.m_Character.enabled = true;
       person._Rigidbody.isKinematic = false;
       person.Anim.applyRootMotion = false;
       if (person is Girl)
@@ -601,6 +604,9 @@ public class SpawnedSexScene : MonoBehaviour
     if ((UnityEngine.Object) person.WeaponInv != (UnityEngine.Object) null && (UnityEngine.Object) person.WeaponInv.CurrentWeapon != (UnityEngine.Object) null)
       person.WeaponInv.CurrentWeapon.enabled = true;
     person.RemoveAllTempAggroToFlagger("OnSeeForcedSex");
+    if (!((UnityEngine.Object) person.ThisPersonInt != (UnityEngine.Object) null))
+      return;
+    person.ThisPersonInt.RestrainedCheck();
   }
 
   public void SpawnStructure()

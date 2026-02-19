@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Prost
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -279,7 +279,7 @@ public class Mis_Prost : Mission
       else
       {
         Main.Instance.GameplayMenu.ShowNotification("You can do the Army mission");
-        Main.Instance.GameplayMenu.DisplayGoal(Main.Instance.AllMissions[16 /*0x10*/].Goals[1], true);
+        Main.Instance.GameplayMenu.DisplayGoal(Main.Instance.AllMissions[16].Goals[1], true);
       }
     });
   }
@@ -314,7 +314,7 @@ public class Mis_Prost : Mission
       {
         if ((UnityEngine.Object) this.BarMusic != (UnityEngine.Object) null)
           this.BarMusic.volume = 0.05f;
-        _gameplay.DisplaySubtitle("So you managed to earn 200 huh?", this.CarolLines[15], (Action) (() => _gameplay.DisplaySubtitle("Wasn't that hard, was it?", this.CarolLines[16 /*0x10*/], (Action) (() =>
+        _gameplay.DisplaySubtitle("So you managed to earn 200 huh?", this.CarolLines[15], (Action) (() => _gameplay.DisplaySubtitle("Wasn't that hard, was it?", this.CarolLines[16], (Action) (() =>
         {
           Main.Instance.GameplayMenu.ShowNotification("Unlocked new safehouse [Stripclub Bedroom]");
           this.StaffRoom.SafeHouse = true;
@@ -386,7 +386,7 @@ public class Mis_Prost : Mission
         {
           if ((UnityEngine.Object) this.BarMusic != (UnityEngine.Object) null)
             this.BarMusic.volume = 0.05f;
-          Main.Instance.AllMissions[16 /*0x10*/].CompleteGoal(0);
+          Main.Instance.AllMissions[16].CompleteGoal(0);
           _gameplay.DisplaySubtitle("You can always ask anyone out there for paid sex", this.CarolLines[0], (Action) (() => _gameplay.DisplaySubtitle("But they might think you're trying to rob them, so they won't trust you", this.CarolLines[1], (Action) (() => _gameplay.DisplaySubtitle("But by being dressed as a prostitute, clients will trust you more", this.CarolLines[2], (Action) (() => _gameplay.DisplaySubtitle("Out there you can wear whatever you want", this.CarolLines[3], (Action) (() => _gameplay.DisplaySubtitle("But in this club you need to wear the proper uniform", this.CarolLines[4], (Action) (() => _gameplay.DisplaySubtitle("It's your first time? Are you a basic bitch now?", this.CarolLines[5], (Action) (() => _gameplay.DisplaySubtitle("Well then whatever, you start with a pre-used basic uniform then", this.CarolLines[6], (Action) (() => _gameplay.DisplaySubtitle("and then later I can level you up to a new uniform.", this.CarolLines[7], (Action) (() => _gameplay.DisplaySubtitle("Go to the lockers behind the curtains on the dance stage", this.CarolLines[8], (Action) (() => _gameplay.DisplaySubtitle("Leave your clothing there, equip your uniform, then come back to me", this.CarolLines[9], (Action) (() =>
           {
             if ((UnityEngine.Object) this.BarMusic != (UnityEngine.Object) null)

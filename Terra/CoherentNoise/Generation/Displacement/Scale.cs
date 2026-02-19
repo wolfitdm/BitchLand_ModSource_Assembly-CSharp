@@ -1,36 +1,37 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Terra.CoherentNoise.Generation.Displacement.Scale
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
 #nullable disable
-namespace Terra.CoherentNoise.Generation.Displacement;
-
-public class Scale : Generator
+namespace Terra.CoherentNoise.Generation.Displacement
 {
-  private readonly Generator m_Source;
-  private readonly float m_X;
-  private readonly float m_Y;
-  private readonly float m_Z;
-
-  public Scale(Generator source, Vector3 v)
-    : this(source, v.x, v.y, v.z)
+  public class Scale : Generator
   {
-  }
+    private readonly Generator m_Source;
+    private readonly float m_X;
+    private readonly float m_Y;
+    private readonly float m_Z;
 
-  public Scale(Generator source, float x, float y, float z)
-  {
-    this.m_Source = source;
-    this.m_Z = z;
-    this.m_Y = y;
-    this.m_X = x;
-  }
+    public Scale(Generator source, Vector3 v)
+      : this(source, v.x, v.y, v.z)
+    {
+    }
 
-  public override float GetValue(float x, float y, float z)
-  {
-    return this.m_Source.GetValue(x * this.m_X, y * this.m_Y, z * this.m_Z);
+    public Scale(Generator source, float x, float y, float z)
+    {
+      this.m_Source = source;
+      this.m_Z = z;
+      this.m_Y = y;
+      this.m_X = x;
+    }
+
+    public override float GetValue(float x, float y, float z)
+    {
+      return this.m_Source.GetValue(x * this.m_X, y * this.m_Y, z * this.m_Z);
+    }
   }
 }

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Health
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -302,7 +302,7 @@ label_27:
             this.PersonComponent.States[15] = true;
             break;
           case 5:
-            this.PersonComponent.States[16 /*0x10*/] = true;
+            this.PersonComponent.States[16] = true;
             break;
         }
       }
@@ -310,7 +310,28 @@ label_27:
     else
       Main.Instance.GameplayMenu.ShowNotification("You woke up in your cell");
     this.Unfade();
-    Transform playerWakeupPlace = Main.Instance.PlayerWakeupPlaces[UnityEngine.Random.Range(0, Main.Instance.PlayerWakeupPlaces.Count)];
+    Transform transform;
+    if (Main.Instance.OpenWorld)
+    {
+      int_bed[] objectsOfType = UnityEngine.Object.FindObjectsOfType<int_bed>();
+      int_bed intBed = (int_bed) null;
+      float num3 = 999999f;
+      for (int index = 0; index < objectsOfType.Length; ++index)
+      {
+        if ((UnityEngine.Object) objectsOfType[index].Owner == (UnityEngine.Object) Main.Instance.Player)
+        {
+          float num4 = Vector2.Distance(new Vector2(objectsOfType[index].transform.position.x, objectsOfType[index].transform.position.z), new Vector2(Main.Instance.Player.transform.position.x, Main.Instance.Player.transform.position.z));
+          if ((double) num4 < (double) num3)
+          {
+            num3 = num4;
+            intBed = objectsOfType[index];
+          }
+        }
+      }
+      transform = !((UnityEngine.Object) intBed == (UnityEngine.Object) null) ? intBed.SleepPlace : Main.Instance.PlayerWakeupPlaces[UnityEngine.Random.Range(0, Main.Instance.PlayerWakeupPlaces.Count)];
+    }
+    else
+      transform = Main.Instance.PlayerWakeupPlaces[UnityEngine.Random.Range(0, Main.Instance.PlayerWakeupPlaces.Count)];
     foreach (bl_sceneticsound blSceneticsound in UnityEngine.Object.FindObjectsOfType<bl_sceneticsound>())
       blSceneticsound.OnTriggerExit(Main.Instance.Player.MainCol);
     this.dead = false;
@@ -322,7 +343,7 @@ label_27:
     this.currentHealth = 51f;
     Main.Instance.GameplayMenu.UpdateHealth();
     this.PersonComponent.AddMoveBlocker("Respawning");
-    this.PersonComponent.transform.position = playerWakeupPlace.position;
+    this.PersonComponent.transform.position = transform.position;
     this.PersonComponent.RemoveAllTempAggro();
     this.PersonComponent.UnRagdoll();
     this.PersonComponent.enabled = false;

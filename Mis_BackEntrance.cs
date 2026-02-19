@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_BackEntrance
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -165,7 +165,7 @@ public class Mis_BackEntrance : Mission
             Main.RunInSeconds((Action) (() => _gameplay.DisplaySubtitle("This side of the city is pretty green don'tcha think?", this.VoiceLines[21], (Action) (() => _gameplay.DisplaySubtitle("Oh I love it", this.VoiceLines[22], (Action) (() =>
             {
               _zea.ThisPersonInt.EndTheChat();
-              Main.RunInSeconds((Action) (() => _gameplay.DisplaySubtitle("Have you seen the new growth pods in the clinic?", this.VoiceLines[25], (Action) (() => _gameplay.DisplaySubtitle("What's that?", this.VoiceLines[26], (Action) (() => _gameplay.DisplaySubtitle("So Sephie made these new pods where you put a newborn in", this.VoiceLines[27], (Action) (() => _gameplay.DisplaySubtitle("and they'll instantly turn adult", this.VoiceLines[28], (Action) (() => _gameplay.DisplaySubtitle("Huh? How does that work?", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("I don't know, it's not like this reality is fiction anyway, nothing really matters here", this.VoiceLines[30], (Action) (() => _gameplay.DisplaySubtitle("What are you even talking about, are you okay?", this.VoiceLines[31 /*0x1F*/], (Action) (() => _gameplay.DisplaySubtitle("Oh wait, you're just high again", this.VoiceLines[32 /*0x20*/], (Action) (() => _zea.ThisPersonInt.EndTheChat()), _zea)), _zea)), _sia)), _zea)), _sia)), _sia)), _zea)), _sia)), 5f);
+              Main.RunInSeconds((Action) (() => _gameplay.DisplaySubtitle("Have you seen the new growth pods in the clinic?", this.VoiceLines[25], (Action) (() => _gameplay.DisplaySubtitle("What's that?", this.VoiceLines[26], (Action) (() => _gameplay.DisplaySubtitle("So Sephie made these new pods where you put a newborn in", this.VoiceLines[27], (Action) (() => _gameplay.DisplaySubtitle("and they'll instantly turn adult", this.VoiceLines[28], (Action) (() => _gameplay.DisplaySubtitle("Huh? How does that work?", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("I don't know, it's not like this reality is fiction anyway, nothing really matters here", this.VoiceLines[30], (Action) (() => _gameplay.DisplaySubtitle("What are you even talking about, are you okay?", this.VoiceLines[31], (Action) (() => _gameplay.DisplaySubtitle("Oh wait, you're just high again", this.VoiceLines[32], (Action) (() => _zea.ThisPersonInt.EndTheChat()), _zea)), _zea)), _sia)), _zea)), _sia)), _sia)), _zea)), _sia)), 5f);
             }), _zea)), _sia)), 3f);
           }));
           Main.Instance.GenerateNav();
@@ -293,7 +293,7 @@ public class Mis_BackEntrance : Mission
     _zea.AddMoveBlocker("siaback");
     this.CompleteGoal(5);
     _gameplay.CanBuild = true;
-    _gameplay.DisplaySubtitle("This is disguised as a shitty radio tower", this.VoiceLines[12], (Action) (() => _gameplay.DisplaySubtitle("but this is actually a medium range scanner", this.VoiceLines[13], (Action) (() => _gameplay.DisplaySubtitle("and it also pulsates \"anti air waves\"", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("whatever that is", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("it's another of Sephie's inventions", this.VoiceLines[16 /*0x10*/], (Action) (() => _gameplay.DisplaySubtitle("I won't even try to understand how any of it works, as long as it works", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("Anyway, Let's head back now", this.VoiceLines[18], (Action) (() =>
+    _gameplay.DisplaySubtitle("This is disguised as a shitty radio tower", this.VoiceLines[12], (Action) (() => _gameplay.DisplaySubtitle("but this is actually a medium range scanner", this.VoiceLines[13], (Action) (() => _gameplay.DisplaySubtitle("and it also pulsates \"anti air waves\"", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("whatever that is", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("it's another of Sephie's inventions", this.VoiceLines[16], (Action) (() => _gameplay.DisplaySubtitle("I won't even try to understand how any of it works, as long as it works", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("Anyway, Let's head back now", this.VoiceLines[18], (Action) (() =>
     {
       _sia.ThisPersonInt.EndTheChat();
       Main.Instance.GameplayMenu.TheScreenFader.FadeOut(3f, (Action) (() =>

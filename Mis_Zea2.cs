@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -95,7 +95,7 @@ public class Mis_Zea2 : Mission
     zea.States[13] = false;
     zea.States[14] = false;
     zea.States[15] = false;
-    zea.States[16 /*0x10*/] = false;
+    zea.States[16] = false;
     zea.States[17] = false;
     zea.States[18] = false;
     zea.States[19] = false;
@@ -144,7 +144,7 @@ public class Mis_Zea2 : Mission
     Person zea = Main.Instance.CityCharacters.Zea;
     this.ZeaBedPrompt.SetActive(false);
     Main.Instance.Player.AddMoveBlocker("asdasd");
-    Main.Instance.Player.PlaceAt(this.SpawnSpots[31 /*0x1F*/]);
+    Main.Instance.Player.PlaceAt(this.SpawnSpots[31]);
     Main.Instance.SexScene.SpawnSexScene(4, 4, Main.Instance.Player, zea, canControl: false);
     Main.Instance.SexScene.SpeedSlider.value = 1.6f;
     Main.Instance.SexScene.ENextImage.gameObject.SetActive(false);
@@ -166,14 +166,14 @@ public class Mis_Zea2 : Mission
     Main.Instance.MapAreas[2].OnLeave();
     this.CompleteGoal(1);
     Main.Instance.Player.RemoveMoveBlocker("asdasd");
-    AudioClip voiceLine = this.VoiceLines[48 /*0x30*/];
+    AudioClip voiceLine = this.VoiceLines[48];
     Action after = new Action(_zea.ThisPersonInt.EndTheChat);
     Person personSaying = _zea;
     gameplayMenu.DisplaySubtitle("okay les'go", voiceLine, after, personSaying);
     _zea.StartScheduleTask(new Person.ScheduleTask()
     {
       IDName = "_zeaentertruck",
-      ActionPlace = this.SpawnSpots[32 /*0x20*/],
+      ActionPlace = this.SpawnSpots[32],
       OnArrive = (Action) (() =>
       {
         this.Army2.FakeTruck.SetActive(false);
@@ -426,7 +426,7 @@ public class Mis_Zea2 : Mission
         _gameplay.DisplaySubtitle("Anyway I really like this bridge", this.VoiceLines[13], (Action) (() =>
         {
           _zea.LookAtPlayer.playerTransform = this.SpawnSpots[5];
-          _gameplay.DisplaySubtitle("I have many fun memories here", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("it's also like a little window into the time before the bombs fell", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("When people used to just live and have fun", this.VoiceLines[16 /*0x10*/], (Action) (() =>
+          _gameplay.DisplaySubtitle("I have many fun memories here", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("it's also like a little window into the time before the bombs fell", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("When people used to just live and have fun", this.VoiceLines[16], (Action) (() =>
           {
             this.Objs[3].SetActive(true);
             this.Objs[3].transform.SetParent(_zea.RightHandStuff);
@@ -582,7 +582,7 @@ public class Mis_Zea2 : Mission
     Main.Instance.GameplayMenu.DisplaySubtitle("Here's the place, let's go inside", this.VoiceLines[20], (Action) (() =>
     {
       _zea.ThisPersonInt.EndTheChat();
-      this.SpawnSpots[16 /*0x10*/].gameObject.SetActive(true);
+      this.SpawnSpots[16].gameObject.SetActive(true);
       this.CompleteGoal(5);
     }), _zea);
   }
@@ -590,7 +590,7 @@ public class Mis_Zea2 : Mission
   public void InteractEnterBuilding()
   {
     Person _zea = Main.Instance.CityCharacters.Zea;
-    this.SpawnSpots[16 /*0x10*/].gameObject.SetActive(false);
+    this.SpawnSpots[16].gameObject.SetActive(false);
     Main.Instance.Player.UserControl.ResetSpot = this.F8Spots[1];
     Main.Instance.Player.PlaceAt(this.SpawnSpots[17]);
     _zea.navMesh.enabled = false;
@@ -757,7 +757,7 @@ public class Mis_Zea2 : Mission
             Main.Instance.MainThreads.Add(new Action(this.DestIn5_5));
           })
         });
-        _gameplay.DisplaySubtitle("Alright lemme show you the kitchen", this.VoiceLines[31 /*0x1F*/], new Action(_zea.ThisPersonInt.EndTheChat), _zea);
+        _gameplay.DisplaySubtitle("Alright lemme show you the kitchen", this.VoiceLines[31], new Action(_zea.ThisPersonInt.EndTheChat), _zea);
       }), _zea)), _zea)), _zea);
     }), _zea)), _zea);
   }
@@ -794,7 +794,7 @@ public class Mis_Zea2 : Mission
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Main.Instance.Player.UserControl.FirstPerson = true;
     _zea.LookAtPlayer.NonplayerTarget = this.Objs[5].transform;
-    _gameplay.DisplaySubtitle("Okay so, here is a keypad", this.VoiceLines[32 /*0x20*/], (Action) (() => _gameplay.DisplaySubtitle("And uhm, how do I describe this to you?", this.VoiceLines[33], (Action) (() =>
+    _gameplay.DisplaySubtitle("Okay so, here is a keypad", this.VoiceLines[32], (Action) (() => _gameplay.DisplaySubtitle("And uhm, how do I describe this to you?", this.VoiceLines[33], (Action) (() =>
     {
       _zea.LookAtPlayer.NonplayerTarget = (Transform) null;
       _gameplay.DisplaySubtitle("Like, if you're around...", this.VoiceLines[34], (Action) (() => _gameplay.DisplaySubtitle("...and there's serious problems going on", this.VoiceLines[35], (Action) (() =>
@@ -820,7 +820,10 @@ public class Mis_Zea2 : Mission
                 Main.Instance.Player.SleepOnFloor();
                 Main.Instance.GameplayMenu.ShowNotification("The next day...");
                 for (int index = 0; index < this._ppl.Count; ++index)
-                  this._ppl[index].SetActive(true);
+                {
+                  if ((UnityEngine.Object) this._ppl[index] != (UnityEngine.Object) null)
+                    this._ppl[index].SetActive(true);
+                }
                 _zea.gameObject.SetActive(false);
                 this.CompleteMission();
                 this.MainWindZone.enabled = true;

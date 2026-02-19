@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: SaveableBehaviour
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ public class SaveableBehaviour : MonoBehaviour
   public bool _AddedToSaveable;
   public bool DontSaveInMain;
   public int _CurrentLoadingIndex;
+  public GameObject RootObj;
   public List<string> CanSaveFlagger = new List<string>();
 
   public virtual bool CanSave => this.CanSaveFlagger.Count == 0;
@@ -27,7 +28,10 @@ public class SaveableBehaviour : MonoBehaviour
   {
     if (!this.AddToSaveableOnStart || !((UnityEngine.Object) Main.Instance != (UnityEngine.Object) null) || Main.Instance.SpawnedObjects == null)
       return;
-    Main.Instance.SpawnedObjects.Add(this);
+    if (Main.Instance.OpenWorld)
+      Main.Instance.SpawnedObjects_World.Add(this);
+    else
+      Main.Instance.SpawnedObjects.Add(this);
     this._AddedToSaveable = true;
   }
 
@@ -35,7 +39,10 @@ public class SaveableBehaviour : MonoBehaviour
   {
     if (!this.AddToSaveableOnStart || this._AddedToSaveable)
       return;
-    Main.Instance.SpawnedObjects.Add(this);
+    if (Main.Instance.OpenWorld)
+      Main.Instance.SpawnedObjects_World.Add(this);
+    else
+      Main.Instance.SpawnedObjects.Add(this);
     this._AddedToSaveable = true;
   }
 
@@ -49,7 +56,7 @@ public class SaveableBehaviour : MonoBehaviour
       }
       catch (Exception ex)
       {
-        Debug.LogError((object) $"Error: {ex.Message}\n{ex.StackTrace}");
+        Debug.LogError((object) ("Error: " + ex.Message + "\n" + ex.StackTrace));
       }
       return (string[]) null;
     }
@@ -61,7 +68,7 @@ public class SaveableBehaviour : MonoBehaviour
       }
       catch (Exception ex)
       {
-        Debug.LogError((object) $"Error: {ex.Message}\n{ex.StackTrace}");
+        Debug.LogError((object) ("Error: " + ex.Message + "\n" + ex.StackTrace));
       }
     }
   }
@@ -111,7 +118,7 @@ public class SaveableBehaviour : MonoBehaviour
     string[] saveableData = this.SaveableData;
     if (saveableData == null)
       return;
-    Debug.Log((object) $"Saving {this.gameObject.name}-{saveableData[0]}-{saveableData[1]}");
+    Debug.Log((object) ("Saving " + this.gameObject.name + "-" + saveableData[0] + "-" + saveableData[1]));
     File.WriteAllLines(filename, saveableData);
   }
 

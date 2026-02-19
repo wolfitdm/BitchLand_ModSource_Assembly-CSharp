@@ -1,9 +1,10 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_Lockable
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -13,6 +14,8 @@ public class int_Lockable : Interactible
 {
   public NavMeshObstacle Obstacle;
   public bool StartLocked;
+  public bool PlayerOwned;
+  public AudioSource Audio;
   public bool DEBUG_LOCKLOG;
   public e_KeyNames KeyID;
   public bool m_Locked;
@@ -38,23 +41,40 @@ public class int_Lockable : Interactible
   {
   }
 
+  public override bool CanInteract
+  {
+    get => Main.Instance.ScatContent || !this.ScatInteractible;
+    set => base.CanInteract = value;
+  }
+
   public bool Locked
   {
     get => this.m_Locked;
     set
     {
       this.m_Locked = value;
-      int num = (Object) this.Obstacle != (Object) null ? 1 : 0;
+      if ((UnityEngine.Object) this.Obstacle != (UnityEngine.Object) null)
+      {
+        this.Obstacle.carving = value;
+        this.Obstacle.enabled = value;
+      }
       if (this.m_Locked)
       {
         this.InteractIcon = 1;
         if (!this.InteractText.Contains(" (Locked"))
         {
           if (this.KeyID != e_KeyNames.None)
-            this.InteractText = $"{this.InteractText} (Locked - {Main.Instance.DoorKeysNames[(int) this.KeyID]})";
+            this.InteractText = this.InteractText + " (Locked - " + Main.Instance.DoorKeysNames[(int) this.KeyID] + ")";
           else
             this.InteractText += " (Locked)";
         }
+        if ((UnityEngine.Object) this._RunningForSecs != (UnityEngine.Object) null)
+        {
+          this._RunningForSecs.Stop();
+          this._RunningForSecs = (Main._runinseconds) null;
+        }
+        if ((UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
+          this.InteractingPerson.StopFollowing();
         this.OnLocked();
       }
       else
@@ -63,21 +83,34 @@ public class int_Lockable : Interactible
         if (this.InteractText.Contains(" (Locked"))
         {
           if (this.KeyID != e_KeyNames.None)
-            this.InteractText = this.InteractText.Replace($" (Locked - {Main.Instance.DoorKeysNames[(int) this.KeyID]})", string.Empty);
+            this.InteractText = this.InteractText.Replace(" (Locked - " + Main.Instance.DoorKeysNames[(int) this.KeyID] + ")", string.Empty);
           else
             this.InteractText = this.InteractText.Replace(" (Locked)", string.Empty);
         }
+        if ((double) this.DoForSeconds != 0.0)
+          this._RunningForSecs = Main.RunInSeconds((Action) (() => this.StopInteracting()), this.DoForSeconds);
         this.OnUnlocked();
+        if (!((UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null))
+          return;
+        this.StopInteracting();
       }
     }
   }
 
   public virtual void OnLocked()
   {
+    if (!((UnityEngine.Object) this.Audio != (UnityEngine.Object) null))
+      return;
+    this.Audio.clip = Main.Instance.DoorLock;
+    this.Audio.Play();
   }
 
   public virtual void OnUnlocked()
   {
+    if (!((UnityEngine.Object) this.Audio != (UnityEngine.Object) null))
+      return;
+    this.Audio.clip = Main.Instance.DoorUnLock;
+    this.Audio.Play();
   }
 
   public override string[] sd_SaveData(char SlitChar = ':')
@@ -87,6 +120,7 @@ public class int_Lockable : Interactible
     if (collection != null)
       stringList.AddRange((IEnumerable<string>) collection);
     stringList.Add(this.Locked ? "1" : "0");
+    stringList.Add(this.PlayerOwned ? "1" : "0");
     return stringList.ToArray();
   }
 
@@ -96,5 +130,6 @@ public class int_Lockable : Interactible
     if (this.DEBUG_LOCKLOG)
       Debug.LogWarning((object) "Lock state is being loaded");
     this.Locked = Data[this._CurrentLoadingIndex++] == "1";
+    this.PlayerOwned = Data[this._CurrentLoadingIndex++] == "1";
   }
 }

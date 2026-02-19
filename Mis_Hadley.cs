@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Hadley
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -154,7 +154,7 @@ public class Mis_Hadley : Mission
           Main.Instance.MainThreads.Add(new Action(Main.Instance.GameplayMenu.OpenedChatOptionsThread));
           break;
         case 2:
-          _gameplay.DisplaySubtitle("Wow you actually got some?", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("Next you gotta craft me a Scat Tube", this.VoiceLines[30], (Action) (() => _gameplay.DisplaySubtitle("It's gonna go crazy with these pills", this.VoiceLines[31 /*0x1F*/], (Action) (() =>
+          _gameplay.DisplaySubtitle("Wow you actually got some?", this.VoiceLines[29], (Action) (() => _gameplay.DisplaySubtitle("Next you gotta craft me a Scat Tube", this.VoiceLines[30], (Action) (() => _gameplay.DisplaySubtitle("It's gonna go crazy with these pills", this.VoiceLines[31], (Action) (() =>
           {
             this.CompleteGoal(2);
             this.AddGoal(3, true);
@@ -178,7 +178,7 @@ public class Mis_Hadley : Mission
             }), person, e_BlendShapes.Shocked)), person, e_BlendShapes.Shocked);
             break;
           }
-          _gameplay.DisplaySubtitle("I'll be waitin", this.VoiceLines[32 /*0x20*/], new Action(person.ThisPersonInt.EndTheChat), person, e_BlendShapes.Shocked);
+          _gameplay.DisplaySubtitle("I'll be waitin", this.VoiceLines[32], new Action(person.ThisPersonInt.EndTheChat), person, e_BlendShapes.Shocked);
           break;
       }
     }
@@ -263,7 +263,7 @@ public class Mis_Hadley : Mission
       if (!Main.Instance.ScatContent)
         _gameplay.DisplaySubtitle("Oh, well you could help me with it...", (AudioClip) null, (Action) (() => _gameplay.DisplaySubtitle("But you disabled that stuff in the Settings, so...", (AudioClip) null, (Action) (() => person.ThisPersonInt.EndTheChat()), person, e_BlendShapes.Smug)), person, e_BlendShapes.Smug);
       else
-        _gameplay.DisplaySubtitle("once injested, it'd expand into a gooey material in your guts", this.VoiceLines[16 /*0x10*/], (Action) (() => _gameplay.DisplaySubtitle("This was to make you feel full", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("But it'd expand so much that you'd shit goo everywhere", this.VoiceLines[18], (Action) (() => _gameplay.DisplaySubtitle("And that actually sounds hot to me", this.VoiceLines[19], (Action) (() => _gameplay.DisplaySubtitle("I've seen some in the Clinic that look like them", this.VoiceLines[20], (Action) (() => _gameplay.DisplaySubtitle("Go there and steal some without Maylenne seeing", this.VoiceLines[21], (Action) (() =>
+        _gameplay.DisplaySubtitle("once injested, it'd expand into a gooey material in your guts", this.VoiceLines[16], (Action) (() => _gameplay.DisplaySubtitle("This was to make you feel full", this.VoiceLines[17], (Action) (() => _gameplay.DisplaySubtitle("But it'd expand so much that you'd shit goo everywhere", this.VoiceLines[18], (Action) (() => _gameplay.DisplaySubtitle("And that actually sounds hot to me", this.VoiceLines[19], (Action) (() => _gameplay.DisplaySubtitle("I've seen some in the Clinic that look like them", this.VoiceLines[20], (Action) (() => _gameplay.DisplaySubtitle("Go there and steal some without Maylenne seeing", this.VoiceLines[21], (Action) (() =>
         {
           this.AddGoal(1, true);
           person.ThisPersonInt.EndTheChat();

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Settings
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.IO;
@@ -42,6 +42,8 @@ public class UI_Settings : UI_Menu
   public Toggle ToggleDotCrossAir;
   public GameObject DotCrossAir;
   public Dropdown BellyBulgeDrop;
+  public InputField CustomResX;
+  public InputField CustomResY;
   public bool PostEnabled = true;
   public static float TargetFOV;
   public GameObject ResCheck;
@@ -56,6 +58,7 @@ public class UI_Settings : UI_Menu
   public GameObject MiscMenu;
   public GameObject ModsMenu;
   public GameObject SpeedrunMenu;
+  public RectTransform ModsContent;
   public GameObject ModEntry;
   public GameObject NoModArrows;
   public bool ModsDownloaded;
@@ -87,6 +90,20 @@ public class UI_Settings : UI_Menu
 
   private UI_Settings() => this.MenuName = "Settings";
 
+  public void SetCustomRes()
+  {
+    int result1 = 0;
+    int result2 = 0;
+    int.TryParse(this.CustomResX.text, out result1);
+    if (result1 < 300)
+      result1 = 300;
+    int.TryParse(this.CustomResY.text, out result2);
+    if (result2 < 300)
+      result2 = 300;
+    Screen.SetResolution(result1, result2, Screen.fullScreen);
+    this.DoResolutionCheck();
+  }
+
   public override void Open()
   {
     base.Open();
@@ -100,7 +117,7 @@ public class UI_Settings : UI_Menu
     string str1 = num.ToString();
     num = Screen.height;
     string str2 = num.ToString();
-    string str3 = $"{str1} x {str2}";
+    string str3 = str1 + " x " + str2;
     captionText.text = str3;
     this.Fullscreenshouldbe = Screen.fullScreen;
     if (Main.Instance.FreeWorldPatch)
@@ -115,7 +132,7 @@ public class UI_Settings : UI_Menu
       this.Click_Bakc();
     if (!this.ResCheck.activeSelf)
       return;
-    this.ResCheckTimer_text.text = $"({this.ResCheckTimer.ToString("0")})";
+    this.ResCheckTimer_text.text = "(" + this.ResCheckTimer.ToString("0") + ")";
     this.ResCheckTimer -= Time.deltaTime;
     if ((double) this.ResCheckTimer >= 0.0)
       return;
@@ -213,22 +230,22 @@ public class UI_Settings : UI_Menu
     switch (this.resoluotn.value)
     {
       case 0:
-        Screen.SetResolution(1280 /*0x0500*/, 720, Screen.fullScreen);
+        Screen.SetResolution(1280, 720, Screen.fullScreen);
         break;
       case 1:
         Screen.SetResolution(1920, 1080, Screen.fullScreen);
         break;
       case 2:
-        Screen.SetResolution(1024 /*0x0400*/, 576, Screen.fullScreen);
+        Screen.SetResolution(1024, 576, Screen.fullScreen);
         break;
       case 3:
         Screen.SetResolution(720, 480, Screen.fullScreen);
         break;
       case 4:
-        Screen.SetResolution(2560 /*0x0A00*/, 1440, Screen.fullScreen);
+        Screen.SetResolution(2560, 1440, Screen.fullScreen);
         break;
       case 5:
-        Screen.SetResolution(2560 /*0x0A00*/, 1600, Screen.fullScreen);
+        Screen.SetResolution(2560, 1600, Screen.fullScreen);
         break;
     }
     this.DoResolutionCheck();
@@ -515,6 +532,7 @@ label_6:
   public void RefreshMods()
   {
     string[] directories = Directory.GetDirectories(Main.AssetsFolder + "/Mods/");
+    float y = 85f;
     for (int index1 = 0; index1 < directories.Length; ++index1)
     {
       string path = directories[index1] + "/info.txt";
@@ -540,8 +558,10 @@ label_6:
         component.Title.text = str1;
         component.Desc.text = str2;
         component.ModEnabled.SetIsOnWithoutNotify(flag);
+        y += 85f;
       }
     }
+    this.ModsContent.sizeDelta = new Vector2(0.0f, y);
   }
 
   public void Click_DownloadMods2()
@@ -555,7 +575,10 @@ label_6:
     }
   }
 
-  public void Click_OpenModsFolder() => Application.OpenURL($"file://{Main.AssetsFolder}/Mods/");
+  public void Click_OpenModsFolder()
+  {
+    Application.OpenURL("file://" + Main.AssetsFolder + "/Mods/");
+  }
 
   public void Click_DownloadMods()
   {

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Mines_Med
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -251,7 +251,7 @@ public class Mis_Mines_Med : Mission
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Person person = Main.Instance.CityCharacters.Sarah;
     this.LabEntranceDoor.Locked = true;
-    _gameplay.DisplaySubtitle("Well, it's not exactly what you think", this.VoiceLines[16 /*0x10*/], (Action) (() =>
+    _gameplay.DisplaySubtitle("Well, it's not exactly what you think", this.VoiceLines[16], (Action) (() =>
     {
       person.ThisPersonInt.AddBlocker("quest");
       Main.Instance.CanSaveFlags_add("SarahMission");
@@ -698,7 +698,7 @@ public class Mis_Mines_Med : Mission
     sephie.PlaceAt(this.SPOTS[11]);
     Main.Instance.Player.PlaceAt(this.SPOTS[12]);
     this.HOle.SetActive(false);
-    Main.RunInSeconds((Action) (() => _gameplay.DisplaySubtitle("Come this way, I found some weird ancient technology", this.VoiceLines[31 /*0x1F*/], (Action) (() =>
+    Main.RunInSeconds((Action) (() => _gameplay.DisplaySubtitle("Come this way, I found some weird ancient technology", this.VoiceLines[31], (Action) (() =>
     {
       sarah.ThisPersonInt.EndTheChat();
       sephie.RemoveMoveBlocker("aaaaa");
@@ -736,7 +736,7 @@ public class Mis_Mines_Med : Mission
     Main.Instance.MainThreads.Remove(new Action(this.Goal8));
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Person sephie = Main.Instance.CityCharacters.Merussy;
-    _gameplay.DisplaySubtitle("Check it out, what the heck is this huge machine", this.VoiceLines[32 /*0x20*/], (Action) (() => _gameplay.DisplaySubtitle("This is a fucking steam train", this.VoiceLines[10], (Action) (() => _gameplay.DisplaySubtitle("There's nothing \"technology\" about it", this.VoiceLines[11], (Action) (() => _gameplay.DisplaySubtitle("Well it does run on coal instead of electricity, which is kinda convenient right now", this.VoiceLines[12], (Action) (() => _gameplay.DisplaySubtitle("So it is a train after all, and runs only on coal?", this.VoiceLines[33], (Action) (() => _gameplay.DisplaySubtitle("That's amazing!", this.VoiceLines[34], (Action) (() => _gameplay.DisplaySubtitle("Maybe my sweetie here could use it later to find land for a new city", this.VoiceLines[35], (Action) (() => _gameplay.DisplaySubtitle("Oh gawd this connects with the outside, that's a major safety threat", this.VoiceLines[13], (Action) (() => _gameplay.DisplaySubtitle("I have to get War here asap to setup defences", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("Let's get out of here now, this dust is what gives you lung cancer", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("And Sarah, I really should upgrade your vocal cords, they are starting to sound bad", this.VoiceLines[37], (Action) (() =>
+    _gameplay.DisplaySubtitle("Check it out, what the heck is this huge machine", this.VoiceLines[32], (Action) (() => _gameplay.DisplaySubtitle("This is a fucking steam train", this.VoiceLines[10], (Action) (() => _gameplay.DisplaySubtitle("There's nothing \"technology\" about it", this.VoiceLines[11], (Action) (() => _gameplay.DisplaySubtitle("Well it does run on coal instead of electricity, which is kinda convenient right now", this.VoiceLines[12], (Action) (() => _gameplay.DisplaySubtitle("So it is a train after all, and runs only on coal?", this.VoiceLines[33], (Action) (() => _gameplay.DisplaySubtitle("That's amazing!", this.VoiceLines[34], (Action) (() => _gameplay.DisplaySubtitle("Maybe my sweetie here could use it later to find land for a new city", this.VoiceLines[35], (Action) (() => _gameplay.DisplaySubtitle("Oh gawd this connects with the outside, that's a major safety threat", this.VoiceLines[13], (Action) (() => _gameplay.DisplaySubtitle("I have to get War here asap to setup defences", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("Let's get out of here now, this dust is what gives you lung cancer", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("And Sarah, I really should upgrade your vocal cords, they are starting to sound bad", this.VoiceLines[37], (Action) (() =>
     {
       sarah.ThisPersonInt.EndTheChat();
       this.EndMission();

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UIManagerTech
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -97,7 +97,7 @@ public class UIManagerTech : MonoBehaviour
   private string ConfPassword;
   private string form;
   private string m_Path;
-  private string[] Characters = new string[64 /*0x40*/]
+  private string[] Characters = new string[64]
   {
     "a",
     "b",
@@ -402,7 +402,7 @@ public class UIManagerTech : MonoBehaviour
     string str1 = num.ToString();
     num = res.height;
     string str2 = num.ToString();
-    return $"{str1} x {str2}";
+    return str1 + " x " + str2;
   }
 
   public void AudioSlider()
@@ -478,7 +478,7 @@ public class UIManagerTech : MonoBehaviour
     bool flag3 = false;
     if (this.Username != "")
     {
-      if (!File.Exists($"{this.m_Path}_{this.Username}.txt"))
+      if (!File.Exists(this.m_Path + "_" + this.Username + ".txt"))
       {
         flag1 = true;
       }
@@ -543,7 +543,7 @@ public class UIManagerTech : MonoBehaviour
       this.Password += ((char) (num2 * num3)).ToString();
     }
     this.form = this.Username + Environment.NewLine + Environment.NewLine + this.Password;
-    File.WriteAllText($"{this.m_Path}_{this.Username}.txt", this.form);
+    File.WriteAllText(this.m_Path + "_" + this.Username + ".txt", this.form);
     this.Username = "";
     this.Password = "";
     this.username.text = "";
@@ -563,10 +563,10 @@ public class UIManagerTech : MonoBehaviour
     bool flag2 = false;
     if (this.logUsernameString != "")
     {
-      if (File.Exists($"{this.m_Path}_{this.logUsernameString}.txt"))
+      if (File.Exists(this.m_Path + "_" + this.logUsernameString + ".txt"))
       {
         flag1 = true;
-        this.Lines = File.ReadAllLines($"{this.m_Path}_{this.logUsernameString}.txt");
+        this.Lines = File.ReadAllLines(this.m_Path + "_" + this.logUsernameString + ".txt");
       }
       else
       {
@@ -581,7 +581,7 @@ public class UIManagerTech : MonoBehaviour
     }
     if (this.logPasswordString != "")
     {
-      if (File.Exists($"{this.m_Path}_{this.logUsernameString}.txt"))
+      if (File.Exists(this.m_Path + "_" + this.logUsernameString + ".txt"))
       {
         int num1 = 1;
         foreach (int num2 in this.Lines[2])
@@ -632,10 +632,10 @@ public class UIManagerTech : MonoBehaviour
     bool flag2 = false;
     if (this.delUsernameString != "" && this.profileDisplay.text != this.delUsernameString)
     {
-      if (File.Exists($"{this.m_Path}_{this.delUsernameString}.txt"))
+      if (File.Exists(this.m_Path + "_" + this.delUsernameString + ".txt"))
       {
         flag1 = true;
-        this.Lines = File.ReadAllLines($"{this.m_Path}_{this.delUsernameString}.txt");
+        this.Lines = File.ReadAllLines(this.m_Path + "_" + this.delUsernameString + ".txt");
       }
       else
       {
@@ -650,7 +650,7 @@ public class UIManagerTech : MonoBehaviour
     }
     if (this.delPasswordString != "")
     {
-      if (File.Exists($"{this.m_Path}_{this.delUsernameString}.txt"))
+      if (File.Exists(this.m_Path + "_" + this.delUsernameString + ".txt"))
       {
         int num1 = 1;
         foreach (int num2 in this.Lines[2])
@@ -682,7 +682,7 @@ public class UIManagerTech : MonoBehaviour
     }
     if (!flag1 || !flag2)
       return;
-    File.Delete($"{this.m_Path}_{this.delUsernameString}.txt");
+    File.Delete(this.m_Path + "_" + this.delUsernameString + ".txt");
     this.delUsernameString = "";
     this.delPasswordString = "";
     this.delUsername.text = "";

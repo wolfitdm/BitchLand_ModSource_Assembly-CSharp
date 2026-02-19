@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Interactible
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ public class Interactible : SaveableBehaviour
   public bool _CanInteract = true;
   public bool ScatInteractible;
   public bool NPCCanUseInFollow;
+  public bool OnlyInteractibleInOW;
   public bool SetInteracting = true;
   public List<e_Fetish> OffersFetishes;
   public List<Personality_Type> OffersPersonalities;
@@ -28,6 +29,8 @@ public class Interactible : SaveableBehaviour
   public bool CanLeave = true;
   public Person PersonGoingToUse;
   public string[] RequiredPerks;
+  public bool DestroyAfterUse;
+  public Person Owner;
   public Transform PivotSpot;
   public bool intDoIK;
   public SexPose_IKSetting[] intUsingIKs;
@@ -39,7 +42,6 @@ public class Interactible : SaveableBehaviour
   public string InteractText;
   public string[] _InteractTexts;
   public Person InteractingPerson;
-  public GameObject RootObj;
   public MeshRenderer[] DisableOnStart;
   public GameObject[] ActivateOnInteract;
   public GameObject[] DeactivateOnInteract;
@@ -68,11 +70,16 @@ public class Interactible : SaveableBehaviour
   public bool DoDistanceCheck = true;
   public bool _InsideSafeHouse;
 
-  public bool CanInteract
+  public virtual bool CanInteract
   {
     set => this._CanInteract = value;
-    get => (Main.Instance.ScatContent || !this.ScatInteractible) && this._CanInteract;
+    get
+    {
+      return (!this.OnlyInteractibleInOW || Main.Instance.OpenWorld) && (Main.Instance.ScatContent || !this.ScatInteractible) && this._CanInteract;
+    }
   }
+
+  public virtual void MakeOwner(Person person) => this.Owner = person;
 
   public bool BeingUsed => this.HasBlocker("Interacting");
 
@@ -117,12 +124,25 @@ public class Interactible : SaveableBehaviour
           return false;
         break;
     }
-    for (int index = 0; index < this.RequiredPerks.Length; ++index)
+    if (this.RequiredPerks != null)
     {
-      if (!person.Perks.Contains(this.RequiredPerks[index]))
-        return false;
+      for (int index = 0; index < this.RequiredPerks.Length; ++index)
+      {
+        if (!person.Perks.Contains(this.RequiredPerks[index]))
+          return false;
+      }
     }
     return true;
+  }
+
+  public virtual bool FullCheckCanInteract(Person person)
+  {
+    if ((UnityEngine.Object) person == (UnityEngine.Object) null)
+      return false;
+    bool flag = this.CheckCanInteract(person) && this.CanInteract;
+    if (person.IsPlayer && !this.PlayerCanInteract)
+      flag = false;
+    return flag;
   }
 
   public override void Awake()
@@ -348,6 +368,9 @@ public class Interactible : SaveableBehaviour
     if (this.NPCOnFinishInteract != null)
       this.NPCOnFinishInteract();
     this.NPCOnFinishInteract = (Action) null;
+    if (!this.DestroyAfterUse)
+      return;
+    UnityEngine.Object.Destroy((UnityEngine.Object) this.RootObj.gameObject);
   }
 
   public override string[] sd_SaveData(char SlitChar = ':')
@@ -389,9 +412,26 @@ public class Interactible : SaveableBehaviour
   {
     if (this.Despawnable)
       this.DespawnTimerThread();
-    if (!((UnityEngine.Object) this.RootObj != (UnityEngine.Object) null) || (double) this.RootObj.transform.position.y >= -10000.0)
+    if (!((UnityEngine.Object) this.RootObj != (UnityEngine.Object) null) || (double) this.RootObj.transform.position.y >= -100.0)
       return;
-    this.RootObj.transform.position = new Vector3(0.0f, 0.2f, 0.0f);
+    Vector3 vector3 = new Vector3(0.0f, 0.2f, 0.0f);
+    if (Main.Instance.OpenWorld)
+    {
+      float num1 = 5E+07f;
+      for (int index = 0; index < bl_SectionGenerate2.ItemFallRespawnSpots.Count; ++index)
+      {
+        if ((UnityEngine.Object) bl_SectionGenerate2.ItemFallRespawnSpots[index] != (UnityEngine.Object) null)
+        {
+          float num2 = Vector3.Distance(bl_SectionGenerate2.ItemFallRespawnSpots[index].position, this.transform.position);
+          if ((double) num2 < (double) num1)
+          {
+            num1 = num2;
+            vector3 = bl_SectionGenerate2.ItemFallRespawnSpots[index].position;
+          }
+        }
+      }
+    }
+    this.RootObj.transform.position = vector3;
     Rigidbody component = this.RootObj.GetComponent<Rigidbody>();
     if (!((UnityEngine.Object) component != (UnityEngine.Object) null))
       return;

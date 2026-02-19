@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Main
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.UI;
 using UnityStandardAssets.Cameras;
 
 #nullable disable
@@ -19,7 +21,7 @@ public class Main : MonoBehaviour
 {
   public const string BuildVersion = "10.e";
   public const string BuildVersionInt = "10";
-  public const string BuildExpireDate = "2026/01/01";
+  public const string BuildExpireDate = "2026/06/01";
   public static bool DebugLog;
   public static Main Instance;
   public bool FirstRunThisVersion;
@@ -29,6 +31,9 @@ public class Main : MonoBehaviour
   public GameObject PersonGuyPrefab;
   public GameObject PersonGuy2Prefab;
   public MonoBehaviour Nav;
+  public MonoBehaviour Nav2;
+  public LayerMask ResourceCheckLayers;
+  public LayerMask RoomSizeCheckLayers;
   public GameObject PreloadCam;
   public UI_Gameplay GameplayMenu;
   public UI_NewGame NewGameMenu;
@@ -53,6 +58,7 @@ public class Main : MonoBehaviour
   public string[] DoorKeysNames;
   public Texture[] ESB_markings;
   public Texture[] BL_markings;
+  public List<bl_Patrol> AllPatrols = new List<bl_Patrol>();
   public Texture2D[] Tex_BodySkin;
   public Texture2D[] Tex_FaceSkin;
   public Texture2D Inv1k;
@@ -76,7 +82,7 @@ public class Main : MonoBehaviour
   public static byte[] OnePixel = new byte[120]
   {
     (byte) 137,
-    (byte) 80 /*0x50*/,
+    (byte) 80,
     (byte) 78,
     (byte) 71,
     (byte) 13,
@@ -104,7 +110,7 @@ public class Main : MonoBehaviour
     (byte) 0,
     (byte) 0,
     (byte) 0,
-    (byte) 31 /*0x1F*/,
+    (byte) 31,
     (byte) 21,
     (byte) 196,
     (byte) 137,
@@ -141,7 +147,7 @@ public class Main : MonoBehaviour
     (byte) 0,
     (byte) 0,
     (byte) 9,
-    (byte) 112 /*0x70*/,
+    (byte) 112,
     (byte) 72,
     (byte) 89,
     (byte) 115,
@@ -173,7 +179,7 @@ public class Main : MonoBehaviour
     byte.MaxValue,
     byte.MaxValue,
     byte.MaxValue,
-    (byte) 127 /*0x7F*/,
+    (byte) 127,
     (byte) 0,
     (byte) 9,
     (byte) 251,
@@ -193,7 +199,7 @@ public class Main : MonoBehaviour
     (byte) 68,
     (byte) 174,
     (byte) 66,
-    (byte) 96 /*0x60*/,
+    (byte) 96,
     (byte) 130
   };
   public List<string> FemaleNames = new List<string>();
@@ -274,6 +280,7 @@ public class Main : MonoBehaviour
   public AudioClip[] MaleMoans;
   public AudioClip[] MeatSlapSounds;
   public AudioClip[] SuccSounds;
+  public AudioClip FemaleScream;
   public Transform Clinic;
   public bl_CityCharacters CityCharacters;
   public DayNightCycle DayCycle;
@@ -355,7 +362,9 @@ public class Main : MonoBehaviour
   public List<Func<Person, int>> OnNpcGenerate = new List<Func<Person, int>>();
   public string StartOnMenu;
   public bool OpenWorld;
+  public AudioClip PickAxeSound;
   public List<Action> MainThreads = new List<Action>();
+  public List<Action> MainThreads_Late = new List<Action>();
   public bool MusicInCombat;
   public float MusicTimer;
   public int Seconds;
@@ -363,15 +372,22 @@ public class Main : MonoBehaviour
   public bool AutosaveEnable = true;
   public float AutoSaveTimer;
   public float AutoSaveTimerMax = 120f;
+  public bool AutosaveWarningShown;
+  public static bool GeneratingOWNav;
   public int _waitedFrames;
   public List<Transform> StaticRoots = new List<Transform>();
+  public bool HasUpdatedNavmeshAfterBuildYet;
   public List<UI_Menu> Menus = new List<UI_Menu>();
   public List<string[]> PlayerData = new List<string[]>();
   public List<Person> SpawnedPeople = new List<Person>();
   public List<SaveableBehaviour> SpawnedObjects = new List<SaveableBehaviour>();
   public List<Person> SpawnedPopulation = new List<Person>();
+  public List<Person> SpawnedPeople_World = new List<Person>();
+  public List<SaveableBehaviour> SpawnedObjects_World = new List<SaveableBehaviour>();
+  public List<bl_WorldSection> WorldSections = new List<bl_WorldSection>();
   public List<GameObject> EnableAfterSave = new List<GameObject>();
   public List<List<Person>> SpawnedPeopleOfType = new List<List<Person>>();
+  public List<List<Person>> SpawnedPeopleOfType_World = new List<List<Person>>();
   public string CurrentSavePath;
   public List<string> _CanSaveFlags = new List<string>();
   public static bool LoadMedFromHard;
@@ -397,11 +413,12 @@ public class Main : MonoBehaviour
   public List<AudioClip> ShitSounds = new List<AudioClip>();
   public static bool AlreadyStartedCombat;
   public List<bl_CraftRecipes> BuildRecs_Misc = new List<bl_CraftRecipes>();
-  public List<bl_CraftRecipes> BuildRecs_Sex = new List<bl_CraftRecipes>();
-  public List<bl_CraftRecipes> BuildRecs_Food = new List<bl_CraftRecipes>();
-  public List<bl_CraftRecipes> BuildRecs_Items = new List<bl_CraftRecipes>();
+  public List<bl_CraftRecipes> BuildRecs_Presets = new List<bl_CraftRecipes>();
+  public List<bl_CraftRecipes> BuildRecs_Furniture = new List<bl_CraftRecipes>();
+  public List<bl_CraftRecipes> BuildRecs_SexFurniture = new List<bl_CraftRecipes>();
   public List<bl_CraftRecipes> BuildRecs_Defence = new List<bl_CraftRecipes>();
   public List<bl_CraftRecipes> BuildRecs_Loaded;
+  public GameObject[] HangZonesDynamics;
 
   public static void Log(string text, bool error = false)
   {
@@ -426,9 +443,9 @@ public class Main : MonoBehaviour
       if (this._CustomBodySkins.Count - 1 <= index1)
         this._CustomBodySkins.Add(new Texture2D(0, 0));
       this._CustomBodySkins[index1].LoadImage(File.ReadAllBytes(files1[index1]));
-      if (this._CustomBodySkins[index1].width != 2048 /*0x0800*/ || this._CustomBodySkins[index1].height != 2048 /*0x0800*/)
+      if (this._CustomBodySkins[index1].width != 2048 || this._CustomBodySkins[index1].height != 2048)
       {
-        Texture2D texture2D = this.ResizeTexture(this._CustomBodySkins[index1], 2048 /*0x0800*/, 2048 /*0x0800*/);
+        Texture2D texture2D = this.ResizeTexture(this._CustomBodySkins[index1], 2048, 2048);
         this._CustomBodySkins[index1].LoadImage(Main.OnePixel);
         this._CustomBodySkins[index1] = texture2D;
       }
@@ -444,9 +461,9 @@ public class Main : MonoBehaviour
       if (this._CustomFaceSkins.Count - 1 <= index2)
         this._CustomFaceSkins.Add(new Texture2D(0, 0));
       this._CustomFaceSkins[index2].LoadImage(File.ReadAllBytes(files2[index2]));
-      if (this._CustomFaceSkins[index2].width != 1024 /*0x0400*/ || this._CustomFaceSkins[index2].height != 1024 /*0x0400*/)
+      if (this._CustomFaceSkins[index2].width != 1024 || this._CustomFaceSkins[index2].height != 1024)
       {
-        Texture2D texture2D = this.ResizeTexture(this._CustomFaceSkins[index2], 1024 /*0x0400*/, 1024 /*0x0400*/);
+        Texture2D texture2D = this.ResizeTexture(this._CustomFaceSkins[index2], 1024, 1024);
         this._CustomFaceSkins[index2].LoadImage(Main.OnePixel);
         this._CustomFaceSkins[index2] = texture2D;
       }
@@ -490,7 +507,7 @@ public class Main : MonoBehaviour
     if (string.IsNullOrEmpty(input))
       return input;
     char[] charArray = input.ToCharArray();
-    charArray[0] = (char) ((uint) charArray[0] - 32U /*0x20*/);
+    charArray[0] = (char) ((uint) charArray[0] - 32U);
     return new string(charArray);
   }
 
@@ -616,7 +633,7 @@ public class Main : MonoBehaviour
                   }
                   catch (Exception ex)
                   {
-                    Main.Log($"ERROR: Calling Init() \"{files[index3]}\"\r\n{ex.Message}\r\n{ex.StackTrace}");
+                    Main.Log("ERROR: Calling Init() \"" + files[index3] + "\"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                   }
                   try
                   {
@@ -625,23 +642,26 @@ public class Main : MonoBehaviour
                   }
                   catch (Exception ex)
                   {
-                    Main.Log($"ERROR: getting EnableMod() \"{files[index3]}\"\r\n{ex.Message}\r\n{ex.StackTrace}");
+                    Main.Log("ERROR: getting EnableMod() \"" + files[index3] + "\"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                   }
                 }
               }
               if (!flag2)
-                Main.Log($"Module \"{files[index3]}\"  \"BitchLand.Mod.Init()\" function not found, make sure it's static!");
+                Main.Log("Module \"" + files[index3] + "\"  \"BitchLand.Mod.Init()\" function not found, make sure it's static!");
             }
           }
           catch (Exception ex)
           {
-            Main.Log($"ERROR: Loading module \"{files[index3]}\"\r\n{ex.Message}\r\n{ex.StackTrace}");
+            Main.Log("ERROR: Loading module \"" + files[index3] + "\"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
           }
         }
       }
     }
     for (int index = 0; index < 10; ++index)
+    {
       this.SpawnedPeopleOfType.Add(new List<Person>());
+      this.SpawnedPeopleOfType_World.Add(new List<Person>());
+    }
     string[] files1 = Directory.GetFiles(Main.AssetsFolder + "/CustomImport/", "*.txt", SearchOption.AllDirectories);
     Main.Log("CustomImport txt files found: " + files1.Length.ToString());
     for (int index = 0; index < files1.Length; ++index)
@@ -741,6 +761,12 @@ public class Main : MonoBehaviour
     return false;
   }
 
+  public void LateUpdate()
+  {
+    for (int index = 0; index < this.MainThreads_Late.Count; ++index)
+      this.MainThreads_Late[index]();
+  }
+
   public void Update()
   {
     this.SkyRot += Time.deltaTime / 2f;
@@ -756,11 +782,19 @@ public class Main : MonoBehaviour
     if (this.AutosaveEnable && Main.Instance.GameplayMenu.gameObject.activeInHierarchy)
     {
       this.AutoSaveTimer += Time.deltaTime;
+      if (!this.AutosaveWarningShown && (double) this.AutoSaveTimer > (double) this.AutoSaveTimerMax - 3.0)
+      {
+        this.AutosaveWarningShown = true;
+        Main.Instance.GameplayMenu.ShowNotification("Autosaving...");
+      }
       if ((double) this.AutoSaveTimer > (double) this.AutoSaveTimerMax)
       {
         this.AutoSaveTimer = 0.0f;
         if (this.CanSaveGame && (UnityEngine.Object) this.Player.InteractingWith == (UnityEngine.Object) null)
+        {
+          this.AutosaveWarningShown = false;
           this.SaveGame(true);
+        }
       }
     }
     this.RandomizeFloatSafes();
@@ -803,44 +837,57 @@ public class Main : MonoBehaviour
 
   public void GenerateNav()
   {
-    if (!this.OpenWorld)
-      this.Nav.GetType().GetMethod("BuildNavMesh").Invoke((object) this.Nav, (object[]) null);
+    this.Nav.GetType().GetMethod("BuildNavMesh").Invoke((object) this.Nav, (object[]) null);
     this.MainThreads.Add(new Action(this.WaitNav));
+  }
+
+  public IEnumerator OWGenerateNav(int xChunks, int yChunks, Slider sliderInUse)
+  {
+    NavMeshDataInstance[,] navMeshChunks = new NavMeshDataInstance[xChunks, yChunks];
+    int totalChunks = xChunks * yChunks;
+    int processed = 0;
+    float chunkSize = 27f;
+    for (int x = 0; x < xChunks; ++x)
+    {
+      for (int z = 0; z < yChunks; ++z)
+      {
+        Bounds bounds = new Bounds(new Vector3((float) x * chunkSize, -100f, (float) z * chunkSize), new Vector3(chunkSize + 10f, 200f, chunkSize + 10f));
+        navMeshChunks[x, z] = NavMesh.AddNavMeshData(NavMeshBuilder.BuildNavMeshData(NavMesh.GetSettingsByID(0), this.CollectSources(bounds), bounds, Vector3.zero, Quaternion.identity));
+        ++processed;
+        if (processed % 16 == 0)
+        {
+          Main.Instance.NewGameMenu.ExtraLoadingText.text = processed.ToString() + "/" + totalChunks.ToString();
+          sliderInUse.value = (float) processed / (float) totalChunks;
+          yield return (object) null;
+        }
+      }
+    }
+    Main.GeneratingOWNav = false;
+  }
+
+  public List<NavMeshBuildSource> CollectSources(Bounds bounds)
+  {
+    List<NavMeshBuildSource> results = new List<NavMeshBuildSource>();
+    NavMeshBuilder.CollectSources(bounds, LayerMask.GetMask("Default"), NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), results);
+    return results;
   }
 
   public void WaitNav()
   {
-    if (this.OpenWorld)
+    if (this.Nav.GetType().GetProperty("navMeshData").GetValue((object) this.Nav) == null)
+      return;
+    this.NavGenerated = true;
+    for (int index = 0; index < this.OnFinallyGenerate.Count; ++index)
+      this.OnFinallyGenerate[index]();
+    this.OnFinallyGenerate.Clear();
+    Main.RunInNextFrame((Action) (() =>
     {
-      this.NavGenerated = true;
-      for (int index = 0; index < this.OnFinallyGenerate.Count; ++index)
-        this.OnFinallyGenerate[index]();
-      this.OnFinallyGenerate.Clear();
-      Main.RunInNextFrame((Action) (() =>
-      {
-        for (int index = 0; index < this.OnAfterFinallyGenerate.Count; ++index)
-          this.OnAfterFinallyGenerate[index]();
-        this.OnAfterFinallyGenerate.Clear();
-      }), 60);
-      this.MainThreads.Remove(new Action(this.WaitNav));
-    }
-    else
-    {
-      if (this.Nav.GetType().GetProperty("navMeshData").GetValue((object) this.Nav) == null)
-        return;
-      this.NavGenerated = true;
-      for (int index = 0; index < this.OnFinallyGenerate.Count; ++index)
-        this.OnFinallyGenerate[index]();
-      this.OnFinallyGenerate.Clear();
-      Main.RunInNextFrame((Action) (() =>
-      {
-        for (int index = 0; index < this.OnAfterFinallyGenerate.Count; ++index)
-          this.OnAfterFinallyGenerate[index]();
-        this.OnAfterFinallyGenerate.Clear();
-      }), 60);
-      this.MainThreads.Remove(new Action(this.WaitNav));
-      this.Bake();
-    }
+      for (int index = 0; index < this.OnAfterFinallyGenerate.Count; ++index)
+        this.OnAfterFinallyGenerate[index]();
+      this.OnAfterFinallyGenerate.Clear();
+    }), 60);
+    this.MainThreads.Remove(new Action(this.WaitNav));
+    this.Bake();
   }
 
   public void Bake()
@@ -882,6 +929,19 @@ public class Main : MonoBehaviour
     }
   }
 
+  public void GarbageCollect()
+  {
+    this.SpawnedPeople.RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    this.SpawnedObjects.RemoveAll((Predicate<SaveableBehaviour>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    this.SpawnedPeople_World.RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    this.SpawnedObjects_World.RemoveAll((Predicate<SaveableBehaviour>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    for (int index = 0; index < this.SpawnedPeopleOfType.Count; ++index)
+      this.SpawnedPeopleOfType[index].RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    for (int index = 0; index < this.SpawnedPeopleOfType_World.Count; ++index)
+      this.SpawnedPeopleOfType_World[index].RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    GC.Collect();
+  }
+
   public virtual void OpenMenu(string menu)
   {
     this.MainMenuCam.gameObject.SetActive(false);
@@ -894,7 +954,7 @@ public class Main : MonoBehaviour
         break;
       }
     }
-    GC.Collect();
+    this.GarbageCollect();
   }
 
   public virtual void CloseMenus()
@@ -931,7 +991,10 @@ public class Main : MonoBehaviour
     Main.Instance.GameplayMenu.SaveButton.interactable = this.CanSaveGame;
   }
 
-  public bool CanSaveGame => this._CanSaveFlags.Count == 0;
+  public bool CanSaveGame
+  {
+    get => this._CanSaveFlags.Count == 0 && !this.GameplayMenu.JournalMenu.activeSelf;
+  }
 
   public void SaveGame(bool autosave = false)
   {
@@ -949,7 +1012,7 @@ public class Main : MonoBehaviour
       int num = 0;
       do
       {
-        this.CurrentSavePath = $"{Main.AssetsFolder}/Saves/{num++.ToString("0000")}/";
+        this.CurrentSavePath = Main.AssetsFolder + "/Saves/" + num++.ToString("0000") + "/";
       }
       while (Directory.Exists(this.CurrentSavePath));
     }
@@ -971,7 +1034,7 @@ public class Main : MonoBehaviour
     string[] contents = new string[6]
     {
       DateTime.Now.ToString(),
-      $"({Main.Instance.Player.Personality.ToString()}) {Main.Instance.Player.Name}",
+      "(" + Main.Instance.Player.Personality.ToString() + ") " + Main.Instance.Player.Name,
       "Mission: " + str1,
       null,
       null,
@@ -980,7 +1043,7 @@ public class Main : MonoBehaviour
     string str2 = Main.Instance.Player.Perks.Count.ToString();
     int num1 = UnityEngine.Object.FindObjectsOfType<misc_Perk>(true).Length;
     string str3 = num1.ToString();
-    contents[3] = $"{str2}/{str3} Level up perks";
+    contents[3] = str2 + "/" + str3 + " Level up perks";
     contents[4] = "Sex unknown times";
     contents[5] = Main.Instance.Player is Girl ? (Main.Instance.Player as Girl).HadPregnancies.ToString() + " Pregnancies" : "unknown Impregnations";
     File.WriteAllLines(path, contents);
@@ -1037,7 +1100,7 @@ public class Main : MonoBehaviour
     string str7 = num1.ToString();
     stringList6.Add(str7);
     for (int index = 0; index < Main.Instance.GlobalVars.Count; ++index)
-      stringList5.Add($"{Main.Instance.GlobalVars.Keys[index]};{Main.Instance.GlobalVars.Values[index]}");
+      stringList5.Add(Main.Instance.GlobalVars.Keys[index] + ";" + Main.Instance.GlobalVars.Values[index]);
     List<string> stringList7 = stringList5;
     num1 = Main.Instance.GameplayMenu.Relationships.Count;
     string str8 = num1.ToString();
@@ -1124,8 +1187,15 @@ public class Main : MonoBehaviour
     for (int index = 0; index < this.SpawnedPeople.Count; ++index)
     {
       if (!((UnityEngine.Object) this.SpawnedPeople[index] == (UnityEngine.Object) null) && !this.SpawnedPeople[index].IsPlayer && !this.SpawnedPeople[index].DontSaveInMain)
-        this.SpawnedPeople[index].SaveToFile($"{this.CurrentSavePath}{this.SpawnedPeople[index].name}{this.SpawnedPeople[index].WorldSaveID}{(this.SpawnedPeople[index] is Girl ? "_f" : "_m")}.chr");
+        this.SpawnedPeople[index].SaveToFile(this.CurrentSavePath + this.SpawnedPeople[index].name + this.SpawnedPeople[index].WorldSaveID + (this.SpawnedPeople[index] is Girl ? "_f" : "_m") + ".chr");
     }
+    List<SaveableBehaviour> saveableBehaviourList = new List<SaveableBehaviour>();
+    for (int index = 0; index < this.SpawnedObjects.Count; ++index)
+    {
+      if (!saveableBehaviourList.Contains(this.SpawnedObjects[index]))
+        saveableBehaviourList.Add(this.SpawnedObjects[index]);
+    }
+    this.SpawnedObjects = saveableBehaviourList;
     for (int index = 0; index < this.SpawnedObjects.Count; ++index)
     {
       if (!((UnityEngine.Object) this.SpawnedObjects[index] == (UnityEngine.Object) null) && !this.SpawnedObjects[index].DontSaveInMain && this.SpawnedObjects[index].CanSave && this.SpawnedObjects[index].gameObject.activeInHierarchy)
@@ -1133,7 +1203,7 @@ public class Main : MonoBehaviour
         string str19 = "null";
         if (this.SpawnedObjects[index].WorldSaveID != null && this.SpawnedObjects[index].WorldSaveID.Length > 0)
           str19 = this.SpawnedObjects[index].WorldSaveID;
-        this.SpawnedObjects[index].SaveToFile($"{this.CurrentSavePath}{str19}_{index.ToString()}.obj");
+        this.SpawnedObjects[index].SaveToFile(this.CurrentSavePath + str19 + "_" + index.ToString() + ".obj");
       }
     }
     for (int index = 0; index < Main.Instance.EnableAfterSave.Count; ++index)
@@ -1409,7 +1479,7 @@ public class Main : MonoBehaviour
           }
         }
       }
-label_39:
+label_45:
       for (int index3 = 0; index3 < files2.Length; ++index3)
       {
         GameObject prefab = (GameObject) null;
@@ -1422,12 +1492,26 @@ label_39:
           Main.Log("_curWorldID is null");
           if (Data.Length > 3 && Data[1] != null && Data[1].Length != 0)
           {
-            for (int index4 = 0; index4 < Main.Instance.AllPrefabs.Count; ++index4)
+            if (Data[1].StartsWith("PLAN_"))
             {
-              if (Main.Instance.AllPrefabs[index4].name == Data[1])
+              for (int index4 = 0; index4 < Main.Instance.Prefabs_Plans.Count; ++index4)
               {
-                prefab = Main.Instance.AllPrefabs[index4];
-                break;
+                if (Main.Instance.Prefabs_Plans[index4].name == Data[1])
+                {
+                  prefab = Main.Instance.Prefabs_Plans[index4];
+                  break;
+                }
+              }
+            }
+            else
+            {
+              for (int index5 = 0; index5 < Main.Instance.AllPrefabs.Count; ++index5)
+              {
+                if (Main.Instance.AllPrefabs[index5].name == Data[1])
+                {
+                  prefab = Main.Instance.AllPrefabs[index5];
+                  break;
+                }
               }
             }
             if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
@@ -1444,13 +1528,13 @@ label_39:
         }
         else
         {
-          for (int index5 = 0; index5 < Main.Instance.SpawnedObjects.Count; ++index5)
+          for (int index6 = 0; index6 < Main.Instance.SpawnedObjects.Count; ++index6)
           {
-            if (Main.Instance.SpawnedObjects[index5].WorldSaveID == str)
+            if (Main.Instance.SpawnedObjects[index6].WorldSaveID == str)
             {
-              Main.Instance.SpawnedObjects[index5].gameObject.SetActive(true);
-              Main.Instance.SpawnedObjects[index5].sd_LoadData(Data);
-              goto label_39;
+              Main.Instance.SpawnedObjects[index6].gameObject.SetActive(true);
+              Main.Instance.SpawnedObjects[index6].sd_LoadData(Data);
+              goto label_45;
             }
           }
           Debug.Log((object) "_curWorldID was NOT found");
@@ -1493,14 +1577,14 @@ label_39:
       if (File.Exists(this.CurrentSavePath + "data.bl"))
       {
         int num = int.Parse(_data[_dataindex++]);
-        for (int index6 = 0; index6 < num; ++index6)
+        for (int index7 = 0; index7 < num; ++index7)
         {
           string str = _data[_dataindex++];
-          for (int index7 = 0; index7 < Main.Instance.SpawnedPeople.Count; ++index7)
+          for (int index8 = 0; index8 < Main.Instance.SpawnedPeople.Count; ++index8)
           {
-            if (Main.Instance.SpawnedPeople[index7].WorldSaveID == str)
+            if (Main.Instance.SpawnedPeople[index8].WorldSaveID == str)
             {
-              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople[index7]);
+              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople[index8]);
               break;
             }
           }
@@ -1528,64 +1612,64 @@ label_39:
       string[] strArray2 = File.ReadAllLines(this.CurrentSavePath + "missions.txt");
       int num1 = 0;
       string[] strArray3 = strArray2;
-      int index8 = num1;
-      int num2 = index8 + 1;
-      _saveVersion = int.Parse(strArray3[index8]);
+      int index9 = num1;
+      int num2 = index9 + 1;
+      _saveVersion = int.Parse(strArray3[index9]);
       string[] strArray4 = strArray2;
-      int index9 = num2;
-      int num3 = index9 + 1;
-      int num4 = int.Parse(strArray4[index9]);
+      int index10 = num2;
+      int num3 = index10 + 1;
+      int num4 = int.Parse(strArray4[index10]);
       Main.Log("_allMissionsCount " + num4.ToString());
-      for (int index10 = 0; index10 < num4; ++index10)
+      for (int index11 = 0; index11 < num4; ++index11)
       {
-        Main.Log("_allMissionsCount i " + index10.ToString());
-        Mission allMission = Main.Instance.AllMissions[index10];
+        Main.Log("_allMissionsCount i " + index11.ToString());
+        Mission allMission = Main.Instance.AllMissions[index11];
         string[] strArray5 = strArray2;
-        int index11 = num3;
-        int num5 = index11 + 1;
-        int num6 = strArray5[index11] == "1" ? 1 : 0;
+        int index12 = num3;
+        int num5 = index12 + 1;
+        int num6 = strArray5[index12] == "1" ? 1 : 0;
         allMission.CompletedMission = num6 != 0;
-        Main.Log("CompletedMission " + Main.Instance.AllMissions[index10].CompletedMission.ToString());
+        Main.Log("CompletedMission " + Main.Instance.AllMissions[index11].CompletedMission.ToString());
         string[] strArray6 = strArray2;
-        int index12 = num5;
-        int num7 = index12 + 1;
-        if (strArray6[index12] != "None")
+        int index13 = num5;
+        int num7 = index13 + 1;
+        if (strArray6[index13] != "None")
         {
-          int index13 = int.Parse(strArray2[num7 - 1]);
-          Main.Log("_curgoal " + index13.ToString());
-          if (index13 != 0 && index13 < Main.Instance.AllMissions[index10].Goals.Count)
+          int index14 = int.Parse(strArray2[num7 - 1]);
+          Main.Log("_curgoal " + index14.ToString());
+          if (index14 != 0 && index14 < Main.Instance.AllMissions[index11].Goals.Count)
           {
-            Main.Instance.AllMissions[index10].CurrentGoal = Main.Instance.AllMissions[index10].Goals[index13];
-            Main.Instance.AllMissions[index10].CurrentGoalIndex = index13;
+            Main.Instance.AllMissions[index11].CurrentGoal = Main.Instance.AllMissions[index11].Goals[index14];
+            Main.Instance.AllMissions[index11].CurrentGoalIndex = index14;
           }
         }
         else
           Main.Log("_curgoal None");
         string[] strArray7 = strArray2;
-        int index14 = num7;
-        num3 = index14 + 1;
-        int num8 = int.Parse(strArray7[index14]);
+        int index15 = num7;
+        num3 = index15 + 1;
+        int num8 = int.Parse(strArray7[index15]);
         Main.Log("_goalsCount " + num8.ToString());
-        for (int index15 = 0; index15 < num8; ++index15)
+        for (int index16 = 0; index16 < num8; ++index16)
         {
-          if (index15 >= Main.Instance.AllMissions[index10].Goals.Count)
+          if (index16 >= Main.Instance.AllMissions[index11].Goals.Count)
           {
-            Main.Log($"broke at {index15.ToString()} / {Main.Instance.AllMissions[index10].Goals.Count.ToString()}");
+            Main.Log("broke at " + index16.ToString() + " / " + Main.Instance.AllMissions[index11].Goals.Count.ToString());
             num3 += 2;
           }
           else
           {
-            MissionGoal goal1 = Main.Instance.AllMissions[index10].Goals[index15];
+            MissionGoal goal1 = Main.Instance.AllMissions[index11].Goals[index16];
             string[] strArray8 = strArray2;
-            int index16 = num3;
-            int num9 = index16 + 1;
-            int num10 = strArray8[index16] == "1" ? 1 : 0;
+            int index17 = num3;
+            int num9 = index17 + 1;
+            int num10 = strArray8[index17] == "1" ? 1 : 0;
             goal1.Completed = num10 != 0;
-            MissionGoal goal2 = Main.Instance.AllMissions[index10].Goals[index15];
+            MissionGoal goal2 = Main.Instance.AllMissions[index11].Goals[index16];
             string[] strArray9 = strArray2;
-            int index17 = num9;
-            num3 = index17 + 1;
-            int num11 = strArray9[index17] == "1" ? 1 : 0;
+            int index18 = num9;
+            num3 = index18 + 1;
+            int num11 = strArray9[index18] == "1" ? 1 : 0;
             goal2.Failed = num11 != 0;
           }
         }
@@ -1594,26 +1678,26 @@ label_39:
       int num12 = int.Parse(strArray2[num3++]);
       Main.Log("_curMissionsCount " + num12.ToString());
       this._MissionsToinit.Clear();
-      for (int index18 = 0; index18 < num12; ++index18)
+      for (int index19 = 0; index19 < num12; ++index19)
       {
-        Main.Log("_curMissionsCount i " + index18.ToString());
-        int index19 = int.Parse(strArray2[num3++]);
-        Main.Instance.GameplayMenu.CurrentMissions.Add(Main.Instance.AllMissions[index19]);
-        Main.Log("init AllMissions[" + index19.ToString());
-        if (!this._MissionsToinit.Contains(Main.Instance.AllMissions[index19]))
-          this._MissionsToinit.Add(Main.Instance.AllMissions[index19]);
+        Main.Log("_curMissionsCount i " + index19.ToString());
+        int index20 = int.Parse(strArray2[num3++]);
+        Main.Instance.GameplayMenu.CurrentMissions.Add(Main.Instance.AllMissions[index20]);
+        Main.Log("init AllMissions[" + index20.ToString());
+        if (!this._MissionsToinit.Contains(Main.Instance.AllMissions[index20]))
+          this._MissionsToinit.Add(Main.Instance.AllMissions[index20]);
       }
       Main.Log("end2 ");
-      int index20 = int.Parse(strArray2[num3++]);
-      Main.Log("_curMission " + index20.ToString());
-      if (index20 != -1)
-        Main.Instance.GameplayMenu.CurrentMission = Main.Instance.AllMissions[index20];
+      int index21 = int.Parse(strArray2[num3++]);
+      Main.Log("_curMission " + index21.ToString());
+      if (index21 != -1)
+        Main.Instance.GameplayMenu.CurrentMission = Main.Instance.AllMissions[index21];
       Main.RunInNextFrame((Action) (() =>
       {
         Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
         Main.Instance.OpenMenu("Gameplay");
-        for (int index21 = 0; index21 < _spawnedPpl.Count; ++index21)
-          _spawnedPpl[index21].RemoveMoveBlocker("LOADING GRRRR");
+        for (int index22 = 0; index22 < _spawnedPpl.Count; ++index22)
+          _spawnedPpl[index22].RemoveMoveBlocker("LOADING GRRRR");
       }));
     }));
     if (File.Exists(this.CurrentSavePath + "Collectibles.txt"))
@@ -1624,59 +1708,59 @@ label_39:
       for (int index = 0; index < num13; ++index)
         Main.Instance.GameplayMenu.HasBitchNotes10[index] = strArray10[num14++] == "1";
       string[] strArray11 = strArray10;
-      int index22 = num14;
-      int num15 = index22 + 1;
-      int num16 = int.Parse(strArray11[index22]);
-      for (int index23 = 0; index23 < num16; ++index23)
-        Main.Instance.GameplayMenu.HasBitchNotes20[index23] = strArray10[num15++] == "1";
+      int index23 = num14;
+      int num15 = index23 + 1;
+      int num16 = int.Parse(strArray11[index23]);
+      for (int index24 = 0; index24 < num16; ++index24)
+        Main.Instance.GameplayMenu.HasBitchNotes20[index24] = strArray10[num15++] == "1";
       string[] strArray12 = strArray10;
-      int index24 = num15;
-      int num17 = index24 + 1;
-      int num18 = int.Parse(strArray12[index24]);
-      for (int index25 = 0; index25 < num18; ++index25)
-        Main.Instance.GameplayMenu.HasBitchNotes50[index25] = strArray10[num17++] == "1";
+      int index25 = num15;
+      int num17 = index25 + 1;
+      int num18 = int.Parse(strArray12[index25]);
+      for (int index26 = 0; index26 < num18; ++index26)
+        Main.Instance.GameplayMenu.HasBitchNotes50[index26] = strArray10[num17++] == "1";
       string[] strArray13 = strArray10;
-      int index26 = num17;
-      int num19 = index26 + 1;
-      int num20 = int.Parse(strArray13[index26]);
-      for (int index27 = 0; index27 < num20; ++index27)
-        Main.Instance.GameplayMenu.HasBitchNotes100[index27] = strArray10[num19++] == "1";
+      int index27 = num17;
+      int num19 = index27 + 1;
+      int num20 = int.Parse(strArray13[index27]);
+      for (int index28 = 0; index28 < num20; ++index28)
+        Main.Instance.GameplayMenu.HasBitchNotes100[index28] = strArray10[num19++] == "1";
       string[] strArray14 = strArray10;
-      int index28 = num19;
-      int num21 = index28 + 1;
-      int num22 = int.Parse(strArray14[index28]);
-      for (int index29 = 0; index29 < num22; ++index29)
-        Main.Instance.GameplayMenu.HasBitchNotes1000[index29] = strArray10[num21++] == "1";
+      int index29 = num19;
+      int num21 = index29 + 1;
+      int num22 = int.Parse(strArray14[index29]);
+      for (int index30 = 0; index30 < num22; ++index30)
+        Main.Instance.GameplayMenu.HasBitchNotes1000[index30] = strArray10[num21++] == "1";
       string[] strArray15 = strArray10;
-      int index30 = num21;
-      int num23 = index30 + 1;
-      int num24 = int.Parse(strArray15[index30]);
-      for (int index31 = 0; index31 < num24; ++index31)
-        Main.Instance.GameplayMenu.HasBitchNotesProt[index31] = strArray10[num23++] == "1";
+      int index31 = num21;
+      int num23 = index31 + 1;
+      int num24 = int.Parse(strArray15[index31]);
+      for (int index32 = 0; index32 < num24; ++index32)
+        Main.Instance.GameplayMenu.HasBitchNotesProt[index32] = strArray10[num23++] == "1";
       string[] strArray16 = strArray10;
-      int index32 = num23;
-      int num25 = index32 + 1;
-      int num26 = int.Parse(strArray16[index32]);
-      for (int index33 = 0; index33 < num26; ++index33)
-        Main.Instance.GameplayMenu.HasPostersBC[index33] = strArray10[num25++] == "1";
+      int index33 = num23;
+      int num25 = index33 + 1;
+      int num26 = int.Parse(strArray16[index33]);
+      for (int index34 = 0; index34 < num26; ++index34)
+        Main.Instance.GameplayMenu.HasPostersBC[index34] = strArray10[num25++] == "1";
       string[] strArray17 = strArray10;
-      int index34 = num25;
-      int num27 = index34 + 1;
-      int num28 = int.Parse(strArray17[index34]);
-      for (int index35 = 0; index35 < num28; ++index35)
-        Main.Instance.GameplayMenu.HasPostersBCLeg[index35] = strArray10[num27++] == "1";
+      int index35 = num25;
+      int num27 = index35 + 1;
+      int num28 = int.Parse(strArray17[index35]);
+      for (int index36 = 0; index36 < num28; ++index36)
+        Main.Instance.GameplayMenu.HasPostersBCLeg[index36] = strArray10[num27++] == "1";
       string[] strArray18 = strArray10;
-      int index36 = num27;
-      int num29 = index36 + 1;
-      int num30 = int.Parse(strArray18[index36]);
-      for (int index37 = 0; index37 < num30; ++index37)
-        Main.Instance.GameplayMenu.HasPostersBCBEL[index37] = strArray10[num29++] == "1";
+      int index37 = num27;
+      int num29 = index37 + 1;
+      int num30 = int.Parse(strArray18[index37]);
+      for (int index38 = 0; index38 < num30; ++index38)
+        Main.Instance.GameplayMenu.HasPostersBCBEL[index38] = strArray10[num29++] == "1";
       string[] strArray19 = strArray10;
-      int index38 = num29;
-      int num31 = index38 + 1;
-      int num32 = int.Parse(strArray19[index38]);
-      for (int index39 = 0; index39 < num32; ++index39)
-        Main.Instance.GameplayMenu.HasPostersBCCap[index39] = strArray10[num31++] == "1";
+      int index39 = num29;
+      int num31 = index39 + 1;
+      int num32 = int.Parse(strArray19[index39]);
+      for (int index40 = 0; index40 < num32; ++index40)
+        Main.Instance.GameplayMenu.HasPostersBCCap[index40] = strArray10[num31++] == "1";
     }
     Main.Instance.NewGameMenu.GenerateDefaultsIDsForThisInstance();
     Main.RunInNextFrame(new Action(this.GenerateNav), 3);
@@ -1799,7 +1883,7 @@ label_39:
     string assetName,
     Main.CustomBundleAssetType assetType)
   {
-    Main.Log($"RegisterCustomBundle: {assetName} - {bundleName}");
+    Main.Log("RegisterCustomBundle: " + assetName + " - " + bundleName);
     this.RegisteredCustomBundles.Add(new Main.RegisteredCustomBundle()
     {
       BundleFileName = bundleName,
@@ -1831,7 +1915,7 @@ label_39:
       }
       catch (Exception ex)
       {
-        Main.Log($"SpawnFromCustomBundle ERROR: {ex.Message}\n{ex.StackTrace}");
+        Main.Log("SpawnFromCustomBundle ERROR: " + ex.Message + "\n" + ex.StackTrace);
       }
     }
     return (GameObject) null;
@@ -1849,7 +1933,7 @@ label_39:
 
   public void ReadTextLinesIn(string language)
   {
-    this._AllTextLines = File.ReadAllLines($"{Main.AssetsFolder}/Data/TextLines/{language}.txt");
+    this._AllTextLines = File.ReadAllLines(Main.AssetsFolder + "/Data/TextLines/" + language + ".txt");
     int num = 0;
     while (num < this._AllTextLines.Length)
     {
@@ -1933,7 +2017,12 @@ label_39:
       if ((UnityEngine.Object) saveableBehaviour == (UnityEngine.Object) null)
         saveableBehaviour = gameObject.GetComponent<SaveableBehaviour>();
       if ((UnityEngine.Object) saveableBehaviour != (UnityEngine.Object) null)
-        Main.Instance.SpawnedObjects.Add(saveableBehaviour);
+      {
+        if (Main.Instance.OpenWorld)
+          Main.Instance.SpawnedObjects_World.Add(saveableBehaviour);
+        else
+          Main.Instance.SpawnedObjects.Add(saveableBehaviour);
+      }
     }
     return gameObject;
   }
@@ -1954,7 +2043,7 @@ label_39:
   {
     char[] chArray = new char[length];
     for (int index = 0; index < length; ++index)
-      chArray[index] = (char) (48 /*0x30*/ + UnityEngine.Random.Range(0, 10));
+      chArray[index] = (char) (48 + UnityEngine.Random.Range(0, 10));
     return new string(chArray);
   }
 
@@ -1970,12 +2059,12 @@ label_39:
 
   public static string Vector32Str(Vector3 value)
   {
-    return $"({Main.Float2Str(value.x)},{Main.Float2Str(value.y)},{Main.Float2Str(value.z)})";
+    return "(" + Main.Float2Str(value.x) + "," + Main.Float2Str(value.y) + "," + Main.Float2Str(value.z) + ")";
   }
 
   public static string Color2Str(Color value)
   {
-    return $"({Main.Float2Str(value.r)},{Main.Float2Str(value.g)},{Main.Float2Str(value.b)},{Main.Float2Str(value.a)})";
+    return "(" + Main.Float2Str(value.r) + "," + Main.Float2Str(value.g) + "," + Main.Float2Str(value.b) + "," + Main.Float2Str(value.a) + ")";
   }
 
   public static void AdjustCharacterPosition(
@@ -2075,7 +2164,7 @@ label_39:
 
   public static bool GeneBoolSelect(bool value1, bool value2, float probability = 0.5f)
   {
-    return value1 == value2 ? value1 : (double) UnityEngine.Random.Range(0, 1) < (double) probability;
+    return value1 == value2 ? value1 : (double) UnityEngine.Random.Range(0.0f, 1f) < (double) probability;
   }
 
   public static float GeneSelect(float value1, float value2, bool randIsHalfVal = false)
@@ -2179,7 +2268,7 @@ label_39:
         randomFaceRange.GetRangesFrom(parent1.Neck, parent2.Neck);
         randomFaceRange.ApplyTo(component.Neck);
         randomFaceRange.GetRangesFrom(parent1.BoobLeft, parent2.BoobLeft);
-        randomFaceRange.ApplyTo(component.BoobLeft, component.BoobRight);
+        randomFaceRange.ApplyTo(component.BoobLeft, component.BoobRight, rotationGlitchFix: true);
         randomFaceRange.GetRangesFrom(parent1.NippleLeft, parent2.NippleLeft);
         randomFaceRange.ApplyTo(component.NippleLeft, component.NippleRight);
         randomFaceRange.GetRangesFrom(parent1.Hips, parent2.Hips);
@@ -2226,7 +2315,7 @@ label_39:
     bool flag5 = false;
     List<e_Fetish> list = Enum.GetValues(typeof (e_Fetish)).Cast<e_Fetish>().ToList<e_Fetish>();
     list.Remove(e_Fetish.MAX);
-    Person.Shuffle<e_Fetish>(list);
+    Person.Shuffle<e_Fetish>(ref list);
     for (int index = 0; index < num3; ++index)
     {
       if (list[index] == e_Fetish.Clean || list[index] == e_Fetish.Dirty)
@@ -2294,11 +2383,29 @@ label_39:
         part.localScale = new Vector3((double) this.SclMin.x == (double) this.SclMax.x ? part.localScale.x : UnityEngine.Random.Range(this.SclMin.x, this.SclMax.x), (double) this.SclMin.y == (double) this.SclMax.y ? part.localScale.y : UnityEngine.Random.Range(this.SclMin.y, this.SclMax.y), (double) this.SclMin.z == (double) this.SclMax.z ? part.localScale.z : UnityEngine.Random.Range(this.SclMin.z, this.SclMax.z));
     }
 
-    public void ApplyTo(Transform leftPart, Transform rightPart, bool wholeScale = false)
+    public void ApplyTo(
+      Transform leftPart,
+      Transform rightPart,
+      bool wholeScale = false,
+      bool rotationGlitchFix = false)
     {
       leftPart.localPosition = new Vector3((double) this.PosMin.x == (double) this.PosMax.x ? leftPart.localPosition.x : UnityEngine.Random.Range(this.PosMin.x, this.PosMax.x), (double) this.PosMin.y == (double) this.PosMax.y ? leftPart.localPosition.y : UnityEngine.Random.Range(this.PosMin.y, this.PosMax.y), (double) this.PosMin.z == (double) this.PosMax.z ? leftPart.localPosition.z : UnityEngine.Random.Range(this.PosMin.z, this.PosMax.z));
       rightPart.localPosition = new Vector3(-leftPart.localPosition.x, leftPart.localPosition.y, leftPart.localPosition.z);
-      leftPart.localEulerAngles = new Vector3((double) this.RotMin.x == (double) this.RotMax.x ? leftPart.localEulerAngles.x : UnityEngine.Random.Range(this.RotMin.x, this.RotMax.x), (double) this.RotMin.y == (double) this.RotMax.y ? leftPart.localEulerAngles.y : UnityEngine.Random.Range(this.RotMin.y, this.RotMax.y), (double) this.RotMin.z == (double) this.RotMax.z ? leftPart.localEulerAngles.z : UnityEngine.Random.Range(this.RotMin.z, this.RotMax.z));
+      if (rotationGlitchFix)
+      {
+        float[] numArray = new float[6]
+        {
+          (double) this.RotMin.x < 180.0 ? this.RotMin.x : this.RotMin.x - 360f,
+          (double) this.RotMax.x < 180.0 ? this.RotMax.x : this.RotMax.x - 360f,
+          (double) this.RotMin.y < 180.0 ? this.RotMin.y : this.RotMin.y - 360f,
+          (double) this.RotMax.y < 180.0 ? this.RotMax.y : this.RotMax.y - 360f,
+          (double) this.RotMin.z < 180.0 ? this.RotMin.z : this.RotMin.z - 360f,
+          (double) this.RotMax.z < 180.0 ? this.RotMax.z : this.RotMax.z - 360f
+        };
+        leftPart.localEulerAngles = new Vector3((double) this.RotMin.x == (double) this.RotMax.x ? leftPart.localEulerAngles.x : UnityEngine.Random.Range(numArray[0], numArray[1]), (double) this.RotMin.y == (double) this.RotMax.y ? leftPart.localEulerAngles.y : UnityEngine.Random.Range(numArray[2], numArray[3]), (double) this.RotMin.z == (double) this.RotMax.z ? leftPart.localEulerAngles.z : UnityEngine.Random.Range(numArray[4], numArray[5]));
+      }
+      else
+        leftPart.localEulerAngles = new Vector3((double) this.RotMin.x == (double) this.RotMax.x ? leftPart.localEulerAngles.x : UnityEngine.Random.Range(this.RotMin.x, this.RotMax.x), (double) this.RotMin.y == (double) this.RotMax.y ? leftPart.localEulerAngles.y : UnityEngine.Random.Range(this.RotMin.y, this.RotMax.y), (double) this.RotMin.z == (double) this.RotMax.z ? leftPart.localEulerAngles.z : UnityEngine.Random.Range(this.RotMin.z, this.RotMax.z));
       rightPart.localEulerAngles = new Vector3(leftPart.localEulerAngles.x, -leftPart.localEulerAngles.y, -leftPart.localEulerAngles.z);
       if (wholeScale)
       {

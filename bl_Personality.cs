@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_Personality
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -15,6 +15,8 @@ public class bl_Personality : MonoBehaviour
   public string WalkAnim;
   public float HowLongWantsSex;
   public int PrevHelloRandom = -1;
+  public e_EscapeRaction EscapeRaction;
+  public e_WorkEffeciency WorkEffeciency;
   public AudioClip[] Voice_Hello;
   public AudioClip[] Voice_SexFollow;
   public AudioClip[] Voice_SexLead;
@@ -96,7 +98,7 @@ public class bl_Personality : MonoBehaviour
     {
       Main.GetLine(46),
       Main.GetLine(47),
-      Main.GetLine(48 /*0x30*/)
+      Main.GetLine(48)
     };
     lineIndex = UnityEngine.Random.Range(0, strArray.Length);
     return strArray[lineIndex];
@@ -108,7 +110,7 @@ public class bl_Personality : MonoBehaviour
     {
       Main.GetLine(28),
       Main.GetLine(29),
-      Main.GetLine(31 /*0x1F*/)
+      Main.GetLine(31)
     };
     lineIndex = UnityEngine.Random.Range(0, strArray.Length);
     return strArray[lineIndex];
@@ -159,9 +161,9 @@ public class bl_Personality : MonoBehaviour
 
   public virtual void OnSeeNakedPerson(Person thisPerson, Person person, bool forceAnyway = false)
   {
-    if (person.TheHealth.dead || person.TheHealth.Incapacitated || !Main.Instance.FreeWorldPatch && thisPerson.IsPlayerDescendant && person.IsPlayer || thisPerson.CurrentScheduleTask == null || !(thisPerson.CurrentScheduleTask.IDName != "GoForceNakedPerson") || (double) UnityEngine.Random.Range(0.0f, 1f) <= 0.5)
+    if (person.TheHealth.dead || person.TheHealth.Incapacitated || thisPerson.IsPlayer || !Main.Instance.FreeWorldPatch && thisPerson.IsPlayerDescendant && person.IsPlayer || thisPerson.CurrentScheduleTask == null || !(thisPerson.CurrentScheduleTask.IDName != "GoForceNakedPerson") || (double) UnityEngine.Random.Range(0.0f, 1f) <= 0.5)
       return;
-    thisPerson.navMesh.stoppingDistance = 0.5f;
+    thisPerson.NavmeshProxDistance = 1f;
     thisPerson.StartScheduleTask(new Person.ScheduleTask()
     {
       IDName = "GoForceNakedPerson",
@@ -228,7 +230,7 @@ public class bl_Personality : MonoBehaviour
             person.States[15] = true;
             break;
           case 5:
-            person.States[16 /*0x10*/] = true;
+            person.States[16] = true;
             break;
         }
       })

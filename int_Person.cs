@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_Person
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -18,6 +18,8 @@ public class int_Person : Interactible
   public bool _Waiting;
   public bool FollowCheck;
   public bool _HasSexControl;
+  public Transform TheLeashRoot;
+  public Transform TheLeashTiedSpot;
 
   public override void Awake()
   {
@@ -35,6 +37,8 @@ public class int_Person : Interactible
 
   public override void Interact(Person person)
   {
+    if (this.ThisPerson.CurrentScheduleTask != null && this.ThisPerson.CurrentScheduleTask.IDName == "escape" && !this.ThisPerson.Restrained)
+      return;
     this.ThisPerson.CreatePersonRelationship();
     switch (this._PersonInteractType)
     {
@@ -44,6 +48,11 @@ public class int_Person : Interactible
         break;
       case PersonInteractType.Sex:
         Main.Instance.SexScene.SpawnSexScene(2, 0, Main.Instance.Player, this.ThisPerson);
+        break;
+      case PersonInteractType.NonChat:
+        if (!((UnityEngine.Object) this.StartTalkMono != (UnityEngine.Object) null))
+          break;
+        this.StartTalkMono.Invoke(this.StartTalkFunc, 0.0f);
         break;
     }
   }
@@ -67,9 +76,13 @@ public class int_Person : Interactible
     Main.Instance.Player.UserControl.StopMoving();
     UI_Gameplay gameplayMenu = Main.Instance.GameplayMenu;
     int lineIndex = 0;
-    string subText = this.ThisPerson.PersonalityData.Reply_Hello(out lineIndex);
+    string str1 = this.ThisPerson.PersonalityData.Reply_Hello(out lineIndex);
+    Action action = new Action(this.DefaultTalk_options);
+    if (this.ThisPerson.PersonType.ThisType == Person_Type.Prisioner && Main.Instance.OpenWorld)
+      action = new Action(this.RestrainedInteraction_options);
+    string subText = str1;
     AudioClip voiceLine = this.ThisPerson.PersonalityData.Voice_Hello[lineIndex];
-    Action after = new Action(this.DefaultTalk_options);
+    Action after = action;
     gameplayMenu.DisplaySubtitle(subText, voiceLine, after);
     bool flag = true;
     if (!((UnityEngine.Object) Main.Instance.GameplayMenu.ShortDesc != (UnityEngine.Object) null & flag))
@@ -81,17 +94,17 @@ public class int_Person : Interactible
       Main.Instance.GameplayMenu.ShortPositiveSlider.fillAmount = (float) this.ThisPerson.Favor / 100f;
     else
       Main.Instance.GameplayMenu.ShortNegativeSlider.fillAmount = (float) -this.ThisPerson.Favor / 100f;
-    string str1 = (this.ThisPerson.Penis.transform.localScale.x * 10f).ToString("###") + "cm Penis";
-    string str2 = "None";
+    string str2 = (this.ThisPerson.Penis.transform.localScale.x * 10f).ToString("###") + "cm Penis";
+    string str3 = "None";
     if (this.ThisPerson.Fetishes.Count > 0)
     {
-      str2 = this.ThisPerson.Fetishes[0].ToString();
+      str3 = this.ThisPerson.Fetishes[0].ToString();
       for (int index = 1; index < this.ThisPerson.Fetishes.Count; ++index)
-        str2 = $"{str2}, {this.ThisPerson.Fetishes[index].ToString()}";
+        str3 = str3 + ", " + this.ThisPerson.Fetishes[index].ToString();
       if (!Main.Instance.ScatContent)
-        str2 = str2.Replace("Scat", "*");
+        str3 = str3.Replace("Scat", "*");
     }
-    Main.Instance.GameplayMenu.ShortPersonDesc.text = $"{this.ThisPerson.PersonType.ThisType.ToString()} ({this.ThisPerson.Personality.ToString()})\nSexed {this.ThisPerson.TimesSexedPlayer.ToString()} times\n{str2}\n{(this.ThisPerson.transform.localScale.y + 0.75f).ToString("##.##")} Meters {UI_Gameplay.MetersToFeetAndInches(this.ThisPerson.transform.localScale.y + 0.75f)}\n{(this.ThisPerson is Girl ? (((Girl) this.ThisPerson).Futa ? str1 : "No Penis") : str1)}\n{(this.ThisPerson is Girl ? (((Girl) this.ThisPerson).Pregnant ? "Pregnancy: " + ((Girl) this.ThisPerson).PregnancyDisplayPercent : "Not Pregnant") : string.Empty)}";
+    Main.Instance.GameplayMenu.ShortPersonDesc.text = this.ThisPerson.PersonType.ThisType.ToString() + " (" + this.ThisPerson.Personality.ToString() + ")\nSexed " + this.ThisPerson.TimesSexedPlayer.ToString() + " times\n" + str3 + "\n" + (this.ThisPerson.transform.localScale.y + 0.75f).ToString("##.##") + " Meters " + UI_Gameplay.MetersToFeetAndInches(this.ThisPerson.transform.localScale.y + 0.75f) + "\n" + (this.ThisPerson is Girl ? (((Girl) this.ThisPerson).Futa ? str2 : "No Penis") : str2) + "\n" + (this.ThisPerson is Girl ? (((Girl) this.ThisPerson).Pregnant ? "Pregnancy: " + ((Girl) this.ThisPerson).PregnancyDisplayPercent : "Not Pregnant") : string.Empty);
   }
 
   public void OnCloseNPCInventory()
@@ -139,12 +152,12 @@ public class int_Person : Interactible
           {
             Main.Instance.GameplayMenu.EnableMove();
             _gameplay.DisplaySubtitle(Main.GetLine(9), Main.Instance.Personalities[0].Voice_Generics[1], new Action(this.EndTheChat));
+            this.ThisPerson.AddCullBlocker("Following");
             if (!Main.Instance.PeopleFollowingPlayer.Contains(this.ThisPerson))
               Main.Instance.PeopleFollowingPlayer.Add(this.ThisPerson);
             this.StartTalkFunc = "FollowingChat";
             this.ThisPerson.RandActionTimer = 5f;
             this.ThisPerson.DecideTimer = 5f;
-            this.ThisPerson.FreeScheduleTasks.Clear();
             this.ThisPerson.CompleteScheduleTask(false);
             this.ThisPerson.FreeScheduleTasks.Clear();
             Main.RunInNextFrame((Action) (() => this.ThisPerson.StartScheduleTask(new Person.ScheduleTask()
@@ -161,15 +174,20 @@ public class int_Person : Interactible
                 float num = Vector3.Distance(Main.Instance.Player.transform.position, this.transform.position);
                 if ((double) num > 1.0)
                   this.ThisPerson.SetDestination(this.ThisPerson.CurrentScheduleTask.ActionPlace);
-                else
+                else if (this.ThisPerson.navMesh.isOnNavMesh)
                   this.ThisPerson.navMesh.isStopped = true;
                 this.ThisPerson.navMesh.speed = (double) num > 4.0 ? 4f : 1f;
               }),
-              OnInterrupt_WhileGoing = (Action) (() => Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson))
+              OnInterrupt_WhileGoing = (Action) (() =>
+              {
+                this.ThisPerson.RemoveCullBlocker("Following");
+                Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
+              })
             })));
           }));
           _gameplay.AddChatOption(Main.GetLine(11), (Action) (() =>
           {
+            this.ThisPerson.RemoveCullBlocker("Following");
             Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
             Main.Instance.GameplayMenu.EnableMove();
             _gameplay.DisplaySubtitle(Main.GetLine(9), Main.Instance.Personalities[0].Voice_Generics[1], new Action(this.EndTheChat));
@@ -184,6 +202,7 @@ public class int_Person : Interactible
           }));
           _gameplay.AddChatOption(Main.GetLine(12), (Action) (() =>
           {
+            this.ThisPerson.RemoveCullBlocker("Following");
             Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
             Main.Instance.GameplayMenu.EnableMove();
             _gameplay.DisplaySubtitle(Main.GetLine(9), Main.Instance.Personalities[0].Voice_SexLead[1], new Action(this.EndTheChat));
@@ -268,7 +287,7 @@ public class int_Person : Interactible
           string str1 = "(+Relationship) ";
           string[] strArray1 = new string[4]
           {
-            str1 + Main.GetLine(16 /*0x10*/),
+            str1 + Main.GetLine(16),
             str1 + Main.GetLine(17),
             str1 + Main.GetLine(18),
             str1 + Main.GetLine(19)
@@ -316,9 +335,15 @@ public class int_Person : Interactible
                         return;
                       this.ThisPerson.RandActionTimer = 0.0f;
                       if ((double) Vector3.Distance(Main.Instance.Player.transform.position, this.transform.position) > 1.0)
+                      {
                         this.ThisPerson.SetDestination(this.ThisPerson.CurrentScheduleTask.ActionPlace);
+                      }
                       else
+                      {
+                        if (!this.ThisPerson.navMesh.isOnNavMesh)
+                          return;
                         this.ThisPerson.navMesh.isStopped = true;
+                      }
                     })
                   }, true);
                   break;
@@ -370,7 +395,8 @@ public class int_Person : Interactible
                       {
                         if (!this._Waiting || Main.Instance.Player.HavingSex)
                           return;
-                        this.ThisPerson.navMesh.isStopped = true;
+                        if (this.ThisPerson.navMesh.isOnNavMesh)
+                          this.ThisPerson.navMesh.isStopped = true;
                         if ((double) Vector3.Distance(this.ThisPerson.transform.position, Main.Instance.Player.transform.position) <= 2.5)
                         {
                           this._Waiting = false;
@@ -435,7 +461,7 @@ public class int_Person : Interactible
               _priceValue = 500;
               break;
           }
-          string str2 = $"({_priceValue.ToString()}BN) ";
+          string str2 = "(" + _priceValue.ToString() + "BN) ";
           string[] strArray2 = new string[7]
           {
             str2 + Main.GetLine(38),
@@ -451,12 +477,12 @@ public class int_Person : Interactible
             if (Main.Instance.Player.Money < _priceValue)
             {
               Main.Instance.GameplayMenu.EnableMove();
-              _gameplay.DisplaySubtitle(Main.GetLine(63 /*0x3F*/), Main.Instance.Personalities[0].Voice_Generics[5], new Action(this.EndTheChat));
+              _gameplay.DisplaySubtitle(Main.GetLine(63), Main.Instance.Personalities[0].Voice_Generics[5], new Action(this.EndTheChat));
             }
             else
             {
               Main.Instance.Player.Money -= _priceValue;
-              Main.Instance.GameplayMenu.ShowNotification($"Paied {_priceValue.ToString()} Bitch notes");
+              Main.Instance.GameplayMenu.ShowNotification("Paied " + _priceValue.ToString() + " Bitch notes");
               this._HasSexControl = true;
               this.ThisPerson.RandActionTimer = 0.0f;
               int num = this.ThisPerson.PersonalityData.PickSexOption();
@@ -489,9 +515,15 @@ public class int_Person : Interactible
                         return;
                       this.ThisPerson.RandActionTimer = 0.0f;
                       if ((double) Vector3.Distance(Main.Instance.Player.transform.position, this.transform.position) > 1.0)
+                      {
                         this.ThisPerson.SetDestination(this.ThisPerson.CurrentScheduleTask.ActionPlace);
+                      }
                       else
+                      {
+                        if (!this.ThisPerson.navMesh.isOnNavMesh)
+                          return;
                         this.ThisPerson.navMesh.isStopped = true;
+                      }
                     })
                   }, true);
                   break;
@@ -543,7 +575,8 @@ public class int_Person : Interactible
                       {
                         if (!this._Waiting || Main.Instance.Player.HavingSex)
                           return;
-                        this.ThisPerson.navMesh.isStopped = true;
+                        if (this.ThisPerson.navMesh.isOnNavMesh)
+                          this.ThisPerson.navMesh.isStopped = true;
                         if ((double) Vector3.Distance(this.ThisPerson.transform.position, Main.Instance.Player.transform.position) <= 2.5)
                         {
                           this._Waiting = false;
@@ -655,9 +688,15 @@ label_8:
                         return;
                       this.ThisPerson.RandActionTimer = 0.0f;
                       if ((double) Vector3.Distance(Main.Instance.Player.transform.position, this.transform.position) > 1.0)
+                      {
                         this.ThisPerson.SetDestination(this.ThisPerson.CurrentScheduleTask.ActionPlace);
+                      }
                       else
+                      {
+                        if (!this.ThisPerson.navMesh.isOnNavMesh)
+                          return;
                         this.ThisPerson.navMesh.isStopped = true;
+                      }
                     })
                   }, true);
                   break;
@@ -709,7 +748,8 @@ label_8:
                       {
                         if (!this._Waiting || Main.Instance.Player.HavingSex)
                           return;
-                        this.ThisPerson.navMesh.isStopped = true;
+                        if (this.ThisPerson.navMesh.isOnNavMesh)
+                          this.ThisPerson.navMesh.isStopped = true;
                         if ((double) Vector3.Distance(this.ThisPerson.transform.position, Main.Instance.Player.transform.position) <= 2.5)
                         {
                           this._Waiting = false;
@@ -777,7 +817,7 @@ label_8:
   {
     UI_Gameplay gameplayMenu = Main.Instance.GameplayMenu;
     gameplayMenu.RemoveAllChatOptions();
-    gameplayMenu.AddChatOption(Main.GetLine(32 /*0x20*/), (Action) (() =>
+    gameplayMenu.AddChatOption(Main.GetLine(32), (Action) (() =>
     {
       this.EndTheChat();
       this.SetDefaultChat();
@@ -812,6 +852,7 @@ label_8:
     gameplayMenu.RemoveAllChatOptions();
     gameplayMenu.AddChatOption("Stay here", (Action) (() =>
     {
+      this.ThisPerson.RemoveCullBlocker("Following");
       Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
       this.EndTheChat();
       this.SetDefaultChat();
@@ -819,18 +860,22 @@ label_8:
     }));
     gameplayMenu.AddChatOption("You're gonna live here now", (Action) (() =>
     {
+      this.ThisPerson.RemoveCullBlocker("Following");
       Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
       this.EndTheChat();
       this.SetDefaultChat();
       this.ThisPerson.CompleteScheduleTask();
+      if ((UnityEngine.Object) this.ThisPerson.CurrentZone == (UnityEngine.Object) null)
+        this.ThisPerson.CurrentZone = this.ThisPerson.TempLivingSpace_hang;
       this.ThisPerson.Home = this.ThisPerson.CurrentZone;
-      if (!((UnityEngine.Object) this.ThisPerson.Home.Location != (UnityEngine.Object) null))
-        return;
-      this.ThisPerson.HomeSpot = this.ThisPerson.Home.Location;
+      if ((UnityEngine.Object) this.ThisPerson.Home.Location != (UnityEngine.Object) null)
+        this.ThisPerson.HomeSpot = this.ThisPerson.Home.Location;
+      this.ThisPerson.TempLivingSpace = this.transform.position;
     }));
     gameplayMenu.AddChatOption("Keep following me", (Action) (() => this.EndTheChat()));
     gameplayMenu.AddChatOption("Stop following me", (Action) (() =>
     {
+      this.ThisPerson.RemoveCullBlocker("Following");
       Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
       this.EndTheChat();
       this.SetDefaultChat();
@@ -840,5 +885,165 @@ label_8:
     }));
     gameplayMenu.SelectChatOption(0);
     Main.Instance.MainThreads.Add(new Action(Main.Instance.GameplayMenu.OpenedChatOptionsThread));
+  }
+
+  public void RestrainedCheck()
+  {
+    if (this.ThisPerson.Restrained)
+    {
+      if (!this.ThisPerson.Leashed)
+      {
+        this.InteractText = "Leash";
+        this.StartTalkMono = (MonoBehaviour) this;
+        this.StartTalkFunc = "Leash";
+        this._PersonInteractType = PersonInteractType.NonChat;
+        this.ThisPerson.RunAway();
+      }
+      else
+      {
+        this.SetDefaultInteraction();
+        this.StartTalkMono = (MonoBehaviour) this;
+        this.StartTalkFunc = "RestrainedInteraction";
+      }
+      for (int index = 0; index < this.ThisPerson.EquippedClothes.Count; ++index)
+        this.ThisPerson.EquippedClothes[index].SetIKs();
+    }
+    else
+    {
+      if (this.ThisPerson.Leashed)
+        this.Unleash();
+      this.ThisPerson.PrisionerEscapeCheck();
+    }
+  }
+
+  public void Leash()
+  {
+    if (!Main.Instance.PeopleFollowingPlayer.Contains(this.ThisPerson))
+      Main.Instance.PeopleFollowingPlayer.Add(this.ThisPerson);
+    this.StartTalkFunc = "RestrainedInteraction";
+    this.ThisPerson.RandActionTimer = 5f;
+    this.ThisPerson.DecideTimer = 5f;
+    this.ThisPerson.FreeScheduleTasks.Clear();
+    this.ThisPerson.CompleteScheduleTask(false);
+    this.ThisPerson.FreeScheduleTasks.Clear();
+    this.ThisPerson.Leashed = true;
+    Main.RunInNextFrame((Action) (() =>
+    {
+      this.ThisPerson.AddCullBlocker("Following_Leash");
+      this.ThisPerson.StartScheduleTask(new Person.ScheduleTask()
+      {
+        IDName = "FollowPlayer_restrained",
+        ActionPlace = Main.Instance.Player.transform,
+        OnArrive = (Action) (() => { }),
+        WhileGoing = (Action) (() =>
+        {
+          this.ThisPerson.RandActionTimer += Time.deltaTime;
+          if ((double) this.ThisPerson.RandActionTimer <= 0.25)
+            return;
+          this.ThisPerson.RandActionTimer = 0.0f;
+          float num = Vector3.Distance(Main.Instance.Player.transform.position, this.transform.position);
+          if ((double) num > 1.0)
+            this.ThisPerson.SetDestination(this.ThisPerson.CurrentScheduleTask.ActionPlace);
+          else if (this.ThisPerson.navMesh.isOnNavMesh)
+            this.ThisPerson.navMesh.isStopped = true;
+          this.ThisPerson.navMesh.speed = (double) num > 4.0 ? 4f : 1f;
+        }),
+        OnInterrupt_WhileGoing = (Action) (() =>
+        {
+          this.ThisPerson.RemoveCullBlocker("Following_Leash");
+          Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
+        })
+      });
+    }));
+    this.TheLeashRoot = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[265]).transform;
+    this.TheLeashRoot.SetParent(Main.Instance.Player.RightHandStuff);
+    this.TheLeashRoot.localScale = Vector3.one;
+    this.TheLeashRoot.localPosition = Vector3.zero;
+    this.TheLeashRoot.localEulerAngles = Vector3.zero;
+    this.TheLeashRoot = this.TheLeashRoot.Find("Tip");
+    this.TheLeashTiedSpot = this.ThisPerson.Neck;
+    Main.Instance.MainThreads_Late.Add(new Action(this.LeashThread));
+    this.SetDefaultInteraction();
+    this.StartTalkMono = (MonoBehaviour) this;
+    this.StartTalkFunc = "RestrainedInteraction";
+  }
+
+  public void LeashThread()
+  {
+    this.TheLeashRoot.LookAt(this.TheLeashTiedSpot);
+    this.TheLeashRoot.localScale = new Vector3(1f, 1f, Vector3.Distance(this.TheLeashRoot.position, this.TheLeashTiedSpot.position));
+  }
+
+  public void RestrainedInteraction()
+  {
+    UI_Gameplay gameplayMenu = Main.Instance.GameplayMenu;
+    Main.Instance.Player.UserControl.StopMoving();
+    int lineIndex = 0;
+    string subText = this.ThisPerson.PersonalityData.Reply_Hello(out lineIndex);
+    AudioClip voiceLine = this.ThisPerson.PersonalityData.Voice_Hello[lineIndex];
+    gameplayMenu.DisplaySubtitle(subText, voiceLine);
+    this.RestrainedInteraction_options();
+  }
+
+  public void RestrainedInteraction_options()
+  {
+    UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
+    _gameplay.RemoveAllChatOptions();
+    if (this.ThisPerson.Leashed)
+      _gameplay.AddChatOption("(Unleash)", (Action) (() =>
+      {
+        this.Unleash();
+        this.EndTheChat();
+        Main.Instance.GameplayMenu.EnableMove();
+      }));
+    else
+      _gameplay.AddChatOption("(Leash)", (Action) (() =>
+      {
+        this.EndTheChat();
+        Main.Instance.GameplayMenu.EnableMove();
+        this.Leash();
+      }));
+    _gameplay.AddChatOption("(Inventory)", (Action) (() =>
+    {
+      Main.Instance.GameplayMenu.OpenContainer((Int_Storage) this.ThisPerson.InventoryStorage);
+      Main.Instance.GameplayMenu.OnCloseContainer.Clear();
+      Main.Instance.GameplayMenu.OnCloseContainer.Add(new Action(this.OnCloseNPCInventory));
+    }));
+    _gameplay.AddChatOption("What's your name?", (Action) (() =>
+    {
+      Main.Instance.GameplayMenu.EnableMove();
+      this.ThisPerson.PlayerKnowsName = true;
+      this.InteractText = Main.GetLine(1) + this.ThisPerson.Name;
+      string[] strArray = new string[3]
+      {
+        this.ThisPerson.Name,
+        Main.GetLine(5) + this.ThisPerson.Name,
+        Main.GetLine(6) + this.ThisPerson.Name
+      };
+      _gameplay.DisplaySubtitle(strArray[UnityEngine.Random.Range(0, strArray.Length)], (AudioClip) null, new Action(this.EndTheChat));
+    }));
+    _gameplay.SelectChatOption(0);
+    Main.Instance.MainThreads.Add(new Action(Main.Instance.GameplayMenu.OpenedChatOptionsThread));
+  }
+
+  public void Unleash()
+  {
+    Main.Instance.MainThreads_Late.Remove(new Action(this.LeashThread));
+    if ((UnityEngine.Object) this.TheLeashRoot != (UnityEngine.Object) null)
+      UnityEngine.Object.Destroy((UnityEngine.Object) this.TheLeashRoot.parent.gameObject);
+    this.ThisPerson.Leashed = false;
+    this.SetDefaultInteraction();
+    this.SetDefaultChat();
+    this.ThisPerson.TempLivingSpace = this.transform.position;
+    this.ThisPerson.RemoveCullBlocker("Following_Leash");
+    this.ThisPerson.RemoveCullBlocker("Following");
+    Main.Instance.PeopleFollowingPlayer.Remove(this.ThisPerson);
+    if (this.ThisPerson.CurrentScheduleTask != null && (this.ThisPerson.CurrentScheduleTask.IDName == "FollowPlayer_restrained" || this.ThisPerson.CurrentScheduleTask.IDName == "FollowPlayer"))
+      this.ThisPerson.CompleteScheduleTask();
+    this.RestrainedCheck();
+  }
+
+  public void TrainingChat_options()
+  {
   }
 }

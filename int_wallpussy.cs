@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_wallpussy
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -19,6 +19,7 @@ public class int_wallpussy : int_basicSit
   public Transform ClientHipsPos;
   public GameObject PrefabEquipWhenUsing;
   public Dressable SpawnedEquipWhenUsing;
+  public bl_tempAttach[] TempAttatchs;
   public Transform[] Lookable;
   public Transform[] LookableAt;
   public int SexType;
@@ -34,13 +35,34 @@ public class int_wallpussy : int_basicSit
 
   public override bool CheckCanInteract(Person person)
   {
-    return Main.Instance.NewGameMenu.DificultySelected != 3 && base.CheckCanInteract(person);
+    if (Main.Instance.NewGameMenu.DificultySelected == 3)
+      return false;
+    if ((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null)
+    {
+      if (Main.Instance.PeopleFollowingPlayer.Count != 0)
+        this.InteractText = "Tie " + Main.Instance.PeopleFollowingPlayer[0].Name;
+      else
+        this.InteractText = "Use on self";
+    }
+    else
+      this.InteractText = "Use";
+    return base.CheckCanInteract(person);
   }
 
   public override void Interact(Person person)
   {
     if ((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null)
-      this.AddProst(person);
+    {
+      if (person.IsPlayer)
+      {
+        if (Main.Instance.PeopleFollowingPlayer.Count != 0)
+          this.AddProst(Main.Instance.PeopleFollowingPlayer[0]);
+        else
+          this.AddProst(person);
+      }
+      else
+        this.AddProst(person);
+    }
     else
       this.AddClient(person);
   }
@@ -57,6 +79,17 @@ public class int_wallpussy : int_basicSit
       if ((UnityEngine.Object) this.SpawnedEquipWhenUsing != (UnityEngine.Object) null)
         UnityEngine.Object.Destroy((UnityEngine.Object) this.SpawnedEquipWhenUsing.PersonEquipped.UndressClothe(this.SpawnedEquipWhenUsing));
       this.SpawnedEquipWhenUsing = this.InteractingPerson.DressClothe(this.PrefabEquipWhenUsing).GetComponentInChildren<Dressable>();
+    }
+    for (int index = 0; index < this.TempAttatchs.Length; ++index)
+    {
+      Transform parent = this.InteractingPerson.transform.Find(this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing1_bone);
+      if ((UnityEngine.Object) parent != (UnityEngine.Object) null)
+      {
+        this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing_spawned = UnityEngine.Object.Instantiate<GameObject>(this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing1, parent);
+        this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing_spawned.transform.localPosition = this.TempAttatchs[index].pos;
+        this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing_spawned.transform.localEulerAngles = this.TempAttatchs[index].rot;
+        this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing_spawned.transform.localScale = this.TempAttatchs[index].scl;
+      }
     }
     if ((UnityEngine.Object) this.InteractingPerson.navMesh != (UnityEngine.Object) null)
       this.InteractingPerson.navMesh.enabled = false;
@@ -170,6 +203,11 @@ public class int_wallpussy : int_basicSit
         else
           UnityEngine.Object.Destroy((UnityEngine.Object) this.SpawnedEquipWhenUsing.PersonEquipped.UndressClothe(this.SpawnedEquipWhenUsing));
         this.SpawnedEquipWhenUsing = (Dressable) null;
+      }
+      for (int index = 0; index < this.TempAttatchs.Length; ++index)
+      {
+        if ((UnityEngine.Object) this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing_spawned != (UnityEngine.Object) null)
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.TempAttatchs[index].NonDress_PrefabEquipWhenUsing_spawned);
       }
       this.RunTo = false;
       this.GenderOnly = this.DefaultGenderOnly;

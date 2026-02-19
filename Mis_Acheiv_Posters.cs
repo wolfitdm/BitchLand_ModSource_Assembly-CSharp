@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Acheiv_Posters
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,7 +27,7 @@ public class Mis_Acheiv_Posters : MonoBehaviour
       if (Main.Instance.GameplayMenu.HasPostersBC[index])
         ++num;
     }
-    this.AcheiveText.text = $"Found All Bitch Commando Posters {num.ToString()}/{Main.Instance.GameplayMenu.HasPostersBC.Length.ToString()}";
+    this.AcheiveText.text = "Found All Bitch Commando Posters " + num.ToString() + "/" + Main.Instance.GameplayMenu.HasPostersBC.Length.ToString();
     if (num == Main.Instance.GameplayMenu.HasPostersBC.Length)
       this.AcheivCheck.SetActive(true);
     Main.Instance.GameplayMenu.DisplayGoalSimple(this.AcheiveText.text, this.AcheivCheck.activeSelf);
@@ -41,7 +41,7 @@ public class Mis_Acheiv_Posters : MonoBehaviour
       if (Main.Instance.GameplayMenu.HasPostersBCLeg[index])
         ++num;
     }
-    this.AcheiveText.text = $"Found All Bitch Commando Posters Legacy {num.ToString()}/{Main.Instance.GameplayMenu.HasPostersBCLeg.Length.ToString()}";
+    this.AcheiveText.text = "Found All Bitch Commando Posters Legacy " + num.ToString() + "/" + Main.Instance.GameplayMenu.HasPostersBCLeg.Length.ToString();
     if (num == Main.Instance.GameplayMenu.HasPostersBCLeg.Length)
       this.AcheivCheck.SetActive(true);
     Main.Instance.GameplayMenu.DisplayGoalSimple(this.AcheiveText.text, this.AcheivCheck.activeSelf);
@@ -55,7 +55,7 @@ public class Mis_Acheiv_Posters : MonoBehaviour
       if (Main.Instance.GameplayMenu.HasPostersBCBEL[index])
         ++num;
     }
-    this.AcheiveText.text = $"Found All BC Behind Enemy Lines Posters {num.ToString()}/{Main.Instance.GameplayMenu.HasPostersBCBEL.Length.ToString()}";
+    this.AcheiveText.text = "Found All BC Behind Enemy Lines Posters " + num.ToString() + "/" + Main.Instance.GameplayMenu.HasPostersBCBEL.Length.ToString();
     if (num == Main.Instance.GameplayMenu.HasPostersBCBEL.Length)
       this.AcheivCheck.SetActive(true);
     Main.Instance.GameplayMenu.DisplayGoalSimple(this.AcheiveText.text, this.AcheivCheck.activeSelf);
@@ -69,7 +69,7 @@ public class Mis_Acheiv_Posters : MonoBehaviour
       if (Main.Instance.GameplayMenu.HasPostersBCCap[index])
         ++num;
     }
-    this.AcheiveText.text = $"Found All Bitch Commando Captured Posters {num.ToString()}/{Main.Instance.GameplayMenu.HasPostersBCCap.Length.ToString()}";
+    this.AcheiveText.text = "Found All Bitch Commando Captured Posters " + num.ToString() + "/" + Main.Instance.GameplayMenu.HasPostersBCCap.Length.ToString();
     if (num == Main.Instance.GameplayMenu.HasPostersBCCap.Length)
       this.AcheivCheck.SetActive(true);
     Main.Instance.GameplayMenu.DisplayGoalSimple(this.AcheiveText.text, this.AcheivCheck.activeSelf);

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Army2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -614,8 +614,8 @@ public class Mis_Army2 : Mission
                   Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[15]);
                   Main.Instance.GameplayMenu.DisplaySubtitle("Make no mistake. Any ESB is always a danger that can kill us", this.VoiceLines[15], (Action) (() =>
                   {
-                    Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[16 /*0x10*/]);
-                    Main.Instance.GameplayMenu.DisplaySubtitle("Surround the house, and one of you volunteer to enter it", this.VoiceLines[16 /*0x10*/], (Action) (() =>
+                    Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[16]);
+                    Main.Instance.GameplayMenu.DisplaySubtitle("Surround the house, and one of you volunteer to enter it", this.VoiceLines[16], (Action) (() =>
                     {
                       Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[17]);
                       Main.Instance.GameplayMenu.DisplaySubtitle("Once inside, Capture this ESB", this.VoiceLines[17], (Action) (() =>
@@ -733,6 +733,7 @@ public class Mis_Army2 : Mission
     for (int index = 0; index < this.Truck.PeopleSeated.Length; ++index)
       this.Truck.StopInteracting(this.Truck.PeopleSeated[index]);
     this.Truck.AddBlocker("quest");
+    Main.Instance.Player.UserControl.ResetSpot = Main.Instance.CityCharacters.War.transform;
   }
 
   public void TankLookAt()
@@ -758,6 +759,7 @@ public class Mis_Army2 : Mission
         this.TankShoot.SetActive(true);
         Main.Instance.MainThreads.Remove(new Action(this.TankLookAt));
         Main.Instance.Default_Area.OnEnter();
+        Main.Instance.Player.UserControl.ResetSpot = Main.Instance.Player.UserControl.OriginalResetSpot;
         Main.Instance.MusicPlayer.pitch = 1f;
         Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[22]);
         Main.Instance.GameplayMenu.TheScreenFader.FadeOut(1f, (Action) (() =>
@@ -922,7 +924,7 @@ public class Mis_Army2 : Mission
               {
                 if (Main.Instance.AllMissions[3].Goals[0].Completed)
                   return;
-                Main.Instance.GameplayMenu.DisplayGoal(Main.Instance.AllMissions[16 /*0x10*/].Goals[0], true);
+                Main.Instance.GameplayMenu.DisplayGoal(Main.Instance.AllMissions[16].Goals[0], true);
               }
             }), 10f);
             Main.Instance.SaveGame(true);

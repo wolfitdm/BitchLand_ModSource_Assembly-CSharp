@@ -1,14 +1,16 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Gameplay
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -96,6 +98,8 @@ public class UI_Gameplay : UI_Menu
   public Text MessageBox_text;
   [Header("Journal")]
   public GameObject JournalMenu;
+  public GameObject[] JournalBGImages;
+  public GameObject JournalOptionsList;
   public AudioClip JournalSound1;
   public AudioClip JournalPerkSound;
   public GameObject Journal_Inventory;
@@ -110,6 +114,10 @@ public class UI_Gameplay : UI_Menu
   public GameObject Journal_Building;
   public GameObject Journal_Population;
   public GameObject Journal_WorldMap;
+  public GameObject Journal_ArmyManagement;
+  public GameObject Journal_WorkerManagement;
+  public GameObject Journal_CivilianManagement;
+  public GameObject Journal_RoyalManagement;
   public RectTransform AcheivementsContent;
   public GameObject AcheivementEntry;
   public List<GameObject> AcheivementEntries = new List<GameObject>();
@@ -172,6 +180,20 @@ public class UI_Gameplay : UI_Menu
   public Image[] Gallery_BCLeg;
   public Image[] Gallery_BCBEL;
   public Image[] Gallery_BCCap;
+  public GameObject[] Army_tabs;
+  public RectTransform ArmyOrdersContent;
+  public GameObject ArmyOrders_entry;
+  public List<GameObject> Orders_entries = new List<GameObject>();
+  public RectTransform ArmyPatrolsContent;
+  public GameObject ArmyPatrols_entry;
+  public List<GameObject> Patrols_entries = new List<GameObject>();
+  public RectTransform ArmyTrainContent;
+  public GameObject ArmyTrain_entry;
+  public List<GameObject> ArmyTrain_entries = new List<GameObject>();
+  public Toggle DisplayArmySpots;
+  public GameObject ARMY_NoNPCS;
+  public GameObject ARMY_NoTrainNPCS;
+  public RectTransform Pop_content;
   public GameObject Pop_Entry;
   public List<GameObject> Pop_Entries = new List<GameObject>();
   [Header(" Trader")]
@@ -233,6 +255,10 @@ public class UI_Gameplay : UI_Menu
   public GameObject OpenWorldUI;
   public List<GameObject> DisableOnOpenWorld = new List<GameObject>();
   public bl_WorldGenerate WorldGenerate;
+  public bl_SectionGenerate2 WorldGenerate2;
+  public static bool OWGenerating;
+  public bool _isLoadingASection;
+  public int _SetionLoading;
   public GameObject SleepMenu;
   public Button[] SleepButtons;
   [Header("Notes")]
@@ -294,9 +320,14 @@ public class UI_Gameplay : UI_Menu
   public List<GameObject> Build_SpawnedCraftRecipeEntries;
   public bl_CraftRecipes Build_TheSelectedReceipt;
   public GameObject _BuildindPlan;
+  public int_ConstructionPlan ThisPlan;
+  public int_ConstructionPlan.e_BuildSnapType CurrentSnapType;
   public LayerMask PlacePlanLayers;
   public GameObject LatestPlacedPlan;
   public bool _CanBuild = true;
+  public bool IsSnapping;
+  public bl_ConstructionSnapSpot _CurrentSnap;
+  public int SelectedPlanRotation;
   public GameObject CancelPlanButton;
   public float SpeedrunTimer;
   public Text SpeedrunLabel;
@@ -370,7 +401,7 @@ public class UI_Gameplay : UI_Menu
     else
     {
       this.AmmoUI.SetActive(true);
-      this.AmmoText.text = $"{Main.Instance.Player.WeaponInv.CurrentWeapon.currentAmmo.ToString()}/{Main.Instance.Player.WeaponInv.CurrentWeapon.ammoCapacity.ToString()}";
+      this.AmmoText.text = Main.Instance.Player.WeaponInv.CurrentWeapon.currentAmmo.ToString() + "/" + Main.Instance.Player.WeaponInv.CurrentWeapon.ammoCapacity.ToString();
       this.AmmoSlider.fillAmount = (float) Main.Instance.Player.WeaponInv.CurrentWeapon.currentAmmo / (float) Main.Instance.Player.WeaponInv.CurrentWeapon.ammoCapacity;
     }
   }
@@ -412,7 +443,7 @@ public class UI_Gameplay : UI_Menu
 
   public void OpenEscMenu()
   {
-    GC.Collect();
+    Main.Instance.GarbageCollect();
     this.AllowCursor();
     Time.timeScale = 0.0f;
     this.EscMenu.SetActive(true);
@@ -644,7 +675,7 @@ label_8:
     }
     this.LevelUpUIs[index].SetActive(true);
     this.LevelUpUIs_Image[index].sprite = this.LevelUpSprites[0];
-    this.LevelUpUIs_Text[index].text = $"+{totalAmount.ToString()}xp";
+    this.LevelUpUIs_Text[index].text = "+" + totalAmount.ToString() + "xp";
     this.LevelUpUIs_Image[index].fillAmount = (float) Main.Instance.Player.SexXpThisLvl / (float) Main.Instance.Player.SexXpThisLvlMax;
     this.LevelUpUIs_LevelUp[index].SetActive(levelup);
     switch (index)
@@ -678,7 +709,7 @@ label_8:
     }
     this.LevelUpUIs[index].SetActive(true);
     this.LevelUpUIs_Image[index].sprite = this.LevelUpSprites[1];
-    this.LevelUpUIs_Text[index].text = $"+{totalAmount.ToString()}xp";
+    this.LevelUpUIs_Text[index].text = "+" + totalAmount.ToString() + "xp";
     this.LevelUpUIs_Image[index].fillAmount = (float) Main.Instance.Player.WorkXpThisLvl / (float) Main.Instance.Player.WorkXpThisLvlMax;
     this.LevelUpUIs_LevelUp[index].SetActive(levelup);
     switch (index)
@@ -712,7 +743,7 @@ label_8:
     }
     this.LevelUpUIs[index].SetActive(true);
     this.LevelUpUIs_Image[index].sprite = this.LevelUpSprites[2];
-    this.LevelUpUIs_Text[index].text = $"+{totalAmount.ToString()}xp";
+    this.LevelUpUIs_Text[index].text = "+" + totalAmount.ToString() + "xp";
     this.LevelUpUIs_Image[index].fillAmount = (float) Main.Instance.Player.ArmyXpThisLvl / (float) Main.Instance.Player.ArmyXpThisLvlMax;
     this.LevelUpUIs_LevelUp[index].SetActive(levelup);
     switch (index)
@@ -783,6 +814,7 @@ label_8:
     if ((UnityEngine.Object) this.PersonChattingTo != (UnityEngine.Object) null)
     {
       this.PersonChattingTo.RemoveMoveBlocker("Chat");
+      this.PersonChattingTo.ThisPersonInt.RestrainedCheck();
       this.PersonChattingTo = (Person) null;
     }
     Main.Instance.Player.RemoveMoveBlocker("Chat");
@@ -891,7 +923,7 @@ label_8:
       if (!this.ChatOptions[index].activeSelf)
       {
         this.ChatOptions[index].SetActive(true);
-        this.ChatOptions_text[index].text = $"{(index + 1).ToString()} - {chattext}";
+        this.ChatOptions_text[index].text = (index + 1).ToString() + " - " + chattext;
         this.ChatOptions_img[index].color = this.ChatUnselectedColor;
         this.ChatOptions_code[index] = onOption;
         ++this.OptionsCount;
@@ -1004,9 +1036,10 @@ label_8:
     this.Journal_Building.SetActive(false);
     this.Journal_Population.SetActive(false);
     this.Journal_WorldMap.SetActive(false);
+    this.Journal_ArmyManagement.SetActive(false);
     this.AddMoneyBtn.SetActive(false);
     this.AddMoneyMenu.SetActive(false);
-    GC.Collect();
+    Main.Instance.GarbageCollect();
   }
 
   public void OpenGallery()
@@ -1017,6 +1050,151 @@ label_8:
       this.MenuButtons[index].sprite = this.UnselectedButton;
     this.MenuButtons[5].sprite = this.SelectedButton;
     this.SelectNotes10();
+  }
+
+  public void Open_ArmyManagementTable()
+  {
+    this.OpenJournal();
+    this.CloseAllJournalMenus();
+    this.JournalOptionsList.SetActive(false);
+    this.Journal_ArmyManagement.SetActive(true);
+    for (int index = 0; index < this.JournalBGImages.Length; ++index)
+      this.JournalBGImages[index].SetActive(false);
+    this.JournalBGImages[1].SetActive(true);
+    this.Army_SelectOrders();
+  }
+
+  public void Army_SelectOrders()
+  {
+    this.Army_tabs[0].SetActive(true);
+    this.Army_tabs[1].SetActive(false);
+    this.Army_tabs[2].SetActive(false);
+    for (int index = 0; index < this.Orders_entries.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.Orders_entries[index] != (UnityEngine.Object) null)
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.Orders_entries[index]);
+    }
+    for (int index = 0; index < Main.Instance.SpawnedPeople_World.Count; ++index)
+    {
+      Person person = Main.Instance.SpawnedPeople_World[index];
+      if ((UnityEngine.Object) person != (UnityEngine.Object) null && person.PersonType.ThisType == Person_Type.Army)
+      {
+        bl_J_PopulationEntry component = UnityEngine.Object.Instantiate<GameObject>(this.ArmyOrders_entry, (Transform) this.ArmyOrdersContent).GetComponent<bl_J_PopulationEntry>();
+        component.gameObject.SetActive(true);
+        this.Orders_entries.Add(component.gameObject);
+        component.ARMY_DisplayForPerson(person);
+      }
+    }
+    this.ARMY_NoNPCS.SetActive(this.Orders_entries.Count == 0);
+    this.ArmyOrdersContent.sizeDelta = new Vector2(0.0f, (float) (this.Orders_entries.Count * 24));
+  }
+
+  public void Army_SelectPatrol()
+  {
+    this.Army_tabs[0].SetActive(false);
+    this.Army_tabs[1].SetActive(true);
+    this.Army_tabs[2].SetActive(false);
+    List<int_PatrolSpot> intPatrolSpotList = new List<int_PatrolSpot>();
+    intPatrolSpotList.AddRange((IEnumerable<int_PatrolSpot>) UnityEngine.Object.FindObjectsOfType<int_PatrolSpot>(true));
+    List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
+    options.Add(new Dropdown.OptionData()
+    {
+      text = "<None>"
+    });
+    for (int index = 0; index < intPatrolSpotList.Count; ++index)
+      options.Add(new Dropdown.OptionData()
+      {
+        text = intPatrolSpotList[index].InteractText
+      });
+    for (int index = 0; index < this.Patrols_entries.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.Patrols_entries[index] != (UnityEngine.Object) null)
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.Patrols_entries[index]);
+    }
+    for (int index1 = 0; index1 < Main.Instance.AllPatrols.Count; ++index1)
+    {
+      bl_J_PopulationEntry component = UnityEngine.Object.Instantiate<GameObject>(this.ArmyPatrols_entry, (Transform) this.ArmyPatrolsContent).GetComponent<bl_J_PopulationEntry>();
+      component.gameObject.SetActive(true);
+      this.Patrols_entries.Add(component.gameObject);
+      component.NoteText.text = Main.Instance.AllPatrols[index1].Name;
+      component.ThisPatrol = index1;
+      for (int index2 = 0; index2 < component.Dropsdowns.Length; ++index2)
+      {
+        component.Dropsdowns[index2].ClearOptions();
+        component.Dropsdowns[index2].AddOptions(options);
+        if ((UnityEngine.Object) Main.Instance.AllPatrols[index1].Spots[index2] == (UnityEngine.Object) null)
+        {
+          component.Dropsdowns[index2].SetValueWithoutNotify(0);
+        }
+        else
+        {
+          for (int index3 = 0; index3 < intPatrolSpotList.Count; ++index3)
+          {
+            if ((UnityEngine.Object) intPatrolSpotList[index3] != (UnityEngine.Object) null && intPatrolSpotList[index3].InteractText == Main.Instance.AllPatrols[index1].Spots[index2].parent.name)
+              component.Dropsdowns[index2].SetValueWithoutNotify(index3 + 1);
+          }
+        }
+      }
+    }
+    this.ArmyPatrolsContent.sizeDelta = new Vector2(0.0f, (float) (this.Patrols_entries.Count * 24 + 24));
+  }
+
+  public void Click_AddNewArmyPatrol()
+  {
+    bl_Patrol blPatrol = new bl_Patrol()
+    {
+      Name = "(New Patrol)"
+    };
+    blPatrol.Spots.AddRange((IEnumerable<Transform>) new Transform[5]);
+    Main.Instance.AllPatrols.Add(blPatrol);
+    this.Army_SelectPatrol();
+  }
+
+  public void Army_SelectTrain()
+  {
+    this.Army_tabs[0].SetActive(false);
+    this.Army_tabs[1].SetActive(false);
+    this.Army_tabs[2].SetActive(true);
+    for (int index = 0; index < this.ArmyTrain_entries.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.ArmyTrain_entries[index] != (UnityEngine.Object) null)
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.ArmyTrain_entries[index]);
+    }
+    for (int index = 0; index < Main.Instance.SpawnedPeople_World.Count; ++index)
+    {
+      Person person = Main.Instance.SpawnedPeople_World[index];
+      if ((UnityEngine.Object) person != (UnityEngine.Object) null && person.PersonType.ThisType == Person_Type.Prisioner)
+      {
+        bl_J_PopulationEntry component = UnityEngine.Object.Instantiate<GameObject>(this.ArmyTrain_entry, (Transform) this.ArmyTrainContent).GetComponent<bl_J_PopulationEntry>();
+        component.gameObject.SetActive(true);
+        this.ArmyTrain_entries.Add(component.gameObject);
+        component.ARMY_Train_DisplayForPerson(person);
+      }
+    }
+    this.ARMY_NoTrainNPCS.SetActive(this.ArmyTrain_entries.Count == 0);
+    this.ArmyTrainContent.sizeDelta = new Vector2(0.0f, (float) (this.ArmyTrain_entries.Count * 24));
+  }
+
+  public void On_DisplayArmySpots() => this.SetDisplayArmySpots(this.DisplayArmySpots.isOn);
+
+  public void SetDisplayArmySpots(bool value)
+  {
+    this.DisplayArmySpots.SetIsOnWithoutNotify(value);
+    Main.Instance.GlobalVars.Add("DisplayArmySpots", value ? "1" : "0");
+    List<int_PatrolSpot> intPatrolSpotList = new List<int_PatrolSpot>();
+    intPatrolSpotList.AddRange((IEnumerable<int_PatrolSpot>) UnityEngine.Object.FindObjectsOfType<int_PatrolSpot>(true));
+    for (int index = 0; index < intPatrolSpotList.Count; ++index)
+      intPatrolSpotList[index].gameObject.SetActive(value);
+  }
+
+  public void Open_WorkerManagementTable()
+  {
+    this.OpenJournal();
+    this.CloseAllJournalMenus();
+    this.JournalOptionsList.SetActive(false);
+    for (int index = 0; index < this.JournalBGImages.Length; ++index)
+      this.JournalBGImages[index].SetActive(false);
+    this.JournalBGImages[2].SetActive(true);
   }
 
   public void SelectNotes10()
@@ -1246,6 +1424,10 @@ label_8:
     Cursor.visible = true;
     Main.Instance.Player.UserControl.TheCam.enabled = false;
     Main.Instance.Player.UserControl.CanMove = false;
+    this.JournalBGImages[0].SetActive(true);
+    for (int index = 1; index < this.JournalBGImages.Length; ++index)
+      this.JournalBGImages[index].SetActive(false);
+    this.JournalOptionsList.SetActive(true);
     this.JournalMenu.SetActive(true);
     this.SelectLevelUp();
   }
@@ -1392,7 +1574,7 @@ label_8:
       if (Main.Instance.Player.States[index])
       {
         GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.StatesEntry, this.StatesEntry.transform.parent);
-        gameObject.transform.Find("text").GetComponent<Text>().text = Main.Instance.States_Data[index].Name + (Main.Instance.States_Data[index].Effect.Length == 0 ? string.Empty : $" ({Main.Instance.States_Data[index].Effect})");
+        gameObject.transform.Find("text").GetComponent<Text>().text = Main.Instance.States_Data[index].Name + (Main.Instance.States_Data[index].Effect.Length == 0 ? string.Empty : " (" + Main.Instance.States_Data[index].Effect + ")");
         gameObject.SetActive(true);
         this.StatesEntries.Add(gameObject);
       }
@@ -1528,16 +1710,26 @@ label_8:
     for (int index = 0; index < this.Pop_Entries.Count; ++index)
       UnityEngine.Object.Destroy((UnityEngine.Object) this.Pop_Entries[index]);
     this.Pop_Entries.Clear();
-    Main.Instance.SpawnedPopulation = Main.Instance.SpawnedPeople;
-    for (int index = 0; index < Main.Instance.SpawnedPopulation.Count; ++index)
+    List<Person> personList = new List<Person>();
+    personList.AddRange((IEnumerable<Person>) Main.Instance.SpawnedPeople);
+    personList.AddRange((IEnumerable<Person>) Main.Instance.SpawnedPeople_World);
+label_4:
+    for (int index = 0; index < personList.Count; ++index)
     {
-      if (!((UnityEngine.Object) Main.Instance.SpawnedPopulation[index] == (UnityEngine.Object) null))
+      if ((UnityEngine.Object) personList[index] == (UnityEngine.Object) null || personList[index].IsPlayer || !personList[index].gameObject.activeSelf || (double) Vector3.Distance(Main.Instance.Player.transform.position, personList[index].transform.position) > 50.0)
       {
-        GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.Pop_Entry, this.Pop_Entry.transform.parent);
-        gameObject.SetActive(true);
-        this.Pop_Entries.Add(gameObject);
-        gameObject.GetComponent<bl_J_PopulationEntry>().DisplayForPerson(Main.Instance.SpawnedPopulation[index]);
+        personList.RemoveAt(index);
+        goto label_4;
       }
+    }
+    this.Pop_content.sizeDelta = new Vector2(0.0f, (float) (personList.Count * 24 + 24));
+    personList.Sort((Comparison<Person>) ((a, b) => Vector3.Distance(Main.Instance.Player.transform.position, a.transform.position).CompareTo(Vector3.Distance(Main.Instance.Player.transform.position, b.transform.position))));
+    for (int index = 0; index < personList.Count; ++index)
+    {
+      GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.Pop_Entry, this.Pop_Entry.transform.parent);
+      gameObject.SetActive(true);
+      this.Pop_Entries.Add(gameObject);
+      gameObject.GetComponent<bl_J_PopulationEntry>().DisplayForPerson(personList[index]);
     }
   }
 
@@ -1768,6 +1960,7 @@ label_8:
         this.ContainerStorage.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        Main.Instance.Player.UserControl.TheCam.IsDisabled = false;
         Main.Instance.Player.RemoveMoveBlocker("Container");
         if (Main.Instance.MainThreads.Contains(new Action(this.OpenedJournal)))
           Main.Instance.MainThreads.Remove(new Action(this.OpenedJournal));
@@ -1779,7 +1972,7 @@ label_8:
         for (int index = 0; index < this.OnCloseContainer.Count; ++index)
           this.OnCloseContainer[index]();
         this.OnCloseContainer.Clear();
-        GC.Collect();
+        Main.Instance.GarbageCollect();
       }
     }
   }
@@ -1814,23 +2007,26 @@ label_8:
       }
       for (int index = 0; index < gameObjectList.Count; ++index)
       {
-        misc_invItem component1 = UnityEngine.Object.Instantiate<GameObject>(this.BackPackEntry, this.BackPackEntry.transform.parent).GetComponent<misc_invItem>();
-        this.BackPackEntries.Add(component1.gameObject);
-        component1.ThisStorage = this.CurrentOpenStorage;
-        component1.ThisWeapomn = gameObjectList[index];
-        component1.Title.text = gameObjectList[index].name;
-        component1.gameObject.SetActive(true);
-        if ((UnityEngine.Object) Storage == (UnityEngine.Object) null || (UnityEngine.Object) Storage != (UnityEngine.Object) null && Storage.Full)
-          component1.SendBtn.GetComponent<Button>().interactable = false;
-        if ((UnityEngine.Object) gameObjectList[index].GetComponent<Dressable>() == (UnityEngine.Object) null)
+        if (!((UnityEngine.Object) gameObjectList[index] == (UnityEngine.Object) null))
         {
-          component1.EquipBtn.SetActive(false);
-          MultiInteractible component2 = gameObjectList[index].GetComponent<MultiInteractible>();
-          if ((UnityEngine.Object) component2 != (UnityEngine.Object) null && (UnityEngine.Object) component2.Parts[0].gameObject.GetComponent<int_PickableClothingPackage>() != (UnityEngine.Object) null)
-            component1.EquipBtn.SetActive(true);
+          misc_invItem component1 = UnityEngine.Object.Instantiate<GameObject>(this.BackPackEntry, this.BackPackEntry.transform.parent).GetComponent<misc_invItem>();
+          this.BackPackEntries.Add(component1.gameObject);
+          component1.ThisStorage = this.CurrentOpenStorage;
+          component1.ThisWeapomn = gameObjectList[index];
+          component1.Title.text = gameObjectList[index].name;
+          component1.gameObject.SetActive(true);
+          if ((UnityEngine.Object) Storage == (UnityEngine.Object) null || (UnityEngine.Object) Storage != (UnityEngine.Object) null && Storage.Full)
+            component1.SendBtn.GetComponent<Button>().interactable = false;
+          if ((UnityEngine.Object) gameObjectList[index].GetComponent<Dressable>() == (UnityEngine.Object) null)
+          {
+            component1.EquipBtn.SetActive(false);
+            MultiInteractible component2 = gameObjectList[index].GetComponent<MultiInteractible>();
+            if ((UnityEngine.Object) component2 != (UnityEngine.Object) null && (UnityEngine.Object) component2.Parts[0].gameObject.GetComponent<int_PickableClothingPackage>() != (UnityEngine.Object) null)
+              component1.EquipBtn.SetActive(true);
+          }
         }
       }
-      this.BackPackAmount.text = !((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null) ? "(No backpack)" : $"{Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Count.ToString()}/{Main.Instance.Player.CurrentBackpack.ThisStorage.StorageMax.ToString()}";
+      this.BackPackAmount.text = !((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null) ? "(No backpack)" : Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Count.ToString() + "/" + Main.Instance.Player.CurrentBackpack.ThisStorage.StorageMax.ToString();
       num1 = gameObjectList.Count;
     }
     else
@@ -1848,6 +2044,7 @@ label_8:
             case DressableType.Hair:
             case DressableType.Head:
             case DressableType.Body:
+            case DressableType.Beard:
               continue;
             default:
               if (!intPersonStorage.ThisPerson.EquippedClothes[index].HideFromInv)
@@ -1906,7 +2103,7 @@ label_8:
           if ((UnityEngine.Object) component4 == (UnityEngine.Object) null && (UnityEngine.Object) componentInChildren == (UnityEngine.Object) null)
             component3.EquipBtn.SetActive(false);
         }
-        this.ContainerAmount.text = $"{this.CurrentOpenStorage.StorageItems.Count.ToString()}/{Storage.StorageMax.ToString()}";
+        this.ContainerAmount.text = this.CurrentOpenStorage.StorageItems.Count.ToString() + "/" + Storage.StorageMax.ToString();
         num2 = this.CurrentOpenStorage.StorageItems.Count;
       }
     }
@@ -1914,6 +2111,7 @@ label_8:
       this.ContainerAmount.text = "(None)";
     Cursor.lockState = CursorLockMode.None;
     Cursor.visible = true;
+    Main.Instance.Player.UserControl.TheCam.IsDisabled = true;
     Main.Instance.MainThreads.Add(new Action(this.OpenedJournal));
     if (num1 > 0)
       this.BackPackContent.sizeDelta = new Vector2(0.0f, (float) (num1 * 40 + 40));
@@ -1944,7 +2142,7 @@ label_8:
     if (num != 0)
     {
       Main.Instance.Player.Money -= num;
-      GameObject gameObject = Main.Spawn(Main.Instance.AllPrefabs[192 /*0xC0*/]);
+      GameObject gameObject = Main.Spawn(Main.Instance.AllPrefabs[192]);
       int_money component = gameObject.GetComponent<int_money>();
       component.Value = num;
       component.InteractText = gameObject.name = num.ToString() + " Bitch Notes";
@@ -1994,9 +2192,9 @@ label_8:
             component2.EquipBtn.SetActive(true);
         }
         if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null)
-          component2.Title.text = $"({componentInChildren.SellPrice.ToString()}BN) {component1.ThisStorage.StorageItems[index].name}";
+          component2.Title.text = "(" + componentInChildren.SellPrice.ToString() + "BN) " + component1.ThisStorage.StorageItems[index].name;
       }
-      this.TraderBackPackAmount.text = $"{Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Count.ToString()}/{Main.Instance.Player.CurrentBackpack.ThisStorage.StorageMax.ToString()}";
+      this.TraderBackPackAmount.text = Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Count.ToString() + "/" + Main.Instance.Player.CurrentBackpack.ThisStorage.StorageMax.ToString();
       num1 = Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Count;
     }
     else
@@ -2020,7 +2218,7 @@ label_8:
         }
         else
         {
-          component.Title.text = $"({componentInChildren.BuyPrice.ToString()}BN) {Storage.StorageItems[index].name}";
+          component.Title.text = "(" + componentInChildren.BuyPrice.ToString() + "BN) " + Storage.StorageItems[index].name;
           if (Main.Instance.Player.Money < componentInChildren.BuyPrice)
             component.SendBtn.GetComponent<Button>().interactable = false;
         }
@@ -2053,7 +2251,7 @@ label_8:
       this.CurrentOpenStorage.Sound.clip = this.CurrentOpenStorage.CloseSound;
       this.CurrentOpenStorage.Sound.Play();
     }
-    GC.Collect();
+    Main.Instance.GarbageCollect();
   }
 
   public void ShowNotification(string message)
@@ -2069,16 +2267,9 @@ label_8:
     }
     if (flag)
       this.notifications.Add(message);
-    if (this.NotificationText.text == "No Backpack equipped" || this.NotificationText.text == "Backpack is full")
-    {
-      this.ShowNextNotification();
-    }
-    else
-    {
-      if (this.currentNotificationIndex >= 0)
-        return;
-      this.ShowNextNotification();
-    }
+    if (this.currentNotificationIndex >= 0)
+      return;
+    this.ShowNextNotification();
   }
 
   private void ShowNextNotification()
@@ -2172,7 +2363,7 @@ label_8:
   public static string MetersToFeetAndInches(float meters)
   {
     double num = (double) meters * 39.370098114013672;
-    return $"{(int) (num / 12.0)}'{(int) (num % 12.0)}\"";
+    return string.Format("{0}'{1}\"", (object) (int) (num / 12.0), (object) (int) (num % 12.0));
   }
 
   public void SelectRels()
@@ -2205,13 +2396,19 @@ label_8:
     }
   }
 
+  public void Click_retakepicture()
+  {
+    this.Relationships[this._SelectedRelsPerson].overrideProfilePic();
+    this.Rels_selectPErson(this._SelectedRelsPerson);
+  }
+
   public void Rels_selectPErson(int index)
   {
     if (this.Relationships.Count <= index)
       return;
     this._SelectedRelsPerson = index;
     Person relationship = this.Relationships[index];
-    string str1 = $"{Main.AssetsFolder}/Saves/{relationship.WorldSaveID}.png";
+    string str1 = Main.AssetsFolder + "/Saves/" + relationship.WorldSaveID + ".png";
     Texture2D texture = !File.Exists(str1) ? (Texture2D) UnityEngine.Object.FindObjectOfType<UI_LoadGame>(true).LoadSlotPrefab.GetComponentInChildren<Image>(true).mainTexture : UI_Gameplay.LoadTexture(str1);
     this.PersonPfp.sprite = Sprite.Create(texture, new Rect(0.0f, 0.0f, (float) texture.width, (float) texture.height), new Vector2(0.0f, 0.0f));
     string str2 = (relationship.Penis.transform.localScale.x * 10f).ToString("###") + "cm Penis";
@@ -2231,12 +2428,12 @@ label_8:
         string str4 = str3;
         fetish = relationship.Fetishes[index1];
         string str5 = fetish.ToString();
-        str3 = $"{str4}, {str5}";
+        str3 = str4 + ", " + str5;
       }
       if (!Main.Instance.ScatContent)
         str3 = str3.Replace("Scat", "*");
     }
-    this.PersonDesc.text = $"{relationship.Name}\n\n{(relationship is Girl ? "Female (" : "Male (")}{((UnityEngine.Object) relationship.PersonType != (UnityEngine.Object) null ? relationship.PersonType.ThisType.ToString() : "Classless")})\n{relationship.Personality.ToString()}\nSexed {relationship.TimesSexedPlayer.ToString()} times\n{str3}\n{(relationship.transform.localScale.y + 0.75f).ToString("##.##")} Meters {UI_Gameplay.MetersToFeetAndInches(relationship.transform.localScale.y + 0.75f)}\n{(relationship is Girl ? (((Girl) relationship).Futa ? str2 : "No Penis") : str2)}\n{(relationship is Girl ? $"({((double) relationship.StoryModeFertility == 0.0 ? (object) (relationship.Fertility * 100f).ToString("0.#") : (object) (float) ((double) relationship.StoryModeFertility * 100.0))?.ToString()}% fertile) {(((Girl) relationship).Pregnant ? "Pregnancy: " + ((Girl) relationship).PregnancyDisplayPercent : "Not Pregnant")}" : string.Empty)}\n{(relationship is Girl ? $"Had {((Girl) relationship).HadPregnancies.ToString()} Pregnancies" : string.Empty)}";
+    this.PersonDesc.text = relationship.Name + "\n\n" + (relationship is Girl ? "Female (" : "Male (") + ((UnityEngine.Object) relationship.PersonType != (UnityEngine.Object) null ? relationship.PersonType.ThisType.ToString() : "Classless") + ")\n" + relationship.Personality.ToString() + "\nSexed " + relationship.TimesSexedPlayer.ToString() + " times\n" + str3 + "\n" + (relationship.transform.localScale.y + 0.75f).ToString("##.##") + " Meters " + UI_Gameplay.MetersToFeetAndInches(relationship.transform.localScale.y + 0.75f) + "\n" + (relationship is Girl ? (((Girl) relationship).Futa ? str2 : "No Penis") : str2) + "\n" + (relationship is Girl ? "(" + ((double) relationship.StoryModeFertility == 0.0 ? (object) (relationship.Fertility * 100f).ToString("0.#") : (object) (float) ((double) relationship.StoryModeFertility * 100.0))?.ToString() + "% fertile) " + (((Girl) relationship).Pregnant ? "Pregnancy: " + ((Girl) relationship).PregnancyDisplayPercent : "Not Pregnant") : string.Empty) + "\n" + (relationship is Girl ? "Had " + ((Girl) relationship).HadPregnancies.ToString() + " Pregnancies" : string.Empty);
   }
 
   public static Texture2D LoadTexture(string FilePath)
@@ -2251,32 +2448,164 @@ label_8:
     return (Texture2D) null;
   }
 
-  public void GoToOpenWorld_11()
+  public void GoToOpenWorld_11() => this.GoToOpenWorld_Section(0);
+
+  public void GoToOpenWorld_Section(int section)
   {
+    Main.Instance.OpenWorld = true;
+    GameObject gameObject = GameObject.Find("TempCube_OpenWorld (2)");
+    if ((UnityEngine.Object) gameObject != (UnityEngine.Object) null)
+      gameObject.SetActive(false);
+    this._isLoadingASection = false;
+    this._SetionLoading = section;
+    Main.Instance.CanSaveFlags_add("GeneratingOW");
     Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
-    for (int index = 0; index < this.DisableOnOpenWorld.Count; ++index)
+    Main.Instance.NewGameMenu.ExtraLoading.SetActive(true);
+    Main.Instance.MapAreas[0].LocalMusics[4] = Main.Instance.MapAreas[0].LocalMusics[3];
+    if (Main.Instance.WorldSections.Count < this._SetionLoading)
+      this._SetionLoading = 0;
+    this._isLoadingASection = Main.Instance.WorldSections[this._SetionLoading].PreviouslyGenerated;
+    Main.Instance.NewGameMenu.ExtraLoadingFirstTime.SetActive(!this._isLoadingASection);
+    Main.Instance.NewGameMenu.ExtraLoadingSliderEpic.value = 0.0f;
+    Main.Instance.NewGameMenu.ExtraLoadingSlider.value = 0.0f;
+    Main.Instance.NewGameMenu.ExtraLoadingSlider.gameObject.SetActive(true);
+    Main.Instance.NewGameMenu.ExtraLoadingSliderEpic = Main.Instance.NewGameMenu.ExtraLoadingSlider;
+    Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+    Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Despawning City";
+    Main.RunInNextFrame((Action) (() =>
     {
-      if ((UnityEngine.Object) this.DisableOnOpenWorld[index] != (UnityEngine.Object) null)
-        this.DisableOnOpenWorld[index].SetActive(false);
+      for (int index = 0; index < this.DisableOnOpenWorld.Count; ++index)
+      {
+        if ((UnityEngine.Object) this.DisableOnOpenWorld[index] != (UnityEngine.Object) null)
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.DisableOnOpenWorld[index]);
+      }
+      for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null)
+          Main.Instance.SpawnedPeople[index].gameObject.SetActive(false);
+      }
+      for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index] != (UnityEngine.Object) null)
+        {
+          if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj != (UnityEngine.Object) null && (UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.transform.parent == (UnityEngine.Object) null)
+            Main.Instance.SpawnedObjects[index].RootObj.SetActive(false);
+          else if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].transform.parent == (UnityEngine.Object) null)
+            Main.Instance.SpawnedObjects[index].gameObject.SetActive(false);
+        }
+      }
+      for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null && !Main.Instance.SpawnedPeople[index].IsPlayer)
+          UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedPeople[index].gameObject);
+      }
+      for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index] != (UnityEngine.Object) null)
+        {
+          if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj != (UnityEngine.Object) null && (UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.transform.parent == (UnityEngine.Object) null)
+            UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.gameObject);
+          else if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].transform.parent == (UnityEngine.Object) null)
+            UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedObjects[index].gameObject);
+        }
+      }
+      foreach (SpawnedSexScene spawnedSexScene in UnityEngine.Object.FindObjectsOfType<SpawnedSexScene>())
+        UnityEngine.Object.Destroy((UnityEngine.Object) spawnedSexScene.SpawnedSexSceneStructure.gameObject);
+      Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+      Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Loading Scene";
+      Main.RunInNextFrame((Action) (() =>
+      {
+        SceneManager.LoadScene(5, LoadSceneMode.Additive);
+        Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+        Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Deciding Terrain";
+        Main.RunInNextFrame((Action) (() =>
+        {
+          this.WorldGenerate2 = UnityEngine.Object.FindObjectOfType<bl_SectionGenerate2>();
+          if ((UnityEngine.Object) this.WorldGenerate2 == (UnityEngine.Object) null)
+          {
+            Debug.LogError((object) "huh?");
+          }
+          else
+          {
+            if (this._isLoadingASection)
+              return;
+            UI_Gameplay.OWGenerating = true;
+            this.StartCoroutine(this.WorldGenerate2.Generate(Vector3.zero, Main.Instance.WorldSections[0]));
+            Main.Instance.MainThreads.Add(new Action(this.WaitingForGenerationThread));
+          }
+        }), 2);
+      }), 3);
+    }), 3);
+  }
+
+  public void WaitingForGenerationThread()
+  {
+    if (UI_Gameplay.OWGenerating)
+      return;
+    Main.Instance.MainThreads.Remove(new Action(this.WaitingForGenerationThread));
+    if (this._isLoadingASection)
+    {
+      Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+      Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Loading Navigation";
     }
-    for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
+    else
     {
-      if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null)
-        Main.Instance.SpawnedPeople[index].gameObject.SetActive(false);
+      Main.Instance.NewGameMenu.ExtraLoadingText.text = "0/1";
+      Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Generating Navigation";
     }
     Main.RunInNextFrame((Action) (() =>
     {
-      SceneManager.LoadScene(5, LoadSceneMode.Additive);
-      this.WorldGenerate = UnityEngine.Object.FindObjectOfType<bl_WorldGenerate>();
-      this.WorldGenerate.Generate(Vector3.zero);
-      this.OpenWorldAfterGenerateNav();
-    }), 3);
+      Main.Instance.OnFinallyGenerate.Clear();
+      Main.Instance.OnAfterFinallyGenerate.Clear();
+      Main.Instance.OnFinallyGenerate.Add((Action) (() => this.OpenWorldAfterGenerateNav()));
+      if (this._isLoadingASection)
+      {
+        BinaryFormatter binaryFormatter = new BinaryFormatter();
+        FileStream fileStream = File.Open(Main.Instance.CurrentSavePath + "Section_" + this._SetionLoading.ToString() + "/navmesh.dat", FileMode.Open);
+        FileStream serializationStream = fileStream;
+        NavMeshData navMeshData = (NavMeshData) binaryFormatter.Deserialize((Stream) serializationStream);
+        fileStream.Close();
+        if ((UnityEngine.Object) navMeshData != (UnityEngine.Object) null)
+          NavMesh.AddNavMeshData(navMeshData);
+        else
+          Main.Instance.GenerateNav();
+      }
+      else
+        Main.Instance.GenerateNav();
+    }), 4);
+  }
+
+  public void Thread_GeneratingOWNav()
+  {
+    if (Main.GeneratingOWNav)
+      return;
+    Main.Instance.MainThreads.Remove(new Action(this.Thread_GeneratingOWNav));
+    for (int index = 0; index < Main.Instance.OnFinallyGenerate.Count; ++index)
+      Main.Instance.OnFinallyGenerate[index]();
+    Main.Instance.OnFinallyGenerate.Clear();
+    Main.RunInNextFrame((Action) (() =>
+    {
+      for (int index = 0; index < Main.Instance.OnAfterFinallyGenerate.Count; ++index)
+        Main.Instance.OnAfterFinallyGenerate[index]();
+      Main.Instance.OnAfterFinallyGenerate.Clear();
+    }), 60);
   }
 
   public void OpenWorldAfterGenerateNav()
   {
     Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
+    Main.Instance.NewGameMenu.ExtraLoading.SetActive(false);
     Main.Instance.Player.gameObject.SetActive(true);
+    Main.Instance.Player.FootStepsAudio.CurrentTerrain = e_CurrentTerrain.Dirt;
+    for (int index = 0; index < bl_WorldStructure.WorldStructures.Count; ++index)
+      bl_WorldStructure.WorldStructures[index].SpawnNPCs();
+    Main.Instance.CanSaveFlags_remove("GeneratingOW");
+  }
+
+  public void GoToCity()
+  {
+    Debug.Log((object) "GoToCity()");
+    Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
   }
 
   public void GoToOpenWorld() => Main.Instance.Player.SaveOnThisPlay();
@@ -2476,7 +2805,7 @@ label_8:
       misc_invItem component = gameObject.GetComponent<misc_invItem>();
       component.ThisEntry = index4;
       component.OnClick = new Action<int>(this.AutoItems);
-      component.Title.text = this.TheSelectedReceipt.Ingredients[index4].IngredientType != e_ResourceType.Unique ? $"{this.TheSelectedReceipt.Ingredients[index4].Amount.ToString()}x {this.TheSelectedReceipt.Ingredients[index4].IngredientType.ToString()}" : $"{this.TheSelectedReceipt.Ingredients[index4].Amount.ToString()}x {this.TheSelectedReceipt.Ingredients[index4].Unique}";
+      component.Title.text = this.TheSelectedReceipt.Ingredients[index4].IngredientType != e_ResourceType.Unique ? this.TheSelectedReceipt.Ingredients[index4].Amount.ToString() + "x " + this.TheSelectedReceipt.Ingredients[index4].IngredientType.ToString() : this.TheSelectedReceipt.Ingredients[index4].Amount.ToString() + "x " + this.TheSelectedReceipt.Ingredients[index4].Unique;
       this.SpawnedCraftRecipeEntries.Add(gameObject);
     }
     this.CraftIngredientList.sizeDelta = new Vector2(0.0f, (float) (this.SpawnedCraftRecipeEntries.Count * 41));
@@ -2503,7 +2832,7 @@ label_8:
       gameObject.SetActive(true);
       int_ResourceItem componentInChildren = this.PlayerItems[index6].GetComponentInChildren<int_ResourceItem>();
       misc_toogleItem component = gameObject.GetComponent<misc_toogleItem>();
-      component.TheText.text = (UnityEngine.Object) componentInChildren == (UnityEngine.Object) null ? this.PlayerItems[index6].name : $"({componentInChildren.ResourceType.ToString()}){this.PlayerItems[index6].name}";
+      component.TheText.text = (UnityEngine.Object) componentInChildren == (UnityEngine.Object) null ? this.PlayerItems[index6].name : "(" + componentInChildren.ResourceType.ToString() + ")" + this.PlayerItems[index6].name;
       component.Index = index6;
       component.TheAction = new Action<bool, int>(this.OnSelectItem);
       this.SpawnedCraftItemEntries.Add(gameObject);
@@ -2523,7 +2852,7 @@ label_8:
   public void OnSelectItem(bool yes, int index)
   {
     Main.Instance.MusicPlayer.PlayOneShot(this.JournalSound1);
-    Main.Log($"OnSelectItem {yes.ToString()} {index.ToString()}");
+    Main.Log("OnSelectItem " + yes.ToString() + " " + index.ToString());
     if (yes)
       this.SelectedItems.Add(this.PlayerItems[index]);
     else
@@ -2660,29 +2989,37 @@ label_26:
     }
     for (int index1 = 0; index1 < Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome.Length; ++index1)
     {
-      GameObject prefab = (GameObject) null;
+      GameObject prefab;
       for (int index2 = 0; index2 < Main.Instance.AllPrefabs.Count; ++index2)
       {
         if (Main.Instance.AllPrefabs[index2].name == Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[index1])
         {
           prefab = Main.Instance.AllPrefabs[index2];
-          break;
+          goto label_26;
         }
       }
-      if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
+      for (int index3 = 0; index3 < Main.Instance.Prefabs_Weapons.Count; ++index3)
       {
-        GameObject gameObject = Main.Spawn(prefab, saveable: true);
-        gameObject.transform.position = Main.Instance.Player.transform.position + new Vector3(0.0f, 0.1f, 0.0f);
-        if ((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null && !Main.Instance.Player.CurrentBackpack.ThisStorage.Full)
+        if (Main.Instance.Prefabs_Weapons[index3].name == Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[index1])
         {
-          Main.Instance.Player.CurrentBackpack.ThisStorage.AddItem(gameObject);
-          Main.Instance.GameplayMenu.ShowNotification($"Crafted: {gameObject.name} (Added to Backpack)");
+          prefab = Main.Instance.Prefabs_Weapons[index3].gameObject;
+          goto label_26;
         }
-        else
-          Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name);
-        this.RefreshRecipes(this.SelectedRecipeType);
-        Main.Instance.MusicPlayer.PlayOneShot(this.JournalPerkSound, 3f);
       }
+      Debug.LogError((object) ("Prefab not found:" + Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[0]));
+      break;
+label_26:
+      GameObject gameObject = Main.Spawn(prefab, saveable: true);
+      gameObject.transform.position = Main.Instance.Player.transform.position + new Vector3(0.0f, 0.1f, 0.0f);
+      if ((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null && !Main.Instance.Player.CurrentBackpack.ThisStorage.Full)
+      {
+        Main.Instance.Player.CurrentBackpack.ThisStorage.AddItem(gameObject);
+        Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name + " (Added to Backpack)");
+      }
+      else
+        Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name);
+      this.RefreshRecipes(this.SelectedRecipeType);
+      Main.Instance.MusicPlayer.PlayOneShot(this.JournalPerkSound, 3f);
     }
   }
 
@@ -2834,13 +3171,13 @@ label_26:
         Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Misc;
         break;
       case 1:
-        Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Sex;
+        Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Presets;
         break;
       case 2:
-        Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Food;
+        Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Furniture;
         break;
       case 3:
-        Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Items;
+        Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_SexFurniture;
         break;
       case 4:
         Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Defence;
@@ -2885,7 +3222,7 @@ label_26:
       misc_invItem component = gameObject.GetComponent<misc_invItem>();
       component.ThisEntry = index3;
       component.OnClick = new Action<int>(this.AutoItems);
-      component.Title.text = this.Build_TheSelectedReceipt.Ingredients[index3].IngredientType != e_ResourceType.Unique ? $"{this.Build_TheSelectedReceipt.Ingredients[index3].Amount.ToString()}x {this.Build_TheSelectedReceipt.Ingredients[index3].IngredientType.ToString()}" : $"{this.Build_TheSelectedReceipt.Ingredients[index3].Amount.ToString()}x {this.Build_TheSelectedReceipt.Ingredients[index3].Unique}";
+      component.Title.text = this.Build_TheSelectedReceipt.Ingredients[index3].IngredientType != e_ResourceType.Unique ? this.Build_TheSelectedReceipt.Ingredients[index3].Amount.ToString() + "x " + this.Build_TheSelectedReceipt.Ingredients[index3].IngredientType.ToString() : this.Build_TheSelectedReceipt.Ingredients[index3].Amount.ToString() + "x " + this.Build_TheSelectedReceipt.Ingredients[index3].Unique;
       this.Build_SpawnedCraftRecipeEntries.Add(gameObject);
     }
     this.Build_CraftIngredientList.sizeDelta = new Vector2(0.0f, (float) (this.Build_SpawnedCraftRecipeEntries.Count * 41));
@@ -2909,8 +3246,40 @@ label_26:
       }
     }
     if ((UnityEngine.Object) this._BuildindPlan == (UnityEngine.Object) null)
-      return;
-    Main.RunInNextFrame((Action) (() => Main.Instance.MainThreads.Add(new Action(this.BuildThread))), 5);
+    {
+      Debug.LogError((object) ("build plan not found: " + this.Build_TheSelectedReceipt.OutCome[0]));
+    }
+    else
+    {
+      int_ConstructionPlan componentInChildren = this._BuildindPlan.GetComponentInChildren<int_ConstructionPlan>();
+      this.ThisPlan = componentInChildren;
+      if ((UnityEngine.Object) componentInChildren == (UnityEngine.Object) null)
+      {
+        Debug.LogError((object) ("Invalid Plan: " + this._BuildindPlan.name));
+        UnityEngine.Object.Destroy((UnityEngine.Object) this._BuildindPlan);
+      }
+      else
+      {
+        componentInChildren.BeingMoved = true;
+        componentInChildren.BuildFill.enabled = false;
+        this.CurrentSnapType = componentInChildren.BuildSnapType;
+        if (componentInChildren.BuildSnapType != int_ConstructionPlan.e_BuildSnapType.Disabled)
+        {
+          foreach (bl_ObjWithConstructionSnap constructionSnap in UnityEngine.Object.FindObjectsOfType<bl_ObjWithConstructionSnap>())
+            constructionSnap.Show(componentInChildren.BuildSnapType);
+        }
+        Main.RunInNextFrame((Action) (() => Main.Instance.MainThreads.Add(new Action(this.BuildThread))), 5);
+      }
+    }
+  }
+
+  public void HideAllSnaps()
+  {
+    this._CurrentSnap = (bl_ConstructionSnapSpot) null;
+    this.IsSnapping = false;
+    this.CurrentSnapType = int_ConstructionPlan.e_BuildSnapType.Disabled;
+    foreach (bl_ObjWithConstructionSnap constructionSnap in UnityEngine.Object.FindObjectsOfType<bl_ObjWithConstructionSnap>())
+      constructionSnap.Hide();
   }
 
   public bool CanBuild
@@ -2925,28 +3294,104 @@ label_26:
 
   public void BuildThread()
   {
+    bool flag = true;
     RaycastHit hitInfo;
-    if (Physics.Raycast(Main.Instance.Player.WeaponInv.transform.position, Main.Instance.Player.WeaponInv.transform.TransformDirection(Vector3.forward), out hitInfo, 10f, (int) this.PlacePlanLayers, QueryTriggerInteraction.Ignore))
-      this._BuildindPlan.transform.position = hitInfo.point;
+    if (Physics.Raycast(Main.Instance.Player.WeaponInv.transform.position, Main.Instance.Player.WeaponInv.transform.TransformDirection(Vector3.forward), out hitInfo, 10f, (int) this.PlacePlanLayers, QueryTriggerInteraction.Collide))
+    {
+      if (hitInfo.transform.tag == "NoBuild")
+      {
+        flag = false;
+      }
+      else
+      {
+        this._CurrentSnap = hitInfo.transform.GetComponent<bl_ConstructionSnapSpot>();
+        if ((UnityEngine.Object) this._CurrentSnap != (UnityEngine.Object) null)
+        {
+          if (this.CurrentSnapType == int_ConstructionPlan.e_BuildSnapType.Floor)
+          {
+            this.IsSnapping = true;
+            this._BuildindPlan.transform.position = this._CurrentSnap.Spot_Floor.position;
+            this._BuildindPlan.transform.rotation = this._CurrentSnap.Spot_Floor.rotation;
+            if (Input.GetKeyUp(KeyCode.LeftAlt))
+            {
+              ++this.SelectedPlanRotation;
+              if (this.SelectedPlanRotation > 3)
+                this.SelectedPlanRotation = 0;
+            }
+            this._BuildindPlan.transform.eulerAngles = new Vector3(this._BuildindPlan.transform.eulerAngles.x, this._BuildindPlan.transform.eulerAngles.y + (float) (90 * this.SelectedPlanRotation), this._BuildindPlan.transform.eulerAngles.z);
+          }
+          else
+          {
+            this.IsSnapping = true;
+            this._BuildindPlan.transform.position = this._CurrentSnap.Spot_Wall.position;
+            this._BuildindPlan.transform.rotation = this._CurrentSnap.Spot_Wall.rotation;
+            if (Input.GetKeyUp(KeyCode.LeftAlt))
+            {
+              ++this.SelectedPlanRotation;
+              if (this.SelectedPlanRotation > 3)
+                this.SelectedPlanRotation = 0;
+            }
+            this._BuildindPlan.transform.eulerAngles = new Vector3(this._BuildindPlan.transform.eulerAngles.x, this._BuildindPlan.transform.eulerAngles.y + (float) (90 * this.SelectedPlanRotation), this._BuildindPlan.transform.eulerAngles.z);
+          }
+        }
+        else
+        {
+          this._CurrentSnap = (bl_ConstructionSnapSpot) null;
+          this.IsSnapping = false;
+          this._BuildindPlan.transform.position = hitInfo.point;
+          if ((UnityEngine.Object) this.ThisPlan != (UnityEngine.Object) null && this.ThisPlan.Foundation)
+          {
+            bl_WorldChunk component = hitInfo.transform.GetComponent<bl_WorldChunk>();
+            if ((UnityEngine.Object) component != (UnityEngine.Object) null && component.CanUseFoundations)
+              this._BuildindPlan.transform.position = new Vector3(hitInfo.point.x, component.transform.position.y + this.ThisPlan.ExtraBuildHeight, hitInfo.point.z);
+          }
+          if (Input.GetKey(KeyCode.LeftAlt))
+            this._BuildindPlan.transform.eulerAngles = new Vector3(this._BuildindPlan.transform.eulerAngles.x, Main.Instance.PlayerCam.transform.eulerAngles.y, this._BuildindPlan.transform.eulerAngles.z);
+        }
+      }
+    }
+    else
+    {
+      this._CurrentSnap = (bl_ConstructionSnapSpot) null;
+      this.IsSnapping = false;
+      flag = false;
+    }
     if (Main.Instance.CancelKey() || Input.GetMouseButtonUp(UI_Settings.RightMouseButton))
     {
       Main.Instance.MainThreads.Remove(new Action(this.BuildThread));
       UnityEngine.Object.Destroy((UnityEngine.Object) this._BuildindPlan);
       this._BuildindPlan = (GameObject) null;
+      this.HideAllSnaps();
     }
-    if (!Input.GetKeyUp(KeyCode.E) && !Input.GetKeyUp(KeyCode.F) && !Input.GetKeyUp(KeyCode.KeypadEnter) && !Input.GetKeyUp(KeyCode.Return) && !Input.GetMouseButtonUp(UI_Settings.LeftMouseButton))
+    if (!flag || !Input.GetKeyUp(KeyCode.E) && !Input.GetKeyUp(KeyCode.F) && !Input.GetKeyUp(KeyCode.KeypadEnter) && !Input.GetKeyUp(KeyCode.Return) && !Input.GetMouseButtonUp(UI_Settings.LeftMouseButton))
       return;
     this.PlacePlan(this._BuildindPlan);
   }
 
   public void PlacePlan(GameObject obj)
   {
+    int_ConstructionPlan componentInChildren = this._BuildindPlan.GetComponentInChildren<int_ConstructionPlan>();
+    this._BuildindPlan.GetComponentInChildren<bl_ObjWithConstructionSnap>();
+    bool _placeAnother = false;
+    if (this.IsSnapping)
+    {
+      int currentSnapType = (int) this.CurrentSnapType;
+    }
+    _placeAnother = componentInChildren.PlanAnotherAfter;
+    componentInChildren.BeingMoved = false;
+    componentInChildren.GetPlaced();
+    this.ThisPlan = (int_ConstructionPlan) null;
     this._BuildindPlan = (GameObject) null;
     Main.Instance.MainThreads.Remove(new Action(this.BuildThread));
+    this.HideAllSnaps();
     Main.RunInNextFrame((Action) (() =>
     {
       obj.GetComponentInChildren<Interactible>().RemoveBlocker("PlanPlacing");
       this.LatestPlacedPlan = obj;
+      if (_placeAnother)
+        this.Click_Build();
+      else
+        this.SelectedPlanRotation = 0;
     }), 5);
   }
 
@@ -2961,7 +3406,7 @@ label_26:
   public void SpeedrunThread()
   {
     this.SpeedrunTimer += Time.deltaTime;
-    this.SpeedrunLabel.text = $"{Mathf.FloorToInt(this.SpeedrunTimer / 3600f):00}:{Mathf.FloorToInt((float) ((double) this.SpeedrunTimer % 3600.0 / 60.0)):00}:{Mathf.FloorToInt(this.SpeedrunTimer % 60f):00}";
+    this.SpeedrunLabel.text = string.Format("{0:00}:{1:00}:{2:00}", (object) Mathf.FloorToInt(this.SpeedrunTimer / 3600f), (object) Mathf.FloorToInt((float) ((double) this.SpeedrunTimer % 3600.0 / 60.0)), (object) Mathf.FloorToInt(this.SpeedrunTimer % 60f));
     switch (UI_Settings._SpeedrunValue)
     {
       case 3:

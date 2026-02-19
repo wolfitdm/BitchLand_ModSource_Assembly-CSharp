@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_HardTutorial
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
+// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -239,7 +239,15 @@ public class Mis_HardTutorial : Mission
       if (this.FirstGuard is Girl)
       {
         ((Girl) this.FirstGuard).PregnancyPercent = 0.0f;
-        ((Girl) this.FirstGuard).Futa = true;
+        if ((double) UI_Customize.FutaChanceValue == 0.0)
+        {
+          ((Girl) this.FirstGuard).Futa = false;
+        }
+        else
+        {
+          ((Girl) this.FirstGuard).Futa = true;
+          this.FirstGuard.HasPenis = true;
+        }
         ((Girl) this.FirstGuard).GirlPhysics = false;
       }
       this.FirstGuard.CantBeForced = true;
@@ -248,12 +256,12 @@ public class Mis_HardTutorial : Mission
       this.FirstGuard.navMesh.speed = 1f;
       this.FirstGuard.WeaponInv.SetActiveWeapon(1);
       this.FirstGuard.Penis.transform.localScale = new Vector3(3f, 3f, 3f);
-      this.FirstGuard.HasPenis = true;
       this.FirstGuard.Fertility = 0.0f;
       this.FirstGuard.StoryModeFertility = 1f;
-      this.FirstGuard.PutPenis();
       this.FirstGuard.HasCondomPut = true;
       this.FirstGuard.Energy = this.FirstGuard.EnergyMax;
+      if ((double) UI_Customize.FutaChanceValue != 0.0)
+        this.FirstGuard.PutPenis();
       this.FirstGuard.Fetishes.Clear();
       this.FirstGuard.Fetishes.Add(e_Fetish.Machine);
       this.FirstGuard.Fetishes.Add(e_Fetish.Sadist);
@@ -317,6 +325,9 @@ public class Mis_HardTutorial : Mission
     {
       "FeedingTime"
     };
+    if ((double) UI_Customize.FutaChanceValue != 0.0)
+      return;
+    ((Girl) this.FirstGuard).StrapOn = this.FirstGuard.DressClothe(Main.Instance.TempStraponPanties);
   }
 
   public void Chat1_aftersucc()
@@ -451,7 +462,7 @@ public class Mis_HardTutorial : Mission
       int num2 = num1 < 60 ? (num1 > 5 ? num1 - 5 : 1) : 60;
       this.MineMission.TotalResourcesGiven = 0;
       this.MineMission.TotalResourcesToGive = num2;
-      this.MineMission.Goals[4].Title = $"Find and bring {num2.ToString()} resources to the Storage room";
+      this.MineMission.Goals[4].Title = "Find and bring " + num2.ToString() + " resources to the Storage room";
       this.MineMission.AddGoal(4, true);
       this.MineMission.StorageGuardInt.InteractBlockers.Clear();
       this.MineMission.StorageGuardInt.CanInteract = true;
@@ -657,7 +668,7 @@ public class Mis_HardTutorial : Mission
     ++this.CurrentDay;
     Main.Instance.GlobalVars.Set("HardMode_CurrentDay", this.CurrentDay.ToString());
     this.Goals[4].Completed = false;
-    Main.Instance.GameplayMenu.ShowNotification($"Day {(this.CurrentDay + 1).ToString()} out of 5");
+    Main.Instance.GameplayMenu.ShowNotification("Day " + (this.CurrentDay + 1).ToString() + " out of 5");
     if (this.CurrentDay != 3)
       return;
     this.Day4Stuff.SetActive(true);
@@ -1015,7 +1026,7 @@ public class Mis_HardTutorial : Mission
     Main.Instance.Player.States[26] = true;
     Main.Instance.Player.SetBodyTexture();
     this.NonRemoveGag.SetActive(true);
-    Main.Instance.GameplayMenu.DisplaySubtitle("I'mma give you this gag first, equip it", this.VoiceLines[16 /*0x10*/], (Action) (() =>
+    Main.Instance.GameplayMenu.DisplaySubtitle("I'mma give you this gag first, equip it", this.VoiceLines[16], (Action) (() =>
     {
       Main.Instance.GameplayMenu.EndChat();
       this.CellDoor.OpenDoor();
@@ -1105,12 +1116,15 @@ public class Mis_HardTutorial : Mission
                       {
                         Interactible part = (this.SuckDildos[index] as MultiInteractible).Parts[0];
                         Person interactingPerson = part.InteractingPerson;
-                        if ((UnityEngine.Object) interactingPerson != (UnityEngine.Object) null && (double) UnityEngine.Random.Range(0.0f, 1f) > 0.5)
+                        if ((UnityEngine.Object) interactingPerson != (UnityEngine.Object) null && (double) UnityEngine.Random.Range(0.0f, 1f) > 0.40000000596046448)
                         {
                           interactingPerson.AddMoveBlocker("quest");
                           part.StopInteracting();
                           interactingPerson.SleepOnFloor();
                           part.InteractingPerson = interactingPerson;
+                          interactingPerson.transform.position = part.NavMeshInteractSpot.position;
+                          part.PlayerCanInteract = false;
+                          part.CanLeave = true;
                         }
                       }
                       Main.RunInSeconds((Action) (() => Main.Instance.GameplayMenu.TheScreenFader.FadeOut(5f, (Action) (() =>
@@ -1155,15 +1169,29 @@ public class Mis_HardTutorial : Mission
     if (tempGuard is Girl)
     {
       ((Girl) tempGuard).PregnancyPercent = 0.0f;
-      ((Girl) tempGuard).Futa = true;
+      if ((double) UI_Customize.FutaChanceValue == 0.0)
+      {
+        ((Girl) tempGuard).Futa = false;
+        tempGuard.HasPenis = false;
+      }
+      else
+      {
+        ((Girl) tempGuard).Futa = true;
+        tempGuard.HasPenis = true;
+        tempGuard.Penis.transform.localScale = new Vector3(3f, 3f, 3f);
+        tempGuard.PutPenis();
+      }
     }
-    tempGuard.HasPenis = true;
+    else
+    {
+      tempGuard.HasPenis = true;
+      tempGuard.Penis.transform.localScale = new Vector3(3f, 3f, 3f);
+      tempGuard.PutPenis();
+    }
     tempGuard.CantBeForced = true;
     tempGuard.CantBeHit = true;
     tempGuard.navMesh.speed = 1f;
     tempGuard.WeaponInv.SetActiveWeapon(1);
-    tempGuard.Penis.transform.localScale = new Vector3(3f, 3f, 3f);
-    tempGuard.PutPenis();
     tempGuard.HasCondomPut = true;
     tempGuard.Energy = tempGuard.EnergyMax;
     tempGuard.NoEnergyLoss = true;
