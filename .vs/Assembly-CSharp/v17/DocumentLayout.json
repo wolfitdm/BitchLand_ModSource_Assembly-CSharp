@@ -1,0 +1,367 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\int_sexmachine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:int_sexmachine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\weaponsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:weaponsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\ui_gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:ui_gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\int_dragable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:int_dragable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_dragable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:int_dragable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\bl_thirdpersonusercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:bl_thirdpersonusercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\mis_zea2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:mis_zea2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\playerbasiccode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:playerbasiccode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\playermovecode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:playermovecode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\ui_customize.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:ui_customize.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\int_lockable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:int_lockable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|e:\\sw_games\\build10_0test\\bitchland_modsource_assembly-csharp\\person.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:person.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\person.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:person.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\ui_newgame.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:ui_newgame.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_loadcustomcharacter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:int_loadcustomcharacter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\health.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F0D741AE-8D2C-41F9-A16F-F6E0ACBE296B}|Assembly-CSharp.csproj|solutionrelative:health.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\ui_gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:ui_gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_constructionplan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:int_constructionplan.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_pickuptobag.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:int_pickuptobag.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_person.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:int_person.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_resourcemining.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B3893A8B-E0B0-43F9-808E-85781BBE9DFF}|Assembly-CSharp.csproj|solutionrelative:int_resourcemining.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "int_Dragable.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Dragable.cs",
+              "RelativeDocumentMoniker": "int_Dragable.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Dragable.cs",
+              "RelativeToolTip": "int_Dragable.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAIwGAAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:16:37.914Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Mis_Zea2.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Mis_Zea2.cs",
+              "RelativeDocumentMoniker": "Mis_Zea2.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Mis_Zea2.cs",
+              "RelativeToolTip": "Mis_Zea2.cs",
+              "ViewState": "AgIAAJ8AAAAAAAAAAAAIwLQAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:07:15.466Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UI_Gameplay.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_Gameplay.cs",
+              "RelativeDocumentMoniker": "UI_Gameplay.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_Gameplay.cs",
+              "RelativeToolTip": "UI_Gameplay.cs",
+              "ViewState": "AgIAAGMLAAAAAAAAAAA9wHgLAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T20:43:40.821Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "bl_ThirdPersonUserControl.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\bl_ThirdPersonUserControl.cs",
+              "RelativeDocumentMoniker": "bl_ThirdPersonUserControl.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\bl_ThirdPersonUserControl.cs",
+              "RelativeToolTip": "bl_ThirdPersonUserControl.cs",
+              "ViewState": "AgIAAB0BAAAAAAAAAAAIwDIBAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T20:49:20.235Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "int_Dragable.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Dragable.cs",
+              "RelativeDocumentMoniker": "int_Dragable.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Dragable.cs",
+              "RelativeToolTip": "int_Dragable.cs",
+              "ViewState": "AgIAAEMAAAAAAAAAAAAEwAkAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-14T20:15:33.913Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "WeaponSystem.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\WeaponSystem.cs",
+              "RelativeDocumentMoniker": "WeaponSystem.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\WeaponSystem.cs",
+              "RelativeToolTip": "WeaponSystem.cs",
+              "ViewState": "AgIAALUAAAAAAAAAAAAIwMEAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-14T20:16:27.97Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Int_SexMachine.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Int_SexMachine.cs",
+              "RelativeDocumentMoniker": "Int_SexMachine.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Int_SexMachine.cs",
+              "RelativeToolTip": "Int_SexMachine.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAQwDYAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:04:34.675Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PlayerBasicCode.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\PlayerBasicCode.cs",
+              "RelativeDocumentMoniker": "PlayerBasicCode.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\PlayerBasicCode.cs",
+              "RelativeToolTip": "PlayerBasicCode.cs",
+              "ViewState": "AgIAAJ8AAAAAAAAAAAAqwLwAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:07:07.019Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "PlayerMoveCode.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\PlayerMoveCode.cs",
+              "RelativeDocumentMoniker": "PlayerMoveCode.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\PlayerMoveCode.cs",
+              "RelativeToolTip": "PlayerMoveCode.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAIwFsAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:07:01.14Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "UI_Customize.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_Customize.cs",
+              "RelativeDocumentMoniker": "UI_Customize.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_Customize.cs",
+              "RelativeToolTip": "UI_Customize.cs",
+              "ViewState": "AgIAACcIAAAAAAAAAAAIwDwIAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:07:00.002Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "int_Lockable.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Lockable.cs",
+              "RelativeDocumentMoniker": "int_Lockable.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Lockable.cs",
+              "RelativeToolTip": "int_Lockable.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAUwGAAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T01:03:53.848Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Person.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Person.cs",
+              "RelativeDocumentMoniker": "Person.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Person.cs",
+              "RelativeToolTip": "Person.cs",
+              "ViewState": "AgIAAEMLAAAAAAAAAAAwwFcLAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T20:52:00.38Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Health.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Health.cs",
+              "RelativeDocumentMoniker": "Health.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Health.cs",
+              "RelativeToolTip": "Health.cs",
+              "ViewState": "AgIAABoBAAAAAAAAAAAIwOEAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T20:49:23.654Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "UI_NewGame.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_NewGame.cs",
+              "RelativeDocumentMoniker": "UI_NewGame.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_NewGame.cs",
+              "RelativeToolTip": "UI_NewGame.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAQwFgAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T20:44:00.383Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "int_LoadCustomCharacter.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_LoadCustomCharacter.cs",
+              "RelativeDocumentMoniker": "int_LoadCustomCharacter.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_LoadCustomCharacter.cs",
+              "RelativeToolTip": "int_LoadCustomCharacter.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T20:49:49.813Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "int_ConstructionPlan.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_ConstructionPlan.cs",
+              "RelativeDocumentMoniker": "int_ConstructionPlan.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_ConstructionPlan.cs",
+              "RelativeToolTip": "int_ConstructionPlan.cs",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAcwFIAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-15T18:31:48.581Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Person.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Person.cs",
+              "RelativeDocumentMoniker": "Person.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Person.cs",
+              "RelativeToolTip": "Person.cs",
+              "ViewState": "AgIAAGwPAAAAAAAAAIAwwCEQAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-15T07:34:40.273Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "int_Person.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Person.cs",
+              "RelativeDocumentMoniker": "int_Person.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_Person.cs",
+              "RelativeToolTip": "int_Person.cs",
+              "ViewState": "AgIAAMUDAAAAAAAAAAApwNoDAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-15T06:15:39.84Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "int_PickupToBag.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_PickupToBag.cs",
+              "RelativeDocumentMoniker": "int_PickupToBag.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\int_PickupToBag.cs",
+              "RelativeToolTip": "int_PickupToBag.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAMwAkAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-14T19:33:00.184Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "UI_Gameplay.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_Gameplay.cs",
+              "RelativeDocumentMoniker": "UI_Gameplay.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\UI_Gameplay.cs",
+              "RelativeToolTip": "UI_Gameplay.cs",
+              "ViewState": "AgIAAKIMAAAAAAAAAIAwwKMMAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-14T17:29:20.463Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Int_ResourceMining.cs",
+              "DocumentMoniker": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Int_ResourceMining.cs",
+              "RelativeDocumentMoniker": "Int_ResourceMining.cs",
+              "ToolTip": "E:\\sw_games\\build10_0TEST\\BitchLand_ModSource_Assembly-CSharp\\Int_ResourceMining.cs",
+              "RelativeToolTip": "Int_ResourceMining.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-14T17:25:27.352Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
