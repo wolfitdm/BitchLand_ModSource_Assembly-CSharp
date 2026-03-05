@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_WorldStructure
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using UnityEngine;
 public class bl_WorldStructure : MonoBehaviour
 {
   public static List<bl_WorldStructure> WorldStructures = new List<bl_WorldStructure>();
+  public int Index_ObjsToNotUnparent = 3;
+  public bool SpawnTrees;
   public GameObject[] NPCs;
   public Transform[] FallRespawnSpots;
 
@@ -37,6 +39,28 @@ public class bl_WorldStructure : MonoBehaviour
         personGenerated.SetCullLod(true);
         UnityEngine.Object.Destroy((UnityEngine.Object) _npc.gameObject);
       }));
+    }
+  }
+
+  public void GetSpawned(bool loadingGame)
+  {
+    List<Transform> transformList = new List<Transform>();
+    for (int objsToNotUnparent = this.Index_ObjsToNotUnparent; objsToNotUnparent < this.transform.childCount; ++objsToNotUnparent)
+      transformList.Add(this.transform.GetChild(objsToNotUnparent));
+    for (int index = 0; index < transformList.Count; ++index)
+    {
+      SaveableBehaviour componentInChildren = transformList[index].GetComponentInChildren<SaveableBehaviour>();
+      if (!((UnityEngine.Object) componentInChildren == (UnityEngine.Object) null))
+      {
+        if (componentInChildren.ow_oddsaving)
+          transformList[index].SetParent(this.transform.parent);
+        else if (componentInChildren.HasByte2Data && !loadingGame)
+          transformList[index].SetParent(this.transform.parent);
+        else if (loadingGame)
+          UnityEngine.Object.Destroy((UnityEngine.Object) transformList[index].gameObject);
+        else
+          transformList[index].SetParent((Transform) null);
+      }
     }
   }
 }

@@ -1,16 +1,14 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Gameplay
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -96,6 +94,12 @@ public class UI_Gameplay : UI_Menu
   public bool _StartCallingAfterSubtitle;
   public GameObject MessageBox;
   public Text MessageBox_text;
+  [Header("custom texture images list")]
+  public RectTransform ImagesListContent;
+  public GameObject ImagesListEntry;
+  public List<GameObject> ImagesListEntries = new List<GameObject>();
+  public List<Texture2D> ImagesListTextureContainer = new List<Texture2D>();
+  public List<string> ImagesListTexturePaths = new List<string>();
   [Header("Journal")]
   public GameObject JournalMenu;
   public GameObject[] JournalBGImages;
@@ -115,9 +119,7 @@ public class UI_Gameplay : UI_Menu
   public GameObject Journal_Population;
   public GameObject Journal_WorldMap;
   public GameObject Journal_ArmyManagement;
-  public GameObject Journal_WorkerManagement;
-  public GameObject Journal_CivilianManagement;
-  public GameObject Journal_RoyalManagement;
+  public List<GameObject> Journal_SubMenus = new List<GameObject>();
   public RectTransform AcheivementsContent;
   public GameObject AcheivementEntry;
   public List<GameObject> AcheivementEntries = new List<GameObject>();
@@ -971,7 +973,7 @@ label_8:
     }
     for (int index = 0; index < this.ChatOptions.Length; ++index)
     {
-      if (Input.GetKeyUp((KeyCode) (49 + index)))
+      if (this.ChatOptions[index].activeSelf && Input.GetKeyUp((KeyCode) (49 + index)))
       {
         this.RemoveAllChatOptions();
         this.ChatOptions_code[index]();
@@ -1022,6 +1024,51 @@ label_8:
     Cursor.visible = false;
   }
 
+  public void Select_ImagesList(int_CustomPoster loaderComp)
+  {
+    this.CloseAllJournalMenus();
+    this.JournalOptionsList.SetActive(false);
+    for (int index = 0; index < this.JournalBGImages.Length; ++index)
+      this.JournalBGImages[index].SetActive(false);
+    this.OpenJournalSubMenu("ImagesList");
+    List<string> stringList = new List<string>();
+    string path = Main.AssetsFolder + "/CustomTextures/Objects/";
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.png", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.jpg", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.jpeg", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.PNG", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.JPG", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.JPEG", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Png", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Jpg", SearchOption.AllDirectories));
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Jpeg", SearchOption.AllDirectories));
+    this.ImagesListTexturePaths.Clear();
+    for (int index = 0; index < this.ImagesListEntries.Count; ++index)
+      UnityEngine.Object.Destroy((UnityEngine.Object) this.ImagesListEntries[index]);
+    int index1;
+    for (index1 = 0; index1 < stringList.Count; ++index1)
+    {
+      if (this.ImagesListTextureContainer.Count <= index1)
+        this.ImagesListTextureContainer.Add(new Texture2D(0, 0));
+      this.ImagesListTexturePaths.Add(stringList[index1].Remove(0, path.Length));
+      this.ImagesListTextureContainer[index1].LoadImage(File.ReadAllBytes(stringList[index1]));
+      bl_J_PopulationEntry component = UnityEngine.Object.Instantiate<GameObject>(this.ImagesListEntry, (Transform) this.ImagesListContent).GetComponent<bl_J_PopulationEntry>();
+      component.gameObject.SetActive(true);
+      component.ThisPersonRel = index1;
+      component.RelsValues[0].sprite = Sprite.Create(Main.Instance.GameplayMenu.ImagesListTextureContainer[index1], new Rect(0.0f, 0.0f, (float) Main.Instance.GameplayMenu.ImagesListTextureContainer[index1].width, (float) Main.Instance.GameplayMenu.ImagesListTextureContainer[index1].height), new Vector2(0.0f, 0.0f));
+      component.Rels = new GameObject[1]
+      {
+        loaderComp.gameObject
+      };
+      loaderComp.ThisCustomTexture = stringList[index1];
+      this.ImagesListEntries.Add(component.gameObject);
+    }
+    for (; index1 < this.ImagesListTextureContainer.Count; ++index1)
+      this.ImagesListTextureContainer[index1].LoadImage(Main.OnePixel);
+    this.ImagesListContent.sizeDelta = new Vector2(0.0f, (float) (stringList.Count / 4 * 195 + 195));
+    Main.Instance.MusicPlayer.PlayOneShot(this.JournalSound1);
+  }
+
   public void CloseAllJournalMenus()
   {
     this.Journal_Inventory.SetActive(false);
@@ -1037,9 +1084,28 @@ label_8:
     this.Journal_Population.SetActive(false);
     this.Journal_WorldMap.SetActive(false);
     this.Journal_ArmyManagement.SetActive(false);
+    for (int index = 0; index < this.Journal_SubMenus.Count; ++index)
+      this.Journal_SubMenus[index].SetActive(false);
     this.AddMoneyBtn.SetActive(false);
     this.AddMoneyMenu.SetActive(false);
+    for (int index = 0; index < this.ImagesListTextureContainer.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.ImagesListTextureContainer[index] != (UnityEngine.Object) null)
+        this.ImagesListTextureContainer[index].LoadImage(Main.OnePixel);
+    }
     Main.Instance.GarbageCollect();
+  }
+
+  public void OpenJournalSubMenu(string itsName)
+  {
+    for (int index = 0; index < this.Journal_SubMenus.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.Journal_SubMenus[index] != (UnityEngine.Object) null && this.Journal_SubMenus[index].name == itsName)
+      {
+        this.Journal_SubMenus[index].SetActive(true);
+        break;
+      }
+    }
   }
 
   public void OpenGallery()
@@ -1697,6 +1763,7 @@ label_8:
     this.CloseAllJournalMenus();
     this.Journal_Population.SetActive(true);
     this.J_RefreshPopulation();
+    Main.Instance.MusicPlayer.PlayOneShot(this.JournalSound1);
   }
 
   public void Select_WorldMap()
@@ -2452,65 +2519,16 @@ label_4:
 
   public void GoToOpenWorld_Section(int section)
   {
-    Main.Instance.OpenWorld = true;
-    GameObject gameObject = GameObject.Find("TempCube_OpenWorld (2)");
-    if ((UnityEngine.Object) gameObject != (UnityEngine.Object) null)
-      gameObject.SetActive(false);
-    this._isLoadingASection = false;
-    this._SetionLoading = section;
-    Main.Instance.CanSaveFlags_add("GeneratingOW");
-    Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
-    Main.Instance.NewGameMenu.ExtraLoading.SetActive(true);
-    Main.Instance.MapAreas[0].LocalMusics[4] = Main.Instance.MapAreas[0].LocalMusics[3];
-    if (Main.Instance.WorldSections.Count < this._SetionLoading)
-      this._SetionLoading = 0;
-    this._isLoadingASection = Main.Instance.WorldSections[this._SetionLoading].PreviouslyGenerated;
-    Main.Instance.NewGameMenu.ExtraLoadingFirstTime.SetActive(!this._isLoadingASection);
-    Main.Instance.NewGameMenu.ExtraLoadingSliderEpic.value = 0.0f;
-    Main.Instance.NewGameMenu.ExtraLoadingSlider.value = 0.0f;
-    Main.Instance.NewGameMenu.ExtraLoadingSlider.gameObject.SetActive(true);
-    Main.Instance.NewGameMenu.ExtraLoadingSliderEpic = Main.Instance.NewGameMenu.ExtraLoadingSlider;
-    Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
-    Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Despawning City";
+    this.PrepareForOWLoad_1(section);
     Main.RunInNextFrame((Action) (() =>
     {
-      for (int index = 0; index < this.DisableOnOpenWorld.Count; ++index)
-      {
-        if ((UnityEngine.Object) this.DisableOnOpenWorld[index] != (UnityEngine.Object) null)
-          UnityEngine.Object.Destroy((UnityEngine.Object) this.DisableOnOpenWorld[index]);
-      }
-      for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
-      {
-        if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null)
-          Main.Instance.SpawnedPeople[index].gameObject.SetActive(false);
-      }
+      this.PrepareForOWLoad_2();
+      Main.Instance.SpawnedObjects_World.AddRange((IEnumerable<SaveableBehaviour>) Main.Instance.SpawnedObjects);
       for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
       {
         if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index] != (UnityEngine.Object) null)
-        {
-          if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj != (UnityEngine.Object) null && (UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.transform.parent == (UnityEngine.Object) null)
-            Main.Instance.SpawnedObjects[index].RootObj.SetActive(false);
-          else if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].transform.parent == (UnityEngine.Object) null)
-            Main.Instance.SpawnedObjects[index].gameObject.SetActive(false);
-        }
+          Main.Instance.SpawnedObjects[index].WorldSaveID = string.Empty;
       }
-      for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
-      {
-        if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null && !Main.Instance.SpawnedPeople[index].IsPlayer)
-          UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedPeople[index].gameObject);
-      }
-      for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
-      {
-        if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index] != (UnityEngine.Object) null)
-        {
-          if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj != (UnityEngine.Object) null && (UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.transform.parent == (UnityEngine.Object) null)
-            UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.gameObject);
-          else if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].transform.parent == (UnityEngine.Object) null)
-            UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedObjects[index].gameObject);
-        }
-      }
-      foreach (SpawnedSexScene spawnedSexScene in UnityEngine.Object.FindObjectsOfType<SpawnedSexScene>())
-        UnityEngine.Object.Destroy((UnityEngine.Object) spawnedSexScene.SpawnedSexSceneStructure.gameObject);
       Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
       Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Loading Scene";
       Main.RunInNextFrame((Action) (() =>
@@ -2538,6 +2556,71 @@ label_4:
     }), 3);
   }
 
+  public void PrepareForOWLoad_1(int section)
+  {
+    Main.Instance.OpenWorld = true;
+    Main.Instance.NavGenerated = false;
+    GameObject gameObject = GameObject.Find("TempCube_OpenWorld (2)");
+    if ((UnityEngine.Object) gameObject != (UnityEngine.Object) null)
+      gameObject.SetActive(false);
+    this._isLoadingASection = false;
+    this._SetionLoading = section;
+    Main.Instance.CanSaveFlags_add("GeneratingOW");
+    Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
+    Main.Instance.NewGameMenu.ExtraLoading.SetActive(true);
+    Main.Instance.MapAreas[0].LocalMusics[4] = Main.Instance.MapAreas[0].LocalMusics[3];
+    if (Main.Instance.WorldSections.Count < this._SetionLoading)
+      this._SetionLoading = 0;
+    Main.Instance.NewGameMenu.ExtraLoadingFirstTime.SetActive(!this._isLoadingASection);
+    Main.Instance.NewGameMenu.ExtraLoadingSliderEpic.value = 0.0f;
+    Main.Instance.NewGameMenu.ExtraLoadingSlider.value = 0.0f;
+    Main.Instance.NewGameMenu.ExtraLoadingSlider.gameObject.SetActive(true);
+    Main.Instance.NewGameMenu.ExtraLoadingSliderEpic = Main.Instance.NewGameMenu.ExtraLoadingSlider;
+    Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+    Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Despawning City";
+  }
+
+  public void PrepareForOWLoad_2()
+  {
+    for (int index = 0; index < this.DisableOnOpenWorld.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.DisableOnOpenWorld[index] != (UnityEngine.Object) null)
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.DisableOnOpenWorld[index]);
+    }
+    for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
+    {
+      if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null)
+        Main.Instance.SpawnedPeople[index].gameObject.SetActive(false);
+    }
+    for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
+    {
+      if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index] != (UnityEngine.Object) null)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj != (UnityEngine.Object) null && (UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.transform.parent == (UnityEngine.Object) null)
+          Main.Instance.SpawnedObjects[index].RootObj.SetActive(false);
+        else if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].transform.parent == (UnityEngine.Object) null)
+          Main.Instance.SpawnedObjects[index].gameObject.SetActive(false);
+      }
+    }
+    for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
+    {
+      if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null && !Main.Instance.SpawnedPeople[index].IsPlayer)
+        UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedPeople[index].gameObject);
+    }
+    for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
+    {
+      if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index] != (UnityEngine.Object) null)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj != (UnityEngine.Object) null && (UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.transform.parent == (UnityEngine.Object) null)
+          UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedObjects[index].RootObj.gameObject);
+        else if ((UnityEngine.Object) Main.Instance.SpawnedObjects[index].transform.parent == (UnityEngine.Object) null)
+          UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.SpawnedObjects[index].gameObject);
+      }
+    }
+    foreach (SpawnedSexScene spawnedSexScene in UnityEngine.Object.FindObjectsOfType<SpawnedSexScene>())
+      UnityEngine.Object.Destroy((UnityEngine.Object) spawnedSexScene.SpawnedSexSceneStructure.gameObject);
+  }
+
   public void WaitingForGenerationThread()
   {
     if (UI_Gameplay.OWGenerating)
@@ -2559,20 +2642,19 @@ label_4:
       Main.Instance.OnAfterFinallyGenerate.Clear();
       Main.Instance.OnFinallyGenerate.Add((Action) (() => this.OpenWorldAfterGenerateNav()));
       if (this._isLoadingASection)
-      {
-        BinaryFormatter binaryFormatter = new BinaryFormatter();
-        FileStream fileStream = File.Open(Main.Instance.CurrentSavePath + "Section_" + this._SetionLoading.ToString() + "/navmesh.dat", FileMode.Open);
-        FileStream serializationStream = fileStream;
-        NavMeshData navMeshData = (NavMeshData) binaryFormatter.Deserialize((Stream) serializationStream);
-        fileStream.Close();
-        if ((UnityEngine.Object) navMeshData != (UnityEngine.Object) null)
-          NavMesh.AddNavMeshData(navMeshData);
-        else
-          Main.Instance.GenerateNav();
-      }
-      else
-        Main.Instance.GenerateNav();
+        return;
+      Main.Instance.GenerateNav();
     }), 4);
+  }
+
+  public void WaitingForGenerationThread_Loading()
+  {
+    if (UI_Gameplay.OWGenerating)
+      return;
+    Main.Instance.MainThreads.Remove(new Action(this.WaitingForGenerationThread_Loading));
+    Main.Instance.NewGameMenu.ExtraLoadingText.text = "0/1";
+    Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Generating Navigation";
+    Main.RunInNextFrame((Action) (() => Main.Instance.GenerateNav()), 4);
   }
 
   public void Thread_GeneratingOWNav()
@@ -2959,67 +3041,83 @@ label_26:
     this.CheckCanCraft();
     if (!this.CraftButton.interactable)
       return;
-    for (int index = 0; index < this.SelectedItems.Count; ++index)
+    if (Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome == null || Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome.Length == 0)
     {
-      if ((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null && Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Contains(this.SelectedItems[index]))
-      {
-        Main.Instance.Player.CurrentBackpack.ThisStorage.RemoveItem(this.SelectedItems[index]);
-        UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
-      }
-      else if ((UnityEngine.Object) Main.Instance.Player.InventoryStorage != (UnityEngine.Object) null && Main.Instance.Player.InventoryStorage.StorageItems.Contains(this.SelectedItems[index]))
-      {
-        Main.Instance.Player.InventoryStorage.RemoveItem(this.SelectedItems[index]);
-        UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
-      }
-      else if ((UnityEngine.Object) Main.Instance.Player.Storage_Hands != (UnityEngine.Object) null && Main.Instance.Player.Storage_Hands.StorageItems.Contains(this.SelectedItems[index]))
-      {
-        Main.Instance.Player.Storage_Hands.RemoveItem(this.SelectedItems[index]);
-        UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
-      }
-      else if ((UnityEngine.Object) Main.Instance.Player.Storage_Vag != (UnityEngine.Object) null && Main.Instance.Player.Storage_Vag.StorageItems.Contains(this.SelectedItems[index]))
-      {
-        Main.Instance.Player.Storage_Vag.RemoveItem(this.SelectedItems[index]);
-        UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
-      }
-      else if ((UnityEngine.Object) Main.Instance.Player.Storage_Anal != (UnityEngine.Object) null && Main.Instance.Player.Storage_Anal.StorageItems.Contains(this.SelectedItems[index]))
-      {
-        Main.Instance.Player.Storage_Anal.RemoveItem(this.SelectedItems[index]);
-        UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
-      }
+      Debug.LogError((object) "!!recipe has no outcome!!");
     }
-    for (int index1 = 0; index1 < Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome.Length; ++index1)
+    else
     {
-      GameObject prefab;
-      for (int index2 = 0; index2 < Main.Instance.AllPrefabs.Count; ++index2)
+      for (int index = 0; index < this.SelectedItems.Count; ++index)
       {
-        if (Main.Instance.AllPrefabs[index2].name == Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[index1])
+        if ((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null && Main.Instance.Player.CurrentBackpack.ThisStorage.StorageItems.Contains(this.SelectedItems[index]))
         {
-          prefab = Main.Instance.AllPrefabs[index2];
-          goto label_26;
+          Main.Instance.Player.CurrentBackpack.ThisStorage.RemoveItem(this.SelectedItems[index]);
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
+        }
+        else if ((UnityEngine.Object) Main.Instance.Player.InventoryStorage != (UnityEngine.Object) null && Main.Instance.Player.InventoryStorage.StorageItems.Contains(this.SelectedItems[index]))
+        {
+          Main.Instance.Player.InventoryStorage.RemoveItem(this.SelectedItems[index]);
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
+        }
+        else if ((UnityEngine.Object) Main.Instance.Player.Storage_Hands != (UnityEngine.Object) null && Main.Instance.Player.Storage_Hands.StorageItems.Contains(this.SelectedItems[index]))
+        {
+          Main.Instance.Player.Storage_Hands.RemoveItem(this.SelectedItems[index]);
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
+        }
+        else if ((UnityEngine.Object) Main.Instance.Player.Storage_Vag != (UnityEngine.Object) null && Main.Instance.Player.Storage_Vag.StorageItems.Contains(this.SelectedItems[index]))
+        {
+          Main.Instance.Player.Storage_Vag.RemoveItem(this.SelectedItems[index]);
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
+        }
+        else if ((UnityEngine.Object) Main.Instance.Player.Storage_Anal != (UnityEngine.Object) null && Main.Instance.Player.Storage_Anal.StorageItems.Contains(this.SelectedItems[index]))
+        {
+          Main.Instance.Player.Storage_Anal.RemoveItem(this.SelectedItems[index]);
+          UnityEngine.Object.Destroy((UnityEngine.Object) this.SelectedItems[index]);
         }
       }
-      for (int index3 = 0; index3 < Main.Instance.Prefabs_Weapons.Count; ++index3)
+      for (int index1 = 0; index1 < Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome.Length; ++index1)
       {
-        if (Main.Instance.Prefabs_Weapons[index3].name == Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[index1])
+        GameObject prefab = Main.Instance.GetPrefab(Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[index1]);
+        if (!((UnityEngine.Object) prefab != (UnityEngine.Object) null))
         {
-          prefab = Main.Instance.Prefabs_Weapons[index3].gameObject;
-          goto label_26;
+          for (int index2 = 0; index2 < Main.Instance.Prefabs_Weapons.Count; ++index2)
+          {
+            if ((UnityEngine.Object) Main.Instance.Prefabs_Weapons[index2] != (UnityEngine.Object) null && Main.Instance.Prefabs_Weapons[index2].name == Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[index1])
+            {
+              prefab = Main.Instance.Prefabs_Weapons[index2].gameObject;
+              goto label_24;
+            }
+          }
+          Debug.LogError((object) ("Prefab not found:" + Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[0]));
+          break;
         }
-      }
-      Debug.LogError((object) ("Prefab not found:" + Main.Instance.RecipesLoaded[this.SelectedRecipe].OutCome[0]));
-      break;
-label_26:
-      GameObject gameObject = Main.Spawn(prefab, saveable: true);
-      gameObject.transform.position = Main.Instance.Player.transform.position + new Vector3(0.0f, 0.1f, 0.0f);
-      if ((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null && !Main.Instance.Player.CurrentBackpack.ThisStorage.Full)
-      {
-        Main.Instance.Player.CurrentBackpack.ThisStorage.AddItem(gameObject);
-        Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name + " (Added to Backpack)");
-      }
-      else
+label_24:
+        GameObject gameObject = Main.Spawn(prefab, saveable: true);
+        gameObject.transform.position = Main.Instance.Player.Hips.position + new Vector3(0.1f, 0.0f, 0.0f);
+        if (!((UnityEngine.Object) gameObject.GetComponentInChildren<Weapon>(true) != (UnityEngine.Object) null))
+        {
+          if ((UnityEngine.Object) Main.Instance.Player.CurrentBackpack != (UnityEngine.Object) null && !Main.Instance.Player.CurrentBackpack.ThisStorage.Full)
+          {
+            Main.Instance.Player.CurrentBackpack.ThisStorage.AddItem(gameObject);
+            Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name + " (Added to Backpack)");
+            goto label_31;
+          }
+          else if ((UnityEngine.Object) Main.Instance.Player.Storage_Hands != (UnityEngine.Object) null && !Main.Instance.Player.Storage_Hands.Full)
+          {
+            int_PickupToHand componentInChildren = gameObject.GetComponentInChildren<int_PickupToHand>();
+            if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null)
+            {
+              componentInChildren.Interact(Main.Instance.Player);
+              Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name + " (Added to hand)");
+              goto label_31;
+            }
+          }
+        }
         Main.Instance.GameplayMenu.ShowNotification("Crafted: " + gameObject.name);
-      this.RefreshRecipes(this.SelectedRecipeType);
-      Main.Instance.MusicPlayer.PlayOneShot(this.JournalPerkSound, 3f);
+label_31:
+        this.RefreshRecipes(this.SelectedRecipeType);
+        Main.Instance.MusicPlayer.PlayOneShot(this.JournalPerkSound, 3f);
+      }
     }
   }
 
@@ -3236,21 +3334,15 @@ label_26:
   public void Click_Build()
   {
     this.CloseJournal();
-    for (int index = 0; index < Main.Instance.Prefabs_Plans.Count; ++index)
-    {
-      if (Main.Instance.Prefabs_Plans[index].name == this.Build_TheSelectedReceipt.OutCome[0])
-      {
-        this._BuildindPlan = Main.Spawn(Main.Instance.Prefabs_Plans[index]);
-        this._BuildindPlan.GetComponentInChildren<Interactible>().AddBlocker("PlanPlacing");
-        break;
-      }
-    }
+    this._BuildindPlan = Main.Instance.GetPlan(this.Build_TheSelectedReceipt.OutCome[0]);
     if ((UnityEngine.Object) this._BuildindPlan == (UnityEngine.Object) null)
     {
       Debug.LogError((object) ("build plan not found: " + this.Build_TheSelectedReceipt.OutCome[0]));
     }
     else
     {
+      this._BuildindPlan = Main.Spawn(this._BuildindPlan);
+      this._BuildindPlan.GetComponentInChildren<Interactible>().AddBlocker("PlanPlacing");
       int_ConstructionPlan componentInChildren = this._BuildindPlan.GetComponentInChildren<int_ConstructionPlan>();
       this.ThisPlan = componentInChildren;
       if ((UnityEngine.Object) componentInChildren == (UnityEngine.Object) null)
@@ -3261,14 +3353,20 @@ label_26:
       else
       {
         componentInChildren.BeingMoved = true;
-        componentInChildren.BuildFill.enabled = false;
+        componentInChildren.InteractText = string.Empty;
+        if ((UnityEngine.Object) componentInChildren.BuildFill != (UnityEngine.Object) null)
+          componentInChildren.BuildFill.enabled = false;
         this.CurrentSnapType = componentInChildren.BuildSnapType;
         if (componentInChildren.BuildSnapType != int_ConstructionPlan.e_BuildSnapType.Disabled)
         {
           foreach (bl_ObjWithConstructionSnap constructionSnap in UnityEngine.Object.FindObjectsOfType<bl_ObjWithConstructionSnap>())
             constructionSnap.Show(componentInChildren.BuildSnapType);
         }
-        Main.RunInNextFrame((Action) (() => Main.Instance.MainThreads.Add(new Action(this.BuildThread))), 5);
+        Main.RunInNextFrame((Action) (() =>
+        {
+          Main.Instance.MainThreads.Add(new Action(this.BuildThread));
+          this.ShowNotification("[ALT] to rotate");
+        }), 5);
       }
     }
   }
@@ -3346,7 +3444,7 @@ label_26:
               this._BuildindPlan.transform.position = new Vector3(hitInfo.point.x, component.transform.position.y + this.ThisPlan.ExtraBuildHeight, hitInfo.point.z);
           }
           if (Input.GetKey(KeyCode.LeftAlt))
-            this._BuildindPlan.transform.eulerAngles = new Vector3(this._BuildindPlan.transform.eulerAngles.x, Main.Instance.PlayerCam.transform.eulerAngles.y, this._BuildindPlan.transform.eulerAngles.z);
+            this._BuildindPlan.transform.eulerAngles = new Vector3(this._BuildindPlan.transform.eulerAngles.x, 180f + Main.Instance.PlayerCam.transform.eulerAngles.y, this._BuildindPlan.transform.eulerAngles.z);
         }
       }
     }
@@ -3363,7 +3461,7 @@ label_26:
       this._BuildindPlan = (GameObject) null;
       this.HideAllSnaps();
     }
-    if (!flag || !Input.GetKeyUp(KeyCode.E) && !Input.GetKeyUp(KeyCode.F) && !Input.GetKeyUp(KeyCode.KeypadEnter) && !Input.GetKeyUp(KeyCode.Return) && !Input.GetMouseButtonUp(UI_Settings.LeftMouseButton))
+    if (!flag || !Input.GetKeyUp(KeyCode.F) && !Input.GetKeyUp(KeyCode.KeypadEnter) && !Input.GetKeyUp(KeyCode.Return) && !Input.GetMouseButtonUp(UI_Settings.LeftMouseButton))
       return;
     this.PlacePlan(this._BuildindPlan);
   }
@@ -3379,6 +3477,7 @@ label_26:
     }
     _placeAnother = componentInChildren.PlanAnotherAfter;
     componentInChildren.BeingMoved = false;
+    componentInChildren.InteractText = "Add Resources";
     componentInChildren.GetPlaced();
     this.ThisPlan = (int_ConstructionPlan) null;
     this._BuildindPlan = (GameObject) null;

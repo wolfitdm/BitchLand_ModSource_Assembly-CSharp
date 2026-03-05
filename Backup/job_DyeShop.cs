@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: job_DyeShop
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -34,7 +34,7 @@ public class job_DyeShop : bl_WorkJobManager
           Main.Instance.CustomizeMenu.Open_HairStyleOnly((Transform) null);
         }
         else
-          _gameplay.DisplaySubtitle(Main.GetLine(63 /*0x3F*/), Main.Instance.Personalities[0].Voice_Generics[5], new Action(person.ThisPersonInt.EndTheChat));
+          _gameplay.DisplaySubtitle(Main.GetLine(63), Main.Instance.Personalities[0].Voice_Generics[5], new Action(person.ThisPersonInt.EndTheChat));
       }));
       _gameplay.AddChatOption("(50bn) I want to Dye my clothing to...", (Action) (() => { }));
       _gameplay.AddChatOption("Is it possible to dye skin and eyes?", (Action) (() => _gameplay.DisplaySubtitle("Uuhmm, not that I know of...?", this.VoiceLines[2], (Action) (() => _gameplay.DisplaySubtitle("But I guess, if they ever put some scientists in the research center to study that", this.VoiceLines[3], new Action(person.ThisPersonInt.EndTheChat), person)), person)));

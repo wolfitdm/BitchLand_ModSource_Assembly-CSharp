@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Weapon
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using DitzelGames.FastIK;
 using KevinIglesias;
@@ -150,18 +150,26 @@ public class Weapon : SaveableBehaviour
 
   public override string[] sd_SaveData(char SlitChar = ':')
   {
-    List<string> stringList = new List<string>();
-    stringList.AddRange((IEnumerable<string>) base.sd_SaveData(SlitChar));
-    stringList.Add(Main.Vector32Str(this.transform.position));
-    stringList.Add(Main.Vector32Str(this.transform.eulerAngles));
-    return stringList.ToArray();
+    return new string[4]
+    {
+      this.WorldSaveID,
+      this.PrefabName,
+      Main.Vector32Str(this.transform.position),
+      Main.Vector32Str(this.transform.eulerAngles)
+    };
   }
 
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
-    this._CurrentLoadingIndex = 1;
-    this.transform.position = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
-    this.transform.eulerAngles = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
+    try
+    {
+      this.transform.position = Main.ParseVector3(Data[2]);
+      this.transform.eulerAngles = Main.ParseVector3(Data[3]);
+    }
+    catch
+    {
+    }
+    this._CurrentLoadingIndex = 4;
   }
 
   public int currentAmmo
@@ -178,14 +186,14 @@ public class Weapon : SaveableBehaviour
 
   public bool PickedUp => (UnityEngine.Object) this._WeaponSystem != (UnityEngine.Object) null;
 
-  public new void Start()
+  public override void Start()
   {
     if (this._Started)
       return;
     this._Started = true;
     if (this.UnparentOnStart)
       this.transform.SetParent((Transform) null);
-    this.OrgScale = this.transform.localScale;
+    base.Start();
     this.currentCrosshairSize = this.startingCrosshairSize;
     this.fireTimer = 0.0f;
     this.currentAmmo = this.ammoCapacity;
@@ -355,6 +363,8 @@ public class Weapon : SaveableBehaviour
 
   private void Update()
   {
+    if ((UnityEngine.Object) this._WeaponSystem == (UnityEngine.Object) null)
+      this.enabled = false;
     this.currentAccuracy = Mathf.Lerp(this.currentAccuracy, this.accuracy, this.accuracyRecoverRate * Time.deltaTime);
     this.currentCrosshairSize = this.startingCrosshairSize + (float) (((double) this.accuracy - (double) this.currentAccuracy) * 0.800000011920929);
     this.fireTimer += Time.deltaTime;

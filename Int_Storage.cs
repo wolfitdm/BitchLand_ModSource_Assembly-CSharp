@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Int_Storage
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -248,7 +248,7 @@ label_0:
       UnityEngine.Object.Destroy((UnityEngine.Object) this.StorageItems[index]);
     this.StorageItems.Clear();
     int num = int.Parse(Data[this._CurrentLoadingIndex++]);
-    for (int index1 = 0; index1 < num; ++index1)
+    for (int index = 0; index < num; ++index)
     {
       try
       {
@@ -260,29 +260,21 @@ label_0:
             if (str.Contains("="))
             {
               string[] Data1 = str.Split("=", StringSplitOptions.None);
-              for (int index2 = 0; index2 < Main.Instance.AllPrefabs.Count; ++index2)
+              GameObject prefab = Main.Instance.GetPrefab(Data1[1]);
+              if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
               {
-                if (Main.Instance.AllPrefabs[index2].name == Data1[1])
-                {
-                  GameObject gameObject = Main.Spawn(Main.Instance.AllPrefabs[index2], saveable: true);
-                  Interactible component = gameObject.GetComponent<Interactible>();
-                  if ((UnityEngine.Object) component != (UnityEngine.Object) null)
-                    component.sd_LoadData(Data1, '=');
-                  this.AddItem(gameObject);
-                  break;
-                }
+                GameObject gameObject = Main.Spawn(prefab, saveable: true);
+                Interactible component = gameObject.GetComponent<Interactible>();
+                if ((UnityEngine.Object) component != (UnityEngine.Object) null)
+                  component.sd_LoadData(Data1, '=');
+                this.AddItem(gameObject);
               }
             }
             else
             {
-              for (int index3 = 0; index3 < Main.Instance.AllPrefabs.Count; ++index3)
-              {
-                if (Main.Instance.AllPrefabs[index3].name == str)
-                {
-                  this.AddItem(Main.Spawn(Main.Instance.AllPrefabs[index3], saveable: true));
-                  break;
-                }
-              }
+              GameObject prefab = Main.Instance.GetPrefab(str);
+              if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
+                this.AddItem(Main.Spawn(prefab, saveable: true));
             }
           }
         }

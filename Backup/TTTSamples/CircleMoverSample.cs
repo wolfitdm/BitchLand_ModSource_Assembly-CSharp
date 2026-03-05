@@ -1,26 +1,27 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: TTTSamples.CircleMoverSample
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
 #nullable disable
-namespace TTTSamples;
-
-public class CircleMoverSample : MonoBehaviour
+namespace TTTSamples
 {
-  private float moveSpeed = 150f;
-  private float torque;
-  private Rigidbody2D rb;
-
-  private void Start() => this.rb = this.GetComponent<Rigidbody2D>();
-
-  private void Update()
+  public class CircleMoverSample : MonoBehaviour
   {
-    this.torque = Input.GetAxis("Horizontal") * this.moveSpeed * Time.deltaTime;
-  }
+    private float moveSpeed = 150f;
+    private float torque;
+    private Rigidbody2D rb;
 
-  private void FixedUpdate() => this.rb.AddTorque(-this.torque);
+    private void Start() => this.rb = this.GetComponent<Rigidbody2D>();
+
+    private void Update()
+    {
+      this.torque = Input.GetAxis("Horizontal") * this.moveSpeed * Time.deltaTime;
+    }
+
+    private void FixedUpdate() => this.rb.AddTorque(-this.torque);
+  }
 }

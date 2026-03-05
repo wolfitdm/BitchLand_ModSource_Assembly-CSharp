@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Vision
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -165,12 +165,48 @@ public class Vision : MonoBehaviour
 
   public void RestartCol()
   {
-    Debug.Log((object) "restart called");
+    Debug.Log((object) "eyes restart called");
     Collider _col = this.GetComponent<Collider>();
     _col.enabled = false;
     this.CurrentCheck = 1;
     this.CurrentFrame = this.FrameMax;
     Main.RunInNextFrame((Action) (() => _col.enabled = true), 2);
+  }
+
+  public void OnCull()
+  {
+    this.Quality = Vision.VisionQuality.None;
+    this.gameObject.SetActive(false);
+  }
+
+  public void OnLowLOD()
+  {
+    this.Quality = Vision.VisionQuality.Low;
+    this.gameObject.SetActive(this.Flagger.Count != 0);
+  }
+
+  public void OnHighLod()
+  {
+    this.Quality = Vision.VisionQuality.High;
+    this.gameObject.SetActive(this.Flagger.Count != 0);
+  }
+
+  public float CalcRoomSize()
+  {
+    float num1 = 0.0f;
+    float num2 = 0.0f;
+    float num3 = 0.0f;
+    float num4 = 0.0f;
+    RaycastHit hitInfo;
+    if (Physics.Raycast(this.ThePerson.transform.position + new Vector3(0.0f, 0.25f, 0.0f), this.ThePerson.transform.TransformDirection(Vector3.forward), out hitInfo, 50f, (int) Main.Instance.RoomSizeCheckLayers, QueryTriggerInteraction.Ignore))
+      num1 = hitInfo.distance;
+    if (Physics.Raycast(this.ThePerson.transform.position + new Vector3(0.0f, 0.25f, 0.0f), this.ThePerson.transform.TransformDirection(Vector3.back), out hitInfo, 50f, (int) Main.Instance.RoomSizeCheckLayers, QueryTriggerInteraction.Ignore))
+      num2 = hitInfo.distance;
+    if (Physics.Raycast(this.ThePerson.transform.position + new Vector3(0.0f, 0.25f, 0.0f), this.ThePerson.transform.TransformDirection(Vector3.left), out hitInfo, 50f, (int) Main.Instance.RoomSizeCheckLayers, QueryTriggerInteraction.Ignore))
+      num3 = hitInfo.distance;
+    if (Physics.Raycast(this.ThePerson.transform.position + new Vector3(0.0f, 0.25f, 0.0f), this.ThePerson.transform.TransformDirection(Vector3.right), out hitInfo, 50f, (int) Main.Instance.RoomSizeCheckLayers, QueryTriggerInteraction.Ignore))
+      num4 = hitInfo.distance;
+    return (float) (((double) (num1 + num2) + (double) (num3 + num4)) / 2.0);
   }
 
   public enum VisionQuality

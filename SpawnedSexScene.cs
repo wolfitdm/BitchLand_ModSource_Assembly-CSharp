@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: SpawnedSexScene
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -206,13 +206,16 @@ public class SpawnedSexScene : MonoBehaviour
       {
         this.ThisSexStateType = SexStateType.Sleeping;
         this.Person2.StopFighting();
-        if (this.UISex)
+        if (this.CurrentPose.TiredSexPose != -1)
         {
-          Main.Instance.SexScene._DontAdd = true;
-          Main.Instance.SexScene.SexTypeDrop.SetValueWithoutNotify(3);
-          Main.Instance.SexScene.On_SexTypeChange();
+          if (this.UISex)
+          {
+            Main.Instance.SexScene._DontAdd = true;
+            Main.Instance.SexScene.SexTypeDrop.SetValueWithoutNotify(3);
+            Main.Instance.SexScene.On_SexTypeChange();
+          }
+          this.StartPose(3, this.CurrentPose.TiredSexPose);
         }
-        this.StartPose(3, this.CurrentPose.TiredSexPose);
       }
     }
     if ((UnityEngine.Object) this.Person3 != (UnityEngine.Object) null)

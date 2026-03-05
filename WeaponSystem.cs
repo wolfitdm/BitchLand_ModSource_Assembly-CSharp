@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: WeaponSystem
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -349,6 +349,7 @@ label_6:
       component.IKs[index2].animator = (Animator) null;
     }
     component.ActualWeaponModel.localPosition = Vector3.zero;
+    component.ActualWeaponModel.localScale = component.OrgScale;
     this.weapons[index].SetActive(true);
     this.weapons[index] = (GameObject) null;
     if ((Object) this.CurrentWeapon == (Object) component)

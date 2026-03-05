@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Army
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ public class Army : BaseType
           person.StartingClothes.Add(this.PrefabsMale_Any[UnityEngine.Random.Range(0, this.PrefabsMale_Any.Count)]);
       }
     }
-    base.ApplyTo(person, addClothing, addWeapon, addHair);
+    base.ApplyTo(person, addClothing, addWeapon, addHair, commingFrom);
     if (!addWeapon)
       return;
     GameObject weapon = UnityEngine.Object.Instantiate<GameObject>(this.Prefabs_Weapons[UnityEngine.Random.Range(0, this.Prefabs_Weapons.Count)]);
@@ -61,12 +61,15 @@ public class Army : BaseType
   public override void GetAssignedto(Person person)
   {
     base.GetAssignedto(person);
+    if (!Main.Instance.OpenWorld)
+      return;
     person.State = Person_State.Work;
   }
 
   public override bool BehaviourPass(Person person)
   {
-    person.SeekBed();
+    if (Main.Instance.OpenWorld)
+      person.SeekBed();
     return false;
   }
 
@@ -103,7 +106,7 @@ public class Army : BaseType
           weapon2 = colliderArray[index].GetComponentInParent<Weapon>();
         if ((UnityEngine.Object) weapon2 != (UnityEngine.Object) null && !weapon2.PickedUp && person.HasPathTo(weapon2.ActualWeaponModel.transform.position))
         {
-          if (weapon2.ThisToolType == e_MiningTool.Undefined)
+          if (weapon2.ThisToolType == e_MiningTool.FireWeapon || weapon2.ThisToolType == e_MiningTool.MeleeWeapon)
           {
             float num3 = Vector2.Distance(new Vector2(person.transform.position.x, person.transform.position.z), new Vector2(weapon2.ActualWeaponModel.transform.position.x, weapon2.ActualWeaponModel.transform.position.z));
             if ((double) num3 < (double) num2)

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Person
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using DitzelGames.FastIK;
 using System;
@@ -45,7 +45,6 @@ public class Person : SaveableBehaviour
   public Main.bl_Dictionary<string, string> SaveableVars = new Main.bl_Dictionary<string, string>();
   public int_bed OwnBed;
   public bool CantBeRestrained;
-  public bool Leashed;
   public bl_HangZone Home;
   [Obsolete]
   public Transform HomeSpot;
@@ -65,6 +64,7 @@ public class Person : SaveableBehaviour
   public Collider HeadCol;
   public bool Interacting;
   public Interactible InteractingWith;
+  public Interactible PreviousInteractingWith;
   public bool IsPlayer;
   public Transform Ground;
   public bool InCombat;
@@ -197,8 +197,8 @@ public class Person : SaveableBehaviour
   public Person Parent1;
   public Person Parent2;
   public bool IsPlayerDescendant;
-  public int Favor;
-  public float TrainingValue;
+  public int _Favor;
+  public int _TrainingValue;
   public float StoryModeFertility;
   public float Fertility;
   public intsafe _SexSkills;
@@ -389,6 +389,12 @@ public class Person : SaveableBehaviour
     set => this.TheHealth.Audio = value;
   }
 
+  public bool Leashed
+  {
+    get => this.SaveableVars["leashed"] == "1";
+    set => this.SaveableVars["leashed"] = value ? "1" : "0";
+  }
+
   public bool Restrained
   {
     get
@@ -399,7 +405,8 @@ public class Person : SaveableBehaviour
       {
         if (this.EquippedClothes[index].Restrains)
         {
-          this.PersonType = Main.Instance.PersonTypes[2];
+          if (Main.Instance.OpenWorld)
+            this.PersonType = Main.Instance.PersonTypes[2];
           this.TempLivingSpace = this.transform.position;
           this.WeaponInv.DropAllWeapons();
           return true;
@@ -438,7 +445,7 @@ public class Person : SaveableBehaviour
       this.States[0] = true;
     using (BinaryWriter writer = new BinaryWriter((Stream) File.Open(filename, FileMode.Create)))
     {
-      writer.Write("10");
+      writer.Write("11");
       writer.Write(this.WorldSaveID);
       writer.Write(this.Name);
       this.WriteVector3(writer, this.transform.position);
@@ -645,12 +652,12 @@ public class Person : SaveableBehaviour
       {
         if (filename.ToUpperInvariant().EndsWith(".PNG"))
           offset = (int) UI_Customize.FindDataStart(filename, UI_Customize.StringToBytes("DataStart"));
+        this.VoicePitch = 1f;
+        this.Fertility = 1f;
+        this.Personality = Personality_Type.Casual;
+        this.Fetishes.Clear();
         using (BinaryReader reader = new BinaryReader((Stream) File.Open(filename, FileMode.Open)))
         {
-          this.VoicePitch = 1f;
-          this.Fertility = 1f;
-          this.Personality = Personality_Type.Casual;
-          this.Fetishes.Clear();
           reader.BaseStream.Seek((long) offset, SeekOrigin.Begin);
           long num1 = reader.BaseStream.Length - 16L;
           string str1 = reader.ReadString();
@@ -757,7 +764,7 @@ label_20:
                                   {
                                     for (int index = 0; index < Main.Instance.AllHomes.Count; ++index)
                                     {
-                                      if (Main.Instance.AllHomes[index].name == str5)
+                                      if ((UnityEngine.Object) Main.Instance.AllHomes[index] != (UnityEngine.Object) null && Main.Instance.AllHomes[index].name == str5)
                                       {
                                         this.Home = Main.Instance.AllHomes[index];
                                         break;
@@ -812,7 +819,7 @@ label_20:
                                   {
                                     for (int index = 0; index < Main.Instance.AllJobs.Count; ++index)
                                     {
-                                      if (Main.Instance.AllJobs[index].JobName == str6)
+                                      if ((UnityEngine.Object) Main.Instance.AllJobs[index] != (UnityEngine.Object) null && Main.Instance.AllJobs[index].JobName == str6)
                                       {
                                         this.WorkJob = Main.Instance.AllJobs[index];
                                         this.WorkJob.AddWorker(this);
@@ -835,7 +842,7 @@ label_20:
                                   {
                                     for (int index = 0; index < Main.Instance.AllHomes.Count; ++index)
                                     {
-                                      if (Main.Instance.AllHomes[index].name == str7)
+                                      if ((UnityEngine.Object) Main.Instance.AllHomes[index] != (UnityEngine.Object) null && Main.Instance.AllHomes[index].name == str7)
                                       {
                                         this.CurrentZone = Main.Instance.AllHomes[index];
                                         break;
@@ -875,7 +882,7 @@ label_20:
                                   else
                                   {
                                     int num10 = reader.ReadInt32();
-                                    for (int index3 = 0; index3 < num10; ++index3)
+                                    for (int index = 0; index < num10; ++index)
                                     {
                                       string str9 = reader.ReadString();
                                       if (str9 != null && str9.Length != 0)
@@ -883,34 +890,26 @@ label_20:
                                         if (str9.Contains(":"))
                                         {
                                           string[] Data = str9.Split(":", StringSplitOptions.None);
-                                          for (int index4 = 0; index4 < Main.Instance.AllPrefabs.Count; ++index4)
+                                          GameObject prefab = Main.Instance.GetPrefab(Data[1]);
+                                          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
                                           {
-                                            if (Main.Instance.AllPrefabs[index4].name == Data[1])
-                                            {
-                                              GameObject gameObject = Main.Spawn(Main.Instance.AllPrefabs[index4], saveable: true);
-                                              Interactible component = gameObject.GetComponent<Interactible>();
-                                              if ((UnityEngine.Object) component != (UnityEngine.Object) null)
-                                                component.sd_LoadData(Data, ':');
-                                              gameObject.GetComponentInChildren<int_PickupToHand>(true).EquipToHand(this);
-                                              break;
-                                            }
+                                            GameObject gameObject = Main.Spawn(prefab, saveable: true);
+                                            Interactible component = gameObject.GetComponent<Interactible>();
+                                            if ((UnityEngine.Object) component != (UnityEngine.Object) null)
+                                              component.sd_LoadData(Data, ':');
+                                            gameObject.GetComponentInChildren<int_PickupToHand>(true).EquipToHand(this);
                                           }
                                         }
                                         else
                                         {
-                                          for (int index5 = 0; index5 < Main.Instance.AllPrefabs.Count; ++index5)
-                                          {
-                                            if (Main.Instance.AllPrefabs[index5].name == str9)
-                                            {
-                                              Main.Spawn(Main.Instance.AllPrefabs[index5], saveable: true).GetComponentInChildren<int_PickupToHand>(true).EquipToHand(this);
-                                              break;
-                                            }
-                                          }
+                                          GameObject prefab = Main.Instance.GetPrefab(str9);
+                                          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
+                                            Main.Spawn(prefab, saveable: true).GetComponentInChildren<int_PickupToHand>(true).EquipToHand(this);
                                         }
                                       }
                                     }
                                     int num11 = reader.ReadInt32();
-                                    for (int index6 = 0; index6 < num11; ++index6)
+                                    for (int index = 0; index < num11; ++index)
                                     {
                                       string str10 = reader.ReadString();
                                       if (str10 != null && str10.Length != 0)
@@ -918,34 +917,26 @@ label_20:
                                         if (str10.Contains(":"))
                                         {
                                           string[] Data = str10.Split(":", StringSplitOptions.None);
-                                          for (int index7 = 0; index7 < Main.Instance.AllPrefabs.Count; ++index7)
+                                          GameObject prefab = Main.Instance.GetPrefab(Data[1]);
+                                          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
                                           {
-                                            if (Main.Instance.AllPrefabs[index7].name == Data[1])
-                                            {
-                                              GameObject gameObject = Main.Spawn(Main.Instance.AllPrefabs[index7], saveable: true);
-                                              Interactible component = gameObject.GetComponent<Interactible>();
-                                              if ((UnityEngine.Object) component != (UnityEngine.Object) null)
-                                                component.sd_LoadData(Data, ':');
-                                              gameObject.GetComponentInChildren<int_PickupToHand>(true).EquipToVag(this);
-                                              break;
-                                            }
+                                            GameObject gameObject = Main.Spawn(prefab, saveable: true);
+                                            Interactible component = gameObject.GetComponent<Interactible>();
+                                            if ((UnityEngine.Object) component != (UnityEngine.Object) null)
+                                              component.sd_LoadData(Data, ':');
+                                            gameObject.GetComponentInChildren<int_PickupToHand>(true).EquipToVag(this);
                                           }
                                         }
                                         else
                                         {
-                                          for (int index8 = 0; index8 < Main.Instance.AllPrefabs.Count; ++index8)
-                                          {
-                                            if (Main.Instance.AllPrefabs[index8].name == str10)
-                                            {
-                                              Main.Spawn(Main.Instance.AllPrefabs[index8], saveable: true).GetComponentInChildren<int_PickupToHand>(true).EquipToVag(this);
-                                              break;
-                                            }
-                                          }
+                                          GameObject prefab = Main.Instance.GetPrefab(str10);
+                                          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
+                                            Main.Spawn(prefab, saveable: true).GetComponentInChildren<int_PickupToHand>(true).EquipToVag(this);
                                         }
                                       }
                                     }
                                     int num12 = reader.ReadInt32();
-                                    for (int index9 = 0; index9 < num12; ++index9)
+                                    for (int index = 0; index < num12; ++index)
                                     {
                                       string str11 = reader.ReadString();
                                       if (str11 != null && str11.Length != 0)
@@ -953,29 +944,21 @@ label_20:
                                         if (str11.Contains(":"))
                                         {
                                           string[] Data = str11.Split(":", StringSplitOptions.None);
-                                          for (int index10 = 0; index10 < Main.Instance.AllPrefabs.Count; ++index10)
+                                          GameObject prefab = Main.Instance.GetPrefab(Data[1]);
+                                          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
                                           {
-                                            if (Main.Instance.AllPrefabs[index10].name == Data[1])
-                                            {
-                                              GameObject gameObject = Main.Spawn(Main.Instance.AllPrefabs[index10], saveable: true);
-                                              Interactible component = gameObject.GetComponent<Interactible>();
-                                              if ((UnityEngine.Object) component != (UnityEngine.Object) null)
-                                                component.sd_LoadData(Data, ':');
-                                              gameObject.GetComponentInChildren<int_PickupToHand>(true).EquipToAss(this);
-                                              break;
-                                            }
+                                            GameObject gameObject = Main.Spawn(prefab, saveable: true);
+                                            Interactible component = gameObject.GetComponent<Interactible>();
+                                            if ((UnityEngine.Object) component != (UnityEngine.Object) null)
+                                              component.sd_LoadData(Data, ':');
+                                            gameObject.GetComponentInChildren<int_PickupToHand>(true).EquipToAss(this);
                                           }
                                         }
                                         else
                                         {
-                                          for (int index11 = 0; index11 < Main.Instance.AllPrefabs.Count; ++index11)
-                                          {
-                                            if (Main.Instance.AllPrefabs[index11].name == str11)
-                                            {
-                                              Main.Spawn(Main.Instance.AllPrefabs[index11], saveable: true).GetComponentInChildren<int_PickupToHand>(true).EquipToAss(this);
-                                              break;
-                                            }
-                                          }
+                                          GameObject prefab = Main.Instance.GetPrefab(str11);
+                                          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
+                                            Main.Spawn(prefab, saveable: true).GetComponentInChildren<int_PickupToHand>(true).EquipToAss(this);
                                         }
                                       }
                                     }
@@ -1073,7 +1056,7 @@ label_20:
   public override string[] sd_SaveData(char SlitChar = ':')
   {
     List<string> stringList1 = new List<string>();
-    stringList1.Add("10");
+    stringList1.Add("11");
     stringList1.Add(this.WorldSaveID);
     stringList1.Add(this.Name);
     stringList1.Add(this.transform.position.ToString());
@@ -1133,7 +1116,7 @@ label_20:
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     base.sd_LoadData(Data, SlitChar);
-    if (Data[0] != "10")
+    if (Data[0] != "11")
       Debug.LogError((object) "DiferentVersion");
     this.WorldSaveID = Data[1];
     this.Name = Data[2];
@@ -1148,6 +1131,7 @@ label_20:
       {
         Main.Instance.Player.UserControl.StopMoving();
         Main.Instance.Player.UserControl.enabled = value;
+        Main.Instance.Player.transform.eulerAngles = new Vector3(0.0f, Main.Instance.Player.transform.eulerAngles.y, 0.0f);
         if (!value)
           return;
         Main.Instance.Player.Anim.Play("GainControl");
@@ -1414,7 +1398,43 @@ label_20:
     set => this._PersonalityData = value;
   }
 
+  public int Favor
+  {
+    get
+    {
+      if (this._Favor < -100)
+        this._Favor = -100;
+      return this._Favor;
+    }
+    set
+    {
+      this._Favor = value;
+      if (this._Favor >= -100)
+        return;
+      this._Favor = -100;
+    }
+  }
+
   public int RelatioshipLevel => this.Favor >= 100 ? 1 : 0;
+
+  public int TrainingValue
+  {
+    set
+    {
+      this._TrainingValue = value;
+      this.SaveableVars[nameof (TrainingValue)] = value.ToString();
+    }
+    get
+    {
+      if (this._TrainingValue == 0)
+      {
+        string saveableVar = this.SaveableVars[nameof (TrainingValue)];
+        if (saveableVar != null && saveableVar.Length > 0)
+          this._TrainingValue = int.Parse(saveableVar);
+      }
+      return this._TrainingValue;
+    }
+  }
 
   public int SexSkills
   {
@@ -1514,7 +1534,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Any[index2] != (UnityEngine.Object) null && Main.Instance.Prefabs_Any[index2].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Any[index2];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index3 = 0; index3 < Main.Instance.Prefabs_Bodies.Count; ++index3)
@@ -1522,7 +1542,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Bodies[index3] != (UnityEngine.Object) null && Main.Instance.Prefabs_Bodies[index3].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Bodies[index3];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index4 = 0; index4 < Main.Instance.Prefabs_Garter.Count; ++index4)
@@ -1530,7 +1550,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Garter[index4] != (UnityEngine.Object) null && Main.Instance.Prefabs_Garter[index4].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Garter[index4];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index5 = 0; index5 < Main.Instance.Prefabs_Hair.Count; ++index5)
@@ -1538,7 +1558,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Hair[index5] != (UnityEngine.Object) null && Main.Instance.Prefabs_Hair[index5].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Hair[index5];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index6 = 0; index6 < Main.Instance.Prefabs_Hat.Count; ++index6)
@@ -1546,7 +1566,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Hat[index6] != (UnityEngine.Object) null && Main.Instance.Prefabs_Hat[index6].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Hat[index6];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index7 = 0; index7 < Main.Instance.Prefabs_Heads.Count; ++index7)
@@ -1554,7 +1574,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Heads[index7] != (UnityEngine.Object) null && Main.Instance.Prefabs_Heads[index7].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Heads[index7];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index8 = 0; index8 < Main.Instance.Prefabs_Pants.Count; ++index8)
@@ -1562,7 +1582,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Pants[index8] != (UnityEngine.Object) null && Main.Instance.Prefabs_Pants[index8].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Pants[index8];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index9 = 0; index9 < Main.Instance.Prefabs_Shoes.Count; ++index9)
@@ -1570,7 +1590,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Shoes[index9] != (UnityEngine.Object) null && Main.Instance.Prefabs_Shoes[index9].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Shoes[index9];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index10 = 0; index10 < Main.Instance.Prefabs_Socks.Count; ++index10)
@@ -1578,7 +1598,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Socks[index10] != (UnityEngine.Object) null && Main.Instance.Prefabs_Socks[index10].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Socks[index10];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index11 = 0; index11 < Main.Instance.Prefabs_Top.Count; ++index11)
@@ -1586,7 +1606,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Top[index11] != (UnityEngine.Object) null && Main.Instance.Prefabs_Top[index11].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Top[index11];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index12 = 0; index12 < Main.Instance.Prefabs_UnderwearLower.Count; ++index12)
@@ -1594,7 +1614,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_UnderwearLower[index12] != (UnityEngine.Object) null && Main.Instance.Prefabs_UnderwearLower[index12].name == assetName)
         {
           prefab = Main.Instance.Prefabs_UnderwearLower[index12];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index13 = 0; index13 < Main.Instance.Prefabs_UnderwearTop.Count; ++index13)
@@ -1602,7 +1622,7 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_UnderwearTop[index13] != (UnityEngine.Object) null && Main.Instance.Prefabs_UnderwearTop[index13].name == assetName)
         {
           prefab = Main.Instance.Prefabs_UnderwearTop[index13];
-          goto label_97;
+          goto label_93;
         }
       }
       for (int index14 = 0; index14 < Main.Instance.Prefabs_Beards.Count; ++index14)
@@ -1610,20 +1630,16 @@ label_20:
         if ((UnityEngine.Object) Main.Instance.Prefabs_Beards[index14] != (UnityEngine.Object) null && Main.Instance.Prefabs_Beards[index14].name == assetName)
         {
           prefab = Main.Instance.Prefabs_Beards[index14];
-          goto label_97;
+          goto label_93;
         }
       }
-      for (int index15 = 0; index15 < Main.Instance.AllPrefabs.Count; ++index15)
+      prefab = Main.Instance.GetPrefab(assetName);
+      if (!((UnityEngine.Object) prefab != (UnityEngine.Object) null))
       {
-        if ((UnityEngine.Object) Main.Instance.AllPrefabs[index15] != (UnityEngine.Object) null && Main.Instance.AllPrefabs[index15].name == assetName)
-        {
-          prefab = Main.Instance.AllPrefabs[index15];
-          goto label_97;
-        }
+        prefab = Main.Instance.SpawnFromCustomBundle(assetName);
+        int num = (UnityEngine.Object) prefab != (UnityEngine.Object) null ? 1 : 0;
       }
-      prefab = Main.Instance.SpawnFromCustomBundle(assetName);
-      int num = (UnityEngine.Object) prefab != (UnityEngine.Object) null ? 1 : 0;
-label_97:
+label_93:
       if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
       {
         if (assetName != "invmouthopen2")
@@ -1636,18 +1652,20 @@ label_97:
         this.DressClothe(prefab, clothingData: this._StartingClothes[index1]);
     }
     this._StartingClothes.Clear();
-    for (int index16 = 0; index16 < this._StartingWeapons.Count; ++index16)
+    for (int index15 = 0; index15 < this._StartingWeapons.Count; ++index15)
     {
-      for (int index17 = 0; index17 < Main.Instance.Prefabs_Weapons.Count; ++index17)
+      for (int index16 = 0; index16 < Main.Instance.Prefabs_Weapons.Count; ++index16)
       {
-        if ((UnityEngine.Object) Main.Instance.Prefabs_Weapons[index17] != (UnityEngine.Object) null && Main.Instance.Prefabs_Weapons[index17].name == this._StartingWeapons[index16])
-          this.WeaponInv.PickupWeapon(Main.Spawn(Main.Instance.Prefabs_Weapons[index17].gameObject));
+        if ((UnityEngine.Object) Main.Instance.Prefabs_Weapons[index16] != (UnityEngine.Object) null && Main.Instance.Prefabs_Weapons[index16].name == this._StartingWeapons[index15])
+          this.WeaponInv.PickupWeapon(Main.Spawn(Main.Instance.Prefabs_Weapons[index16].gameObject));
       }
     }
     this._StartingWeapons.Clear();
     this.PersonalityData = Main.Instance.Personalities[(int) this.Personality];
     this.PersonalityData.OnSpawn(this);
     this.RefreshColors();
+    if (!this.IsPlayer && this.Leashed)
+      this.ThisPersonInt.Leash();
     for (int index = 0; index < this.OnFinallyInited.Count; ++index)
       this.OnFinallyInited[index]();
     this.OnFinallyInited.Clear();
@@ -2151,6 +2169,8 @@ label_97:
 
   public void Seen(GameObject seen)
   {
+    if (this.BlindFolded)
+      return;
     bl_PersonRedirect component1 = seen.GetComponent<bl_PersonRedirect>();
     Person component2 = (!((UnityEngine.Object) component1 != (UnityEngine.Object) null) ? (Component) seen.transform.root : (Component) component1.RedirectTarget.transform).GetComponent<Person>();
     if ((UnityEngine.Object) component2 != (UnityEngine.Object) null)
@@ -3182,28 +3202,72 @@ label_29:
           this.WhileDoingAction();
         if (this.CurrentLOD == 0 && this._FullCulled)
           return;
-        if (this.CanMove && (!this.CurrentTaskIsNull() || !this.PersonType.BehaviourPass(this)))
+        if (this.CanMove && (!this.CurrentTaskIsNull() || !((UnityEngine.Object) this.PersonType != (UnityEngine.Object) null) || !this.PersonType.BehaviourPass(this)))
         {
           switch (this.State)
           {
             case Person_State.Free:
-              if (this.CurrentTaskIsNull() && !this.PersonType.BehaviourPass_Free(this) && (UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null)
+              if (this.CurrentTaskIsNull() && !this.PersonType.BehaviourPass_Free(this))
               {
-                Vector3 _wonder = Vector3.zero;
-                NavMeshPath path = new NavMeshPath();
-                Interactible _int = this.CurrentZone.PickThingToDo(this, out _wonder, out path);
-                if ((UnityEngine.Object) _int != (UnityEngine.Object) null || _wonder != Vector3.zero)
+                if ((UnityEngine.Object) this.CurrentZone == (UnityEngine.Object) null)
+                  this.CurrentZone = this.TempLivingSpace_hang;
+                if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null)
                 {
-                  this.RandActionTimer = UnityEngine.Random.Range(5f, 50f);
-                  if ((UnityEngine.Object) _int == (UnityEngine.Object) null)
+                  Vector3 _wonder = Vector3.zero;
+                  NavMeshPath path = new NavMeshPath();
+                  Interactible _int = this.CurrentZone.PickThingToDo(this, out _wonder, out path);
+                  if ((UnityEngine.Object) _int != (UnityEngine.Object) null || _wonder != Vector3.zero)
                   {
+                    this.RandActionTimer = UnityEngine.Random.Range(5f, 50f);
+                    if ((UnityEngine.Object) _int == (UnityEngine.Object) null)
+                    {
+                      this.AddFreeScheduleTask(new Person.ScheduleTask()
+                      {
+                        IDName = "WonderInZone",
+                        ActionPlacePosition = _wonder,
+                        RunTo = false,
+                        CanBeInterrupted = true,
+                        WhileDoing = (Action) (() =>
+                        {
+                          this.RandActionTimer -= Time.deltaTime;
+                          if ((double) this.RandActionTimer > 0.0)
+                            return;
+                          this.RandActionTimer = UnityEngine.Random.Range(5f, 50f);
+                          if ((UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
+                          {
+                            if (this.InteractingWith.NPCOnFinishInteract == null)
+                            {
+                              this.InteractingWith.StopInteracting();
+                              this.CompleteScheduleTask();
+                            }
+                            else
+                              this.InteractingWith.StopInteracting();
+                          }
+                          else
+                            this.CompleteScheduleTask();
+                        }),
+                        OnArrive = (Action) (() =>
+                        {
+                          if (this.PrisionerEscapeCheck())
+                            return;
+                          GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[264]);
+                          gameObject.transform.position = _wonder;
+                          gameObject.transform.eulerAngles = new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360f), 0.0f);
+                          Interactible component = gameObject.GetComponent<Interactible>();
+                          component.NPCOnFinishInteract = new Action(this.CompleteScheduleTask);
+                          component.Interact(this);
+                        }),
+                        OnStartGoing = (Action) (() => this.PrisionerEscapeCheck())
+                      }, true);
+                      break;
+                    }
                     this.AddFreeScheduleTask(new Person.ScheduleTask()
                     {
-                      IDName = "WonderInZone",
-                      ActionPlacePosition = _wonder,
-                      RunTo = false,
+                      IDName = "DoSomethingInZone",
+                      ActionPlace = _int.NavMeshInteractSpot,
+                      RunTo = _int.RunTo,
                       CanBeInterrupted = true,
-                      WhileDoing = (Action) (() =>
+                      WhileDoing = _int.AutomatedStopInteraction ? (Action) null : (Action) (() =>
                       {
                         this.RandActionTimer -= Time.deltaTime;
                         if ((double) this.RandActionTimer > 0.0)
@@ -3224,62 +3288,24 @@ label_29:
                       }),
                       OnArrive = (Action) (() =>
                       {
-                        if (this.PrisionerEscapeCheck())
-                          return;
-                        GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[264]);
-                        gameObject.transform.position = _wonder;
-                        gameObject.transform.eulerAngles = new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360f), 0.0f);
-                        Interactible component = gameObject.GetComponent<Interactible>();
-                        component.NPCOnFinishInteract = new Action(this.CompleteScheduleTask);
-                        component.Interact(this);
-                      }),
-                      OnStartGoing = (Action) (() => this.PrisionerEscapeCheck())
+                        if ((UnityEngine.Object) _int == (UnityEngine.Object) null)
+                        {
+                          GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[264]);
+                          gameObject.transform.position = _wonder;
+                          gameObject.transform.eulerAngles = new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360f), 0.0f);
+                          _int = gameObject.GetComponent<Interactible>();
+                        }
+                        if (_int.CanInteract)
+                        {
+                          _int.NPCOnFinishInteract = new Action(this.CompleteScheduleTask);
+                          _int.Interact(this);
+                        }
+                        else
+                          this.CompleteScheduleTask();
+                      })
                     }, true);
                     break;
                   }
-                  this.AddFreeScheduleTask(new Person.ScheduleTask()
-                  {
-                    IDName = "DoSomethingInZone",
-                    ActionPlace = _int.NavMeshInteractSpot,
-                    RunTo = _int.RunTo,
-                    CanBeInterrupted = true,
-                    WhileDoing = _int.AutomatedStopInteraction ? (Action) null : (Action) (() =>
-                    {
-                      this.RandActionTimer -= Time.deltaTime;
-                      if ((double) this.RandActionTimer > 0.0)
-                        return;
-                      this.RandActionTimer = UnityEngine.Random.Range(5f, 50f);
-                      if ((UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
-                      {
-                        if (this.InteractingWith.NPCOnFinishInteract == null)
-                        {
-                          this.InteractingWith.StopInteracting();
-                          this.CompleteScheduleTask();
-                        }
-                        else
-                          this.InteractingWith.StopInteracting();
-                      }
-                      else
-                        this.CompleteScheduleTask();
-                    }),
-                    OnArrive = (Action) (() =>
-                    {
-                      if ((UnityEngine.Object) _int == (UnityEngine.Object) null)
-                      {
-                        GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Main.Instance.AllPrefabs[264]);
-                        gameObject.transform.position = _wonder;
-                        gameObject.transform.eulerAngles = new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360f), 0.0f);
-                        _int = gameObject.GetComponent<Interactible>();
-                      }
-                      if (_int.CanInteract)
-                      {
-                        _int.NPCOnFinishInteract = new Action(this.CompleteScheduleTask);
-                        _int.Interact(this);
-                      }
-                      else
-                        this.CompleteScheduleTask();
-                    })
-                  }, true);
                   break;
                 }
                 break;
@@ -3965,6 +3991,8 @@ label_29:
     }
     if (componentInChildren2.HidesFeet && (UnityEngine.Object) this.CurrentFeet != (UnityEngine.Object) null)
       this.RemoveFeet();
+    if (componentInChildren2.HidesHair && (UnityEngine.Object) this.CurrentHair != (UnityEngine.Object) null)
+      this.CurrentHair.gameObject.SetActive(false);
     if (componentInChildren2.Skinned)
     {
       gameObject.transform.SetParent(this.transform);
@@ -4192,6 +4220,8 @@ label_29:
     this.ResetAllShapes();
     if (clothe.HidesFeet && (UnityEngine.Object) this.CurrentFeet == (UnityEngine.Object) null)
       this.PutFeet();
+    if (clothe.HidesHair && (UnityEngine.Object) this.CurrentHair != (UnityEngine.Object) null)
+      this.CurrentHair.gameObject.SetActive(true);
     if (clothe.BoneStorage != null)
     {
       for (int index = 0; index < clothe.BoneStorage.Length; ++index)
@@ -5025,7 +5055,7 @@ label_0:
 
   public bool PrisionerEscapeCheck()
   {
-    return this.CanMove && (UnityEngine.Object) this.PersonType != (UnityEngine.Object) null && this.PersonType.ThisType == Person_Type.Prisioner && (double) this.TrainingValue < 95.0 && this.RunAway();
+    return Main.Instance.OpenWorld && this.CanMove && (UnityEngine.Object) this.PersonType != (UnityEngine.Object) null && this.PersonType.ThisType == Person_Type.Prisioner && this.TrainingValue < 95 && this.RunAway();
   }
 
   public void StopFollowing()

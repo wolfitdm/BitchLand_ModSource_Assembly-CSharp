@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_Lockable
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ public class int_Lockable : Interactible
   public bool DEBUG_LOCKLOG;
   public e_KeyNames KeyID;
   public bool m_Locked;
+  public bool __internalloading_Locked;
 
   public override bool CheckCanInteract(Person person)
   {
@@ -129,7 +130,15 @@ public class int_Lockable : Interactible
     base.sd_LoadData(Data, SlitChar);
     if (this.DEBUG_LOCKLOG)
       Debug.LogWarning((object) "Lock state is being loaded");
-    this.Locked = Data[this._CurrentLoadingIndex++] == "1";
+    if (Data.Length <= this._CurrentLoadingIndex)
+      return;
+    this.__internalloading_Locked = Data[this._CurrentLoadingIndex++] == "1";
     this.PlayerOwned = Data[this._CurrentLoadingIndex++] == "1";
+  }
+
+  public override void AfterDataLoaded()
+  {
+    base.AfterDataLoaded();
+    this.Locked = this.__internalloading_Locked;
   }
 }

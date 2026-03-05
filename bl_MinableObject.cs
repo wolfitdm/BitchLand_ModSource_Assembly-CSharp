@@ -1,12 +1,14 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_MinableObject
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,6 +19,7 @@ public class bl_MinableObject : Interactible
   public bool RawResources;
   public e_MiningTool MiningTool;
   public e_ResourceType ResourceItOffers;
+  public bool Infinite;
   public GameObject[] BreaksInto;
   public GameObject[] ExtraOre;
   public bool AlwaysShowPrompt;
@@ -27,14 +30,21 @@ public class bl_MinableObject : Interactible
   public float _TimeMining;
   public bool SpawnNonDespawnable;
   public Transform[] SpawnSpots;
+  public Interactible[] OtherIntsToCheckOnCanBreak;
   public bool BakeNavmeshOnBuild;
   public List<Person> _Builders = new List<Person>();
+  public Int_Storage[] ReleaseWhenBreak;
 
   public override bool CheckCanInteract(Person person)
   {
     bool flag = false;
     if ((UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
       return false;
+    for (int index = 0; index < this.OtherIntsToCheckOnCanBreak.Length; ++index)
+    {
+      if ((UnityEngine.Object) this.OtherIntsToCheckOnCanBreak[index] != (UnityEngine.Object) null && (UnityEngine.Object) this.OtherIntsToCheckOnCanBreak[index].InteractingPerson != (UnityEngine.Object) null)
+        return false;
+    }
     if (!person.IsPlayer)
       return true;
     if (this.AlwaysShowPrompt)
@@ -46,7 +56,7 @@ public class bl_MinableObject : Interactible
         if (this.ShowNotifWhenNoWeapon)
           flag = true;
       }
-      else
+      else if (person.WeaponInv.CurrentWeapon.ThisToolType != e_MiningTool.Undefined && person.WeaponInv.CurrentWeapon.ThisToolType != e_MiningTool.FireWeapon && person.WeaponInv.CurrentWeapon.ThisToolType != e_MiningTool.MeleeWeapon)
         flag = true;
     }
     return flag;
@@ -138,6 +148,8 @@ public class bl_MinableObject : Interactible
       }
     }
     this.OnBreak();
+    if (this.Infinite)
+      return;
     UnityEngine.Object.Destroy((UnityEngine.Object) this.RootObj);
   }
 
@@ -171,22 +183,28 @@ public class bl_MinableObject : Interactible
 
   public virtual void OnBreak()
   {
-    if (!this.BakeNavmeshOnBuild)
-      return;
-    if (!Main.Instance.HasUpdatedNavmeshAfterBuildYet)
+    if (this.BakeNavmeshOnBuild)
     {
-      Main.Instance.HasUpdatedNavmeshAfterBuildYet = true;
-      Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
-    }
-    Main.RunInNextFrame((Action) (() =>
-    {
-      Main.Instance.Nav2.GetType().GetMethod("RequestNavMeshUpdate").Invoke((object) Main.Instance.Nav2, (object[]) null);
+      if (!Main.Instance.HasUpdatedNavmeshAfterBuildYet)
+      {
+        Main.Instance.HasUpdatedNavmeshAfterBuildYet = true;
+        Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
+      }
       Main.RunInNextFrame((Action) (() =>
       {
-        Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
-        Main.Instance.GarbageCollect();
-      }), 10);
-    }), 3);
+        Main.Instance.Nav2.GetType().GetMethod("RequestNavMeshUpdate").Invoke((object) Main.Instance.Nav2, (object[]) null);
+        Main.RunInNextFrame((Action) (() =>
+        {
+          Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
+          Main.Instance.GarbageCollect();
+        }), 10);
+      }), 3);
+    }
+    for (int index = 0; index < this.ReleaseWhenBreak.Length; ++index)
+    {
+      if ((UnityEngine.Object) this.ReleaseWhenBreak[index] != (UnityEngine.Object) null)
+        this.ReleaseWhenBreak[index].RemoveAllItems();
+    }
   }
 
   public void ProcessNavmeshUGH2()
@@ -215,5 +233,75 @@ public class bl_MinableObject : Interactible
     __Boxed<LayerMask> local = (ValueType) layerMask;
     property.SetValue((object) monoBehaviour2, (object) local);
     monoBehaviour1.GetType().GetMethod("BuildNavMesh").Invoke((object) monoBehaviour1, (object[]) null);
+  }
+
+  public override string[] sd_SaveData(char SlitChar = ':')
+  {
+    Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
+    return new string[5]
+    {
+      this.WorldSaveID,
+      this.PrefabName,
+      Main.Vector32Str(transform.position),
+      Main.Vector32Str(transform.eulerAngles),
+      Main.Vector32Str(transform.localScale)
+    };
+  }
+
+  public override void sd_LoadData(string[] Data, char SlitChar = ':')
+  {
+    Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
+    if (Data.Length > 2)
+      transform.position = Main.ParseVector3(Data[2]);
+    else
+      Debug.LogError((object) ("Data.Length > 2 -> " + this.gameObject.name));
+    if (Data.Length > 3)
+      transform.eulerAngles = Main.ParseVector3(Data[3]);
+    else
+      Debug.LogError((object) ("Data.Length > 3 -> " + this.gameObject.name));
+    if (Data.Length > 4)
+      transform.localScale = Main.ParseVector3(Data[4]);
+    else
+      Debug.LogError((object) ("Data.Length > 4 -> " + this.gameObject.name));
+    this._CurrentLoadingIndex = 5;
+  }
+
+  public override byte[] ByteSaveableData2
+  {
+    get
+    {
+      Transform transform = (UnityEngine.Object) this.RootObj != (UnityEngine.Object) null ? this.RootObj.transform : this.transform;
+      using (MemoryStream output = new MemoryStream())
+      {
+        using (BinaryWriter writer = new BinaryWriter((Stream) output))
+        {
+          writer.Write(this.WorldSaveID.Length);
+          writer.Write(Encoding.UTF8.GetBytes(this.WorldSaveID));
+          writer.Write(this.PrefabName.Length);
+          writer.Write(Encoding.UTF8.GetBytes(this.PrefabName));
+          this.WriteVector3(writer, transform.position);
+          this.WriteVector3(writer, transform.eulerAngles);
+          this.WriteVector3(writer, transform.lossyScale);
+          return output.ToArray();
+        }
+      }
+    }
+    set
+    {
+      Transform transform = (UnityEngine.Object) this.RootObj != (UnityEngine.Object) null ? this.RootObj.transform : this.transform;
+      using (MemoryStream input = new MemoryStream(value))
+      {
+        using (BinaryReader reader = new BinaryReader((Stream) input))
+        {
+          int count1 = reader.ReadInt32();
+          this.WorldSaveID = Encoding.UTF8.GetString(reader.ReadBytes(count1));
+          int count2 = reader.ReadInt32();
+          this.PrefabName = Encoding.UTF8.GetString(reader.ReadBytes(count2));
+          transform.position = this.ReadVector3(reader);
+          transform.eulerAngles = this.ReadVector3(reader);
+          transform.localScale = this.ReadVector3(reader);
+        }
+      }
+    }
   }
 }

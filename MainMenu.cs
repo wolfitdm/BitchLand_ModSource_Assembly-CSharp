@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: MainMenu
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -66,9 +66,9 @@ public class MainMenu : UI_Menu
     bool flag = PlayerPrefs.GetInt("FirstRun8.5", 0) == 0;
     int index = flag ? this.FirstRunMenu : UnityEngine.Random.Range(0, this.MainMenuPositions.Count);
     PlayerPrefs.SetInt("FirstRun8.5", 1);
-    if (PlayerPrefs.GetInt("FirstRun10.e", 0) == 0)
+    if (PlayerPrefs.GetInt("FirstRun11.a", 0) == 0)
       Main.Instance.FirstRunThisVersion = true;
-    PlayerPrefs.SetInt("FirstRun10.e", 1);
+    PlayerPrefs.SetInt("FirstRun11.a", 1);
     if (this.SpecificBG != -1)
       index = this.SpecificBG;
     Transform mainMenuPosition = this.MainMenuPositions[index];
@@ -88,6 +88,7 @@ public class MainMenu : UI_Menu
 
   public void Start()
   {
+    bl_SectionGenerate2.SmallWorld = false;
     this.Patrons = File.ReadAllText(Main.AssetsFolder + "/Patrons.txt");
     this.UpdateVersionTexts();
     for (int index = 0; index < this.PatronTexts.Length; ++index)
@@ -110,7 +111,7 @@ public class MainMenu : UI_Menu
     Main.Instance.Lights.transform.localEulerAngles = this.LightsAngle;
     Time.timeScale = 1f;
     DateTime result = new DateTime();
-    DateTime.TryParse("2026/06/01", out result);
+    DateTime.TryParse("2026/06/06", out result);
     this.BuildIsOld.SetActive(result < DateTime.Now);
     this.ModsButton.SetActive(!Main.Instance.FreeWorldPatch);
     switch (UI_Settings._SpeedrunValue)
@@ -177,7 +178,7 @@ public class MainMenu : UI_Menu
   public void UpdateVersionTexts()
   {
     for (int index = 0; index < this.VersionTexts.Length; ++index)
-      this.VersionTexts[index].text = "10.e";
+      this.VersionTexts[index].text = "11.a";
   }
 
   public void Click_ChangeLog()
@@ -306,24 +307,20 @@ public class MainMenu : UI_Menu
             case "clothes":
               string[] strArray2 = strArray1[1].Split(";", StringSplitOptions.None);
               this._Clothes = new GameObject[strArray2.Length];
-              for (int index1 = 0; index1 < strArray2.Length; ++index1)
+              for (int index = 0; index < strArray2.Length; ++index)
               {
-                string[] strArray3 = strArray2[index1].Split(":", StringSplitOptions.None);
-                for (int index2 = 0; index2 < Main.Instance.AllPrefabs.Count; ++index2)
+                string[] strArray3 = strArray2[index].Split(":", StringSplitOptions.None);
+                GameObject prefab = Main.Instance.GetPrefab(strArray3[0]);
+                if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
                 {
-                  if (strArray3[0] == Main.Instance.AllPrefabs[index2].name)
+                  this._Clothes[index] = prefab;
+                  if (strArray3.Length > 1 && (UnityEngine.Object) this._Clothes[index].GetComponentInChildren<int_PickableClothingPackage>(true) != (UnityEngine.Object) null)
                   {
-                    this._Clothes[index1] = Main.Instance.AllPrefabs[index2];
-                    if (strArray3.Length > 1 && (UnityEngine.Object) this._Clothes[index1].GetComponentInChildren<int_PickableClothingPackage>(true) != (UnityEngine.Object) null)
-                    {
-                      GameObject gameObject = Main.Spawn(this._Clothes[index1], Main.Instance.DisabledObjects);
-                      int_PickableClothingPackage componentInChildren = gameObject.GetComponentInChildren<int_PickableClothingPackage>(true);
-                      if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null)
-                        componentInChildren.ClothingData = ":" + strArray3[1] + ":RGBA(0.000, 0.000, 0.000, 0.000)";
-                      this._Clothes[index1] = gameObject;
-                      break;
-                    }
-                    break;
+                    GameObject gameObject = Main.Spawn(this._Clothes[index], Main.Instance.DisabledObjects);
+                    int_PickableClothingPackage componentInChildren = gameObject.GetComponentInChildren<int_PickableClothingPackage>(true);
+                    if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null)
+                      componentInChildren.ClothingData = ":" + strArray3[1] + ":RGBA(0.000, 0.000, 0.000, 0.000)";
+                    this._Clothes[index] = gameObject;
                   }
                 }
               }

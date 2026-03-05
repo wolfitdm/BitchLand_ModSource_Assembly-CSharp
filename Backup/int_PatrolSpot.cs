@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_PatrolSpot
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +10,14 @@ using UnityEngine;
 #nullable disable
 public class int_PatrolSpot : int_ConstructionPlan
 {
+  public override void Start()
+  {
+    base.Start();
+    if (!(Main.Instance.GlobalVars.Get("DisplayArmySpots") == "1"))
+      return;
+    this.gameObject.SetActive(false);
+  }
+
   public override void GetPlaced()
   {
     this.InteractText = this.RootObj.transform.position.x.ToString("0") + "." + this.RootObj.transform.position.y.ToString("0") + "." + this.RootObj.transform.position.z.ToString("0");

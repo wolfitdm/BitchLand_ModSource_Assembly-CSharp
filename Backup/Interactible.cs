@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Interactible
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,8 @@ public class Interactible : SaveableBehaviour
   public bool _CanInteract = true;
   public bool ScatInteractible;
   public bool NPCCanUseInFollow;
+  public bool OnlyInteractibleInOW;
+  public bool RootClass_NullUserAtEnd;
   public bool SetInteracting = true;
   public List<e_Fetish> OffersFetishes;
   public List<Personality_Type> OffersPersonalities;
@@ -28,6 +30,8 @@ public class Interactible : SaveableBehaviour
   public bool CanLeave = true;
   public Person PersonGoingToUse;
   public string[] RequiredPerks;
+  public bool DestroyAfterUse;
+  public Person Owner;
   public Transform PivotSpot;
   public bool intDoIK;
   public SexPose_IKSetting[] intUsingIKs;
@@ -39,7 +43,6 @@ public class Interactible : SaveableBehaviour
   public string InteractText;
   public string[] _InteractTexts;
   public Person InteractingPerson;
-  public GameObject RootObj;
   public MeshRenderer[] DisableOnStart;
   public GameObject[] ActivateOnInteract;
   public GameObject[] DeactivateOnInteract;
@@ -60,6 +63,7 @@ public class Interactible : SaveableBehaviour
   public bool[] _AvailableUses;
   public int _SelectedUseIndex;
   public Main._runinseconds _RunningForSecs;
+  public string __internalloading_PersonUsing;
   [Header("Despawn")]
   public bool Despawnable;
   public float DespawnTimerMaxHere;
@@ -68,11 +72,16 @@ public class Interactible : SaveableBehaviour
   public bool DoDistanceCheck = true;
   public bool _InsideSafeHouse;
 
-  public bool CanInteract
+  public virtual bool CanInteract
   {
     set => this._CanInteract = value;
-    get => (Main.Instance.ScatContent || !this.ScatInteractible) && this._CanInteract;
+    get
+    {
+      return (!this.OnlyInteractibleInOW || Main.Instance.OpenWorld) && (Main.Instance.ScatContent || !this.ScatInteractible) && this._CanInteract;
+    }
   }
+
+  public virtual void MakeOwner(Person person) => this.Owner = person;
 
   public bool BeingUsed => this.HasBlocker("Interacting");
 
@@ -117,12 +126,25 @@ public class Interactible : SaveableBehaviour
           return false;
         break;
     }
-    for (int index = 0; index < this.RequiredPerks.Length; ++index)
+    if (this.RequiredPerks != null)
     {
-      if (!person.Perks.Contains(this.RequiredPerks[index]))
-        return false;
+      for (int index = 0; index < this.RequiredPerks.Length; ++index)
+      {
+        if (!person.Perks.Contains(this.RequiredPerks[index]))
+          return false;
+      }
     }
     return true;
+  }
+
+  public virtual bool FullCheckCanInteract(Person person)
+  {
+    if ((UnityEngine.Object) person == (UnityEngine.Object) null)
+      return false;
+    bool flag = this.CheckCanInteract(person) && this.CanInteract;
+    if (person.IsPlayer && !this.PlayerCanInteract)
+      flag = false;
+    return flag;
   }
 
   public override void Awake()
@@ -141,54 +163,76 @@ public class Interactible : SaveableBehaviour
   public virtual void Interact(Person person)
   {
     this.PersonGoingToUse = (Person) null;
-    if (person.IsPlayer)
+    if (person.TheHealth.dead || person.TheHealth.Incapacitated)
     {
-      person.UserControl.StopMoving();
-      if ((UnityEngine.Object) this.PivotSpot != (UnityEngine.Object) null)
+      Debug.LogError((object) ("ragdoll tried to use " + person.Name));
+    }
+    else
+    {
+      if (person.IsPlayer)
       {
-        FreeLookCam objectOfType = UnityEngine.Object.FindObjectOfType<FreeLookCam>(true);
-        objectOfType.m_Target = this.PivotSpot.transform;
-        objectOfType.transform.Find("Pivot").localPosition = Vector3.zero;
+        person.UserControl.StopMoving();
+        if ((UnityEngine.Object) this.PivotSpot != (UnityEngine.Object) null)
+        {
+          FreeLookCam objectOfType = UnityEngine.Object.FindObjectOfType<FreeLookCam>(true);
+          objectOfType.m_Target = this.PivotSpot.transform;
+          objectOfType.transform.Find("Pivot").localPosition = Vector3.zero;
+        }
       }
+      if (this.SetInteracting)
+      {
+        this.InteractingPerson = person;
+        this.InteractingPerson.Interacting = true;
+        this.InteractingPerson.InteractingWith = this;
+        this.AddBlocker("Interacting");
+        this.ProcessIK();
+      }
+      if (this.DisableHeadRotate)
+        person.LookAtPlayer.Disable = true;
+      if (this.DeactivateOnInteract != null)
+      {
+        for (int index = 0; index < this.DeactivateOnInteract.Length; ++index)
+        {
+          if ((UnityEngine.Object) this.DeactivateOnInteract[index] != (UnityEngine.Object) null)
+            this.DeactivateOnInteract[index].SetActive(false);
+        }
+      }
+      if (this.DisableOnInteract != null)
+      {
+        for (int index = 0; index < this.DisableOnInteract.Length; ++index)
+        {
+          if ((UnityEngine.Object) this.DisableOnInteract[index] != (UnityEngine.Object) null)
+            this.DisableOnInteract[index].enabled = false;
+        }
+      }
+      if (this.ActivateOnInteract != null)
+      {
+        for (int index = 0; index < this.ActivateOnInteract.Length; ++index)
+        {
+          if ((UnityEngine.Object) this.ActivateOnInteract[index] != (UnityEngine.Object) null)
+            this.ActivateOnInteract[index].SetActive(true);
+        }
+      }
+      if (this.EnableOnInteract != null)
+      {
+        for (int index = 0; index < this.EnableOnInteract.Length; ++index)
+        {
+          if ((UnityEngine.Object) this.EnableOnInteract[index] != (UnityEngine.Object) null)
+            this.EnableOnInteract[index].enabled = true;
+        }
+      }
+      if (this.ScriptToRun_OnInteract != null)
+      {
+        for (int index = 0; index < this.ScriptToRun_OnInteract.Length; ++index)
+        {
+          if ((UnityEngine.Object) this.ScriptToRun_OnInteract[index] != (UnityEngine.Object) null)
+            this.ScriptToRun_OnInteract[index].Invoke(this.ScriptFunctionToRun_OnInteract[index], 0.0f);
+        }
+      }
+      if ((double) this.DoForSeconds == 0.0)
+        return;
+      this._RunningForSecs = Main.RunInSeconds((Action) (() => this.StopInteracting()), this.DoForSeconds);
     }
-    if (this.SetInteracting)
-    {
-      this.InteractingPerson = person;
-      this.InteractingPerson.Interacting = true;
-      this.InteractingPerson.InteractingWith = this;
-      this.AddBlocker("Interacting");
-      this.ProcessIK();
-    }
-    if (this.DisableHeadRotate)
-      person.LookAtPlayer.Disable = true;
-    if (this.DeactivateOnInteract != null)
-    {
-      for (int index = 0; index < this.DeactivateOnInteract.Length; ++index)
-        this.DeactivateOnInteract[index].SetActive(false);
-    }
-    if (this.DisableOnInteract != null)
-    {
-      for (int index = 0; index < this.DisableOnInteract.Length; ++index)
-        this.DisableOnInteract[index].enabled = false;
-    }
-    if (this.ActivateOnInteract != null)
-    {
-      for (int index = 0; index < this.ActivateOnInteract.Length; ++index)
-        this.ActivateOnInteract[index].SetActive(true);
-    }
-    if (this.EnableOnInteract != null)
-    {
-      for (int index = 0; index < this.EnableOnInteract.Length; ++index)
-        this.EnableOnInteract[index].enabled = true;
-    }
-    if (this.ScriptToRun_OnInteract != null)
-    {
-      for (int index = 0; index < this.ScriptToRun_OnInteract.Length; ++index)
-        this.ScriptToRun_OnInteract[index].Invoke(this.ScriptFunctionToRun_OnInteract[index], 0.0f);
-    }
-    if ((double) this.DoForSeconds == 0.0)
-      return;
-    this._RunningForSecs = Main.RunInSeconds((Action) (() => this.StopInteracting()), this.DoForSeconds);
   }
 
   public virtual void InteractEx(int index, Person person)
@@ -297,27 +341,42 @@ public class Interactible : SaveableBehaviour
     if (this.ActivateOnInteract != null)
     {
       for (int index = 0; index < this.ActivateOnInteract.Length; ++index)
-        this.ActivateOnInteract[index].SetActive(false);
+      {
+        if ((UnityEngine.Object) this.ActivateOnInteract[index] != (UnityEngine.Object) null)
+          this.ActivateOnInteract[index].SetActive(false);
+      }
     }
     if (this.EnableOnInteract != null)
     {
       for (int index = 0; index < this.EnableOnInteract.Length; ++index)
-        this.EnableOnInteract[index].enabled = false;
+      {
+        if ((UnityEngine.Object) this.EnableOnInteract[index] != (UnityEngine.Object) null)
+          this.EnableOnInteract[index].enabled = false;
+      }
     }
     if (this.DeactivateOnInteract != null)
     {
       for (int index = 0; index < this.DeactivateOnInteract.Length; ++index)
-        this.DeactivateOnInteract[index].SetActive(true);
+      {
+        if ((UnityEngine.Object) this.DeactivateOnInteract[index] != (UnityEngine.Object) null)
+          this.DeactivateOnInteract[index].SetActive(true);
+      }
     }
     if (this.DisableOnInteract != null)
     {
       for (int index = 0; index < this.DisableOnInteract.Length; ++index)
-        this.DisableOnInteract[index].enabled = true;
+      {
+        if ((UnityEngine.Object) this.DisableOnInteract[index] != (UnityEngine.Object) null)
+          this.DisableOnInteract[index].enabled = true;
+      }
     }
     if (this.ScriptToRun_OnStopInteract != null)
     {
       for (int index = 0; index < this.ScriptToRun_OnStopInteract.Length; ++index)
-        this.ScriptToRun_OnStopInteract[index].Invoke(this.ScriptFunctionToRun_OnStopInteract[index], 0.0f);
+      {
+        if ((UnityEngine.Object) this.ScriptToRun_OnStopInteract[index] != (UnityEngine.Object) null)
+          this.ScriptToRun_OnStopInteract[index].Invoke(this.ScriptFunctionToRun_OnStopInteract[index], 0.0f);
+      }
     }
     if (this.DisableHeadRotate)
       interactingPerson.LookAtPlayer.Disable = false;
@@ -331,6 +390,7 @@ public class Interactible : SaveableBehaviour
     if (this.SetInteracting)
     {
       interactingPerson.Interacting = false;
+      interactingPerson.PreviousInteractingWith = interactingPerson.InteractingWith;
       interactingPerson.InteractingWith = (Interactible) null;
       this.RemoveBlocker("Interacting");
       if (this.intDoIK)
@@ -348,26 +408,68 @@ public class Interactible : SaveableBehaviour
     if (this.NPCOnFinishInteract != null)
       this.NPCOnFinishInteract();
     this.NPCOnFinishInteract = (Action) null;
+    if (this.DestroyAfterUse)
+      UnityEngine.Object.Destroy((UnityEngine.Object) this.RootObj.gameObject);
+    if (!this.RootClass_NullUserAtEnd)
+      return;
+    this.InteractingPerson = (Person) null;
   }
 
   public override string[] sd_SaveData(char SlitChar = ':')
   {
     Transform transform = (UnityEngine.Object) this.RootObj != (UnityEngine.Object) null ? this.RootObj.transform : this.transform;
-    return new string[4]
+    return new string[5]
     {
       this.WorldSaveID,
       this.PrefabName,
       Main.Vector32Str(transform.position),
-      Main.Vector32Str(transform.eulerAngles)
+      Main.Vector32Str(transform.eulerAngles),
+      (UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null ? "NULL" : this.InteractingPerson.WorldSaveID
     };
   }
 
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
-    transform.position = Main.ParseVector3(Data[2]);
-    transform.eulerAngles = Main.ParseVector3(Data[3]);
-    this._CurrentLoadingIndex = 4;
+    this._CurrentLoadingIndex = 2;
+    if (Data.Length <= this._CurrentLoadingIndex)
+      return;
+    transform.position = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
+    if (Data.Length <= this._CurrentLoadingIndex)
+      return;
+    transform.eulerAngles = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
+    if (Data.Length <= this._CurrentLoadingIndex)
+      return;
+    this.__internalloading_PersonUsing = Data[this._CurrentLoadingIndex++];
+  }
+
+  public override void AfterDataLoaded()
+  {
+    base.AfterDataLoaded();
+    if (!(this.__internalloading_PersonUsing != "NULL"))
+      return;
+    if (Main.Instance.OpenWorld)
+    {
+      for (int index = 0; index < Main.Instance.SpawnedPeople_World.Count; ++index)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedPeople_World[index] != (UnityEngine.Object) null && Main.Instance.SpawnedPeople_World[index].WorldSaveID == this.__internalloading_PersonUsing)
+        {
+          this.Interact(Main.Instance.SpawnedPeople_World[index]);
+          break;
+        }
+      }
+    }
+    else
+    {
+      for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
+      {
+        if ((UnityEngine.Object) Main.Instance.SpawnedPeople[index] != (UnityEngine.Object) null && Main.Instance.SpawnedPeople[index].WorldSaveID == this.__internalloading_PersonUsing)
+        {
+          this.Interact(Main.Instance.SpawnedPeople[index]);
+          break;
+        }
+      }
+    }
   }
 
   public bool InsideSafeHouse
@@ -389,9 +491,26 @@ public class Interactible : SaveableBehaviour
   {
     if (this.Despawnable)
       this.DespawnTimerThread();
-    if (!((UnityEngine.Object) this.RootObj != (UnityEngine.Object) null) || (double) this.RootObj.transform.position.y >= -10000.0)
+    if (!((UnityEngine.Object) this.RootObj != (UnityEngine.Object) null) || (double) this.RootObj.transform.position.y >= -100.0)
       return;
-    this.RootObj.transform.position = new Vector3(0.0f, 0.2f, 0.0f);
+    Vector3 vector3 = new Vector3(0.0f, 0.2f, 0.0f);
+    if (Main.Instance.OpenWorld)
+    {
+      float num1 = 5E+07f;
+      for (int index = 0; index < bl_SectionGenerate2.ItemFallRespawnSpots.Count; ++index)
+      {
+        if ((UnityEngine.Object) bl_SectionGenerate2.ItemFallRespawnSpots[index] != (UnityEngine.Object) null)
+        {
+          float num2 = Vector3.Distance(bl_SectionGenerate2.ItemFallRespawnSpots[index].position, this.transform.position);
+          if ((double) num2 < (double) num1)
+          {
+            num1 = num2;
+            vector3 = bl_SectionGenerate2.ItemFallRespawnSpots[index].position;
+          }
+        }
+      }
+    }
+    this.RootObj.transform.position = vector3;
     Rigidbody component = this.RootObj.GetComponent<Rigidbody>();
     if (!((UnityEngine.Object) component != (UnityEngine.Object) null))
       return;

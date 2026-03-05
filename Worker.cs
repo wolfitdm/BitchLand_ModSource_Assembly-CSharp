@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Worker
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ public class Worker : BaseType
         person.WeaponInv.startingWeaponIndex = 1;
       }
     }
-    base.ApplyTo(person, addClothing, addWeapon, addHair);
+    base.ApplyTo(person, addClothing, addWeapon, addHair, commingFrom);
     switch (UnityEngine.Random.Range(0, 4))
     {
       case 1:
@@ -62,6 +62,8 @@ public class Worker : BaseType
   public override void GetAssignedto(Person person)
   {
     base.GetAssignedto(person);
+    if (!Main.Instance.OpenWorld)
+      return;
     person.State = Person_State.Work;
   }
 
@@ -73,7 +75,8 @@ public class Worker : BaseType
 
   public override bool BehaviourPass(Person person)
   {
-    person.SeekBed();
+    if (Main.Instance.OpenWorld)
+      person.SeekBed();
     return false;
   }
 
@@ -102,6 +105,7 @@ public class Worker : BaseType
     int_ConstructionPlan _planToMineFor = (int_ConstructionPlan) null;
     float num1 = 99999f;
     float num2 = 99999f;
+    Collider[] colliderArray1 = (Collider[]) null;
     bool flag1 = false;
     switch (person.PersonalityData.WorkEffeciency)
     {
@@ -268,7 +272,7 @@ label_45:
     }
     else
     {
-      Collider[] colliderArray1 = Physics.OverlapSphere(person.transform.position, 100f, (int) Main.Instance.ResourceCheckLayers);
+      colliderArray1 = Physics.OverlapSphere(person.transform.position, 100f, (int) Main.Instance.ResourceCheckLayers);
       if (person.DEBUG)
         Debug.Log((object) ("_woodhits = " + colliderArray1.Length.ToString()));
       Dictionary<int_ResourceItem, float> source3 = new Dictionary<int_ResourceItem, float>();
@@ -445,6 +449,44 @@ label_110:
     person.Storage_Hands.RemoveAllItems();
     if ((UnityEngine.Object) person.WeaponInv.CurrentWeapon != (UnityEngine.Object) null)
       person.WeaponInv.CurrentWeapon.Holdster();
+    if (colliderArray1 == null || colliderArray1.Length == 0)
+      colliderArray1 = Physics.OverlapSphere(person.transform.position, 100f, (int) Main.Instance.ResourceCheckLayers);
+    List<bl_ow_job> blOwJobList = new List<bl_ow_job>();
+    for (int index = 0; index < colliderArray1.Length; ++index)
+    {
+      bl_ow_job component = colliderArray1[index].GetComponent<bl_ow_job>();
+      if ((UnityEngine.Object) component != (UnityEngine.Object) null && !component.BeingMoved && component.ForClass == this.ThisType && (UnityEngine.Object) component.WorkerSpot.InteractingPerson == (UnityEngine.Object) null)
+        blOwJobList.Add(component);
+    }
+    float num8 = 999999f;
+    bl_ow_job _closest = (bl_ow_job) null;
+    for (int index = 0; index < blOwJobList.Count; ++index)
+    {
+      bl_ow_job blOwJob = blOwJobList[index];
+      if ((double) Vector2.Distance(new Vector2(person.transform.position.x, person.transform.position.z), new Vector2(blOwJob.RootObj.transform.position.x, blOwJob.RootObj.transform.position.z)) < (double) num8)
+        _closest = blOwJob;
+    }
+    if ((UnityEngine.Object) _closest != (UnityEngine.Object) null)
+    {
+      person.NavmeshProxDistance = 1f;
+      person.AddCullBlocker("worktime");
+      person.AddWorkScheduleTask(new Person.ScheduleTask()
+      {
+        IDName = "GoToWorkerJob",
+        ActionPlace = _closest.WorkerSpot.transform,
+        RunTo = flag1,
+        NoMoveChecker = true,
+        NoMoveTimer = 4f,
+        WhenNoMove = (Action) (() => person.CompleteScheduleTask(true)),
+        OnArrive = (Action) (() =>
+        {
+          if ((UnityEngine.Object) _closest != (UnityEngine.Object) null && (UnityEngine.Object) _closest.WorkerSpot != (UnityEngine.Object) null && (UnityEngine.Object) _closest.WorkerSpot.InteractingPerson == (UnityEngine.Object) null)
+            _closest.WorkerSpot.Interact(person);
+          person.CompleteScheduleTask(true);
+        })
+      }, true);
+      return true;
+    }
     person.NavmeshProxDistance = 0.2f;
     person.RemoveCullBlocker("worktime");
     return false;

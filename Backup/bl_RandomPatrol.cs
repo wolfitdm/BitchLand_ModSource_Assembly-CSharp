@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_RandomPatrol
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,8 @@ public class bl_RandomPatrol : MonoBehaviour
   public List<Transform> Spots = new List<Transform>();
   public float WaitMin;
   public float WaitMax;
+  public bool NonRandomSpots;
+  public int _PreviousSpot;
 
   public void StartPatrol(Person person)
   {
@@ -24,15 +26,52 @@ public class bl_RandomPatrol : MonoBehaviour
 
   public void AddDestonationPatrol()
   {
+    if (Main.Instance.OpenWorld)
+    {
+      string str = this.ThisPerson.SaveableVars.Get("ArmyData");
+      if (str == null || str.Length <= 1)
+        return;
+      string[] strArray = str.Split(":", StringSplitOptions.None);
+      if (!(strArray[0] == "1"))
+        return;
+      switch (strArray[1])
+      {
+        case "Wonder":
+          return;
+        case "Random Spots":
+          return;
+      }
+    }
+    Transform spot;
+    if (!this.NonRandomSpots)
+    {
+      do
+      {
+        spot = this.Spots[UnityEngine.Random.Range(0, this.Spots.Count)];
+      }
+      while ((UnityEngine.Object) spot == (UnityEngine.Object) null);
+    }
+    else
+    {
+      do
+      {
+        spot = this.Spots[this._PreviousSpot];
+        ++this._PreviousSpot;
+        if (this._PreviousSpot >= this.Spots.Count)
+          this._PreviousSpot = 0;
+      }
+      while ((UnityEngine.Object) spot == (UnityEngine.Object) null);
+    }
     this.ThisPerson.AddWorkScheduleTask(new Person.ScheduleTask()
     {
       IDName = "Patrol",
-      ActionPlace = this.Spots[UnityEngine.Random.Range(0, this.Spots.Count)],
+      ActionPlace = spot,
       OnArrive = (Action) (() =>
       {
-        this.AddDestonationPatrol();
+        this.ThisPerson.WorkScheduleTasks.Clear();
         this.ThisPerson.CompleteScheduleTask(false);
         this.ThisPerson.DecideTimer = UnityEngine.Random.Range(this.WaitMin, this.WaitMax);
+        this.AddDestonationPatrol();
       })
     });
   }

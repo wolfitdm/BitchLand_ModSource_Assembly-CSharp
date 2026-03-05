@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Int_SexMachine
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -169,12 +169,19 @@ public class Int_SexMachine : int_Lockable
 
   public virtual void RefreshPoseAnim()
   {
-    this.InteractingPerson.Anim.Play(this.Anim_Active);
-    Main.RunInNextFrame((Action) (() =>
+    if ((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null)
     {
-      if (!((UnityEngine.Object) this.HipsSpot != (UnityEngine.Object) null))
-        return;
-      Main.AdjustCharacterPosition(this.InteractingPerson.transform, this.HipsSpot, this.InteractingPerson.ActualHips);
-    }), 2);
+      this.enabled = false;
+    }
+    else
+    {
+      this.InteractingPerson.Anim.Play(this.Anim_Active);
+      Main.RunInNextFrame((Action) (() =>
+      {
+        if (!((UnityEngine.Object) this.HipsSpot != (UnityEngine.Object) null))
+          return;
+        Main.AdjustCharacterPosition(this.InteractingPerson.transform, this.HipsSpot, this.InteractingPerson.ActualHips);
+      }), 2);
+    }
   }
 }

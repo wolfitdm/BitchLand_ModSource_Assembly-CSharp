@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_ConstructionPlan
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,7 @@ public class int_ConstructionPlan : Int_Storage
   public bl_CraftRecipes OwnRecipe;
   public bool PlanAnotherAfter;
   public float[] ConstructionSpotsTimers;
+  public bool DontPlaceBuildersWhenBuild;
   public Transform[] ConstructionSpots;
   public List<Person> PeopleBuilding = new List<Person>();
   public Transform DropSpotAfterBuild;
@@ -207,7 +208,10 @@ label_10:
   {
     this.PeopleBuilding.Add(person);
     Transform constructionSpot = this.ConstructionSpots[this.PeopleBuilding.Count - 1];
-    person.PlaceAt(constructionSpot);
+    if (!this.DontPlaceBuildersWhenBuild)
+      person.PlaceAt(constructionSpot);
+    else
+      person.transform.LookAt(this.transform);
     person.transform.eulerAngles = new Vector3(0.0f, person.transform.eulerAngles.y, 0.0f);
     person.AddMoveBlocker("Building");
     person.enabled = false;
@@ -330,9 +334,10 @@ label_10:
     foreach (Person person in builders)
       this.RemoveBuilder(person);
     GameObject gameObject = Main.Spawn(this.FinalPrefab);
-    gameObject.transform.position = this.transform.position;
-    gameObject.transform.rotation = this.transform.rotation;
-    gameObject.transform.localScale = this.transform.localScale;
+    Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
+    gameObject.transform.position = transform.position;
+    gameObject.transform.rotation = transform.rotation;
+    gameObject.transform.localScale = transform.localScale;
     bl_MinableObject component = gameObject.GetComponent<bl_MinableObject>();
     if ((UnityEngine.Object) component != (UnityEngine.Object) null)
       component.OnBuilt(builders);
@@ -346,6 +351,10 @@ label_10:
   [ContextMenu("Make Buildable")]
   public void MakeBuildable()
   {
+    this.AddToSaveableOnStart = true;
+    this.DisableAfterStart = true;
+    foreach (Collider componentsInChild in this.transform.GetComponentsInChildren<Collider>())
+      componentsInChild.isTrigger = true;
     MeshRenderer[] componentsInChildren1 = this.transform.GetComponentsInChildren<MeshRenderer>();
     for (int index = 0; index < componentsInChildren1.Length; ++index)
     {
@@ -361,7 +370,7 @@ label_10:
       componentsInChildren2[index].gameObject.layer = 22;
     }
     this.PrefabName = this.name;
-    this.RootObj = this.gameObject.gameObject;
+    this.RootObj = this.transform.root.gameObject;
     Transform transform1 = new GameObject("nav").transform;
     transform1.SetParent(this.transform);
     transform1.localScale = Vector3.one;
@@ -390,8 +399,7 @@ label_10:
       {
         this.FinalPrefab.name
       };
-      this.gameObject.name = "PLAN_" + this.FinalPrefab.name;
-      this.PrefabName = this.gameObject.name;
+      this.transform.root.name = this.PrefabName = "PLAN_" + this.FinalPrefab.name;
     }
     this.PlanAnotherAfter = false;
     Transform transform4 = new GameObject("cons1").transform;
@@ -448,7 +456,9 @@ label_10:
     this.BuildFill.enabled = false;
     this.FillMax = 1.8f;
     this.BuiltProgresspointsNeeded = 20f;
-    this.enabled = false;
+    this.enabled = true;
+    this.InteractText = string.Empty;
+    this.DontPlaceBuildersWhenBuild = true;
   }
 
   public enum e_BuildSnapType

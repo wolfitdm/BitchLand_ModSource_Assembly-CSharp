@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: RandomNPCHere
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,7 @@ public class RandomNPCHere : MonoBehaviour
   public bool NoUglyHair;
   public bool OnlyGoodHair;
   public bool SpawnClean;
+  public bool WithoutHairPaint;
   public Person_Type TypeToSet = Person_Type.Max;
   public List<string> AddRunawayBlockers = new List<string>();
   public Person_State StartingState;
@@ -50,6 +51,8 @@ public class RandomNPCHere : MonoBehaviour
   public bool DontLoadInteraction;
   public List<GameObject> SpecificClothes;
   public List<GameObject> SpecificWeapons;
+  public string StartingFaceSkins;
+  public string StartingBodySkins;
   public bool ExtraPerson;
   public bool DEBUG_GenderMix;
   public bool DEBUG_GenderMix2;
@@ -151,6 +154,18 @@ public class RandomNPCHere : MonoBehaviour
     if ((UnityEngine.Object) this.PersonType == (UnityEngine.Object) null)
       this.PersonType = this.TypeToSet == Person_Type.Max ? Main.Instance.PersonTypes[0].gameObject : Main.Instance.PersonTypes[(int) this.TypeToSet].gameObject;
     this.PersonType.GetComponent<BaseType>().ApplyTo(this.PersonGenerated, !this.WithoutClothing, !this.WithoutWeapon, !this.LoadSpecificNPC, this);
+    if (this.StartingFaceSkins != null && this.StartingFaceSkins.Length > 0)
+    {
+      for (int index = 0; index < Main.Instance._CustomFaceSkinsName.Count; ++index)
+      {
+        if (Main.Instance._CustomFaceSkinsName[index].ToUpperInvariant() == this.StartingFaceSkins.ToUpperInvariant())
+        {
+          this.PersonGenerated._CustomFaceSkinStates[index] = true;
+          this.PersonGenerated.SetBodyTexture();
+          break;
+        }
+      }
+    }
     this.PersonGenerated.TheHealth.canDie = !this.CantDie;
     Main.Instance.ActionWhenNav(new Action(this.GeneratedRandom));
     this.enabled = false;

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: SaveableBehaviour
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -18,8 +18,14 @@ public class SaveableBehaviour : MonoBehaviour
   public bool AddToSaveableOnStart;
   public bool _AddedToSaveable;
   public bool DontSaveInMain;
+  public bool ow_oddsaving;
+  public bool HasByte2Data;
+  public bool DisableAfterStart;
   public int _CurrentLoadingIndex;
+  public SaveableBehaviour[] ExtraSavebles;
+  public GameObject RootObj;
   public List<string> CanSaveFlagger = new List<string>();
+  public string[] _LatestDataLoading;
 
   public virtual bool CanSave => this.CanSaveFlagger.Count == 0;
 
@@ -27,16 +33,28 @@ public class SaveableBehaviour : MonoBehaviour
   {
     if (!this.AddToSaveableOnStart || !((UnityEngine.Object) Main.Instance != (UnityEngine.Object) null) || Main.Instance.SpawnedObjects == null)
       return;
-    Main.Instance.SpawnedObjects.Add(this);
+    if (Main.Instance.OpenWorld)
+      Main.Instance.SpawnedObjects_World.Add(this);
+    else
+      Main.Instance.SpawnedObjects.Add(this);
     this._AddedToSaveable = true;
+    if (!this.DisableAfterStart)
+      return;
+    this.enabled = false;
   }
 
   public virtual void Start()
   {
     if (!this.AddToSaveableOnStart || this._AddedToSaveable)
       return;
-    Main.Instance.SpawnedObjects.Add(this);
+    if (Main.Instance.OpenWorld)
+      Main.Instance.SpawnedObjects_World.Add(this);
+    else
+      Main.Instance.SpawnedObjects.Add(this);
     this._AddedToSaveable = true;
+    if (!this.DisableAfterStart)
+      return;
+    this.enabled = false;
   }
 
   public virtual string[] SaveableData
@@ -45,11 +63,15 @@ public class SaveableBehaviour : MonoBehaviour
     {
       try
       {
-        return this.sd_SaveData();
+        List<string> stringList = new List<string>();
+        stringList.AddRange((IEnumerable<string>) this.sd_SaveData());
+        for (int index = 0; index < this.ExtraSavebles.Length; ++index)
+          stringList.Add(this.ExtraSavebles[index].sv_SaveData());
+        return stringList.ToArray();
       }
       catch (Exception ex)
       {
-        Debug.LogError((object) $"Error: {ex.Message}\n{ex.StackTrace}");
+        Debug.LogError((object) ("Error: " + ex.Message + "\n" + ex.StackTrace));
       }
       return (string[]) null;
     }
@@ -57,12 +79,28 @@ public class SaveableBehaviour : MonoBehaviour
     {
       try
       {
+        this._LatestDataLoading = value;
+        this._CurrentLoadingIndex = 0;
         this.sd_LoadData(value);
+        this.AfterDataLoaded();
+        for (int index = 0; index < this.ExtraSavebles.Length; ++index)
+        {
+          this.ExtraSavebles[index].sv_LoadData(this._LatestDataLoading[this._CurrentLoadingIndex++], removeFirst: false);
+          this.ExtraSavebles[index].AfterDataLoaded();
+        }
       }
       catch (Exception ex)
       {
-        Debug.LogError((object) $"Error: {ex.Message}\n{ex.StackTrace}");
+        Debug.LogError((object) ("Error loading: " + this.gameObject.name + "\n" + ex.Message + "\n" + ex.StackTrace));
       }
+    }
+  }
+
+  public virtual byte[] ByteSaveableData2
+  {
+    get => (byte[]) null;
+    set
+    {
     }
   }
 
@@ -73,7 +111,7 @@ public class SaveableBehaviour : MonoBehaviour
 
   public virtual string sv_SaveData(char SlitChar = ':')
   {
-    string[] strArray = this.sd_SaveData(SlitChar);
+    string[] strArray = this.sd_SaveData(';');
     string str = string.Empty;
     if (strArray.Length != 0)
     {
@@ -91,10 +129,10 @@ public class SaveableBehaviour : MonoBehaviour
       string[] sourceArray = Data.Split(SlitChar, StringSplitOptions.None);
       string[] strArray = new string[sourceArray.Length - 1];
       Array.Copy((Array) sourceArray, 1, (Array) strArray, 0, sourceArray.Length - 1);
-      this.sd_LoadData(strArray, SlitChar);
+      this.sd_LoadData(strArray, ';');
     }
     else
-      this.sd_LoadData(Data.Split(SlitChar, StringSplitOptions.None), SlitChar);
+      this.sd_LoadData(Data.Split(SlitChar, StringSplitOptions.None), ';');
   }
 
   public virtual string[] sd_SaveData(char SlitChar = ':')
@@ -106,12 +144,16 @@ public class SaveableBehaviour : MonoBehaviour
   {
   }
 
+  public virtual void AfterDataLoaded()
+  {
+  }
+
   public virtual void SaveToFile(string filename)
   {
     string[] saveableData = this.SaveableData;
     if (saveableData == null)
       return;
-    Debug.Log((object) $"Saving {this.gameObject.name}-{saveableData[0]}-{saveableData[1]}");
+    Debug.Log((object) ("Saving " + this.gameObject.name + "-" + saveableData[0] + "-" + saveableData[1]));
     File.WriteAllLines(filename, saveableData);
   }
 

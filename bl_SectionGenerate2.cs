@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_SectionGenerate2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ public class bl_SectionGenerate2 : MonoBehaviour
   public static int Seed;
   public ChunkGenerateData[,] NewChunks;
   public static bool _SmallWorld;
+  public GameObject LoadingCam;
   [Header(" -- ")]
   public List<bl_WorldChunk> PrefabChunks = new List<bl_WorldChunk>();
   public List<bl_WorldChunk> PrefabChunks_Desert = new List<bl_WorldChunk>();
@@ -24,8 +25,13 @@ public class bl_SectionGenerate2 : MonoBehaviour
   [Header(" -- ")]
   public GameObject BorderPrefab;
   public GameObject PlayerStartPrefab;
+  public GameObject FakeMine;
   public GameObject StructureFlatPlain;
   public List<GameObject> PrefabStructures = new List<GameObject>();
+  public List<int> StructuresMin_small = new List<int>();
+  public List<int> StructuresMax_small = new List<int>();
+  public List<int> StructuresMin_big = new List<int>();
+  public List<int> StructuresMax_big = new List<int>();
   [Header(" -- runtime --- ")]
   public static List<Transform> ItemFallRespawnSpots = new List<Transform>();
 
@@ -64,15 +70,11 @@ public class bl_SectionGenerate2 : MonoBehaviour
       section.ChunksCount = _sectionXSize * _sectionYSize;
     }
     sectionGenerate2.NewChunks = new ChunkGenerateData[_sectionXSize, _sectionYSize];
-    int num1 = 120;
+    int num1 = 100;
     int minInclusive1 = 5;
     int maxExclusive1 = 20;
     if (bl_SectionGenerate2.SmallWorld)
-    {
-      num1 /= 3;
-      minInclusive1 /= 3;
-      maxExclusive1 /= 3;
-    }
+      num1 /= 4;
     for (int index1 = 0; index1 < _sectionXSize; ++index1)
     {
       for (int index2 = 0; index2 < _sectionYSize; ++index2)
@@ -104,12 +106,12 @@ public class bl_SectionGenerate2 : MonoBehaviour
         ChunkGenerateData newChunk1 = sectionGenerate2.NewChunks[index6, index7];
         ChunkGenerateData newChunk2 = sectionGenerate2.NewChunks[index6, index7 + 1];
         ChunkGenerateData newChunk3 = sectionGenerate2.NewChunks[index6 + 1, index7 + 1];
-        ChunkGenerateData newChunk4 = sectionGenerate2.NewChunks[index6 + 1, index7];
-        ChunkGenerateData newChunk5 = sectionGenerate2.NewChunks[index6 + 1, index7 - 1];
+        ChunkGenerateData newChunk4 = sectionGenerate2.NewChunks[index6 + 1, index7 - 1];
+        ChunkGenerateData newChunk5 = sectionGenerate2.NewChunks[index6 + 1, index7];
         newChunk1.ConnectedChunks = new ChunkGenerateData[4];
         newChunk1.ConnectedChunks[0] = sectionGenerate2.NewChunks[index6 - 1, index7];
         newChunk1.ConnectedChunks[1] = newChunk2;
-        newChunk1.ConnectedChunks[2] = newChunk4;
+        newChunk1.ConnectedChunks[2] = newChunk5;
         newChunk1.ConnectedChunks[3] = sectionGenerate2.NewChunks[index6, index7 - 1];
         while (true)
         {
@@ -133,21 +135,21 @@ public class bl_SectionGenerate2 : MonoBehaviour
         }
         while (true)
         {
-          int num8 = newChunk4.Height - newChunk1.Height;
+          int num8 = newChunk5.Height - newChunk1.Height;
           if (num8 > 1)
-            --newChunk4.Height;
+            --newChunk5.Height;
           else if (num8 < -1)
-            ++newChunk4.Height;
+            ++newChunk5.Height;
           else
             break;
         }
         while (true)
         {
-          int num9 = newChunk5.Height - newChunk1.Height;
+          int num9 = newChunk4.Height - newChunk1.Height;
           if (num9 > 1)
-            --newChunk5.Height;
+            --newChunk4.Height;
           else if (num9 < -1)
-            ++newChunk5.Height;
+            ++newChunk4.Height;
           else
             break;
         }
@@ -707,40 +709,64 @@ label_220:
         }
       }
     }
-    int num37 = 120;
-    if (bl_SectionGenerate2.SmallWorld)
-      num37 /= 4;
-    List<ChunkGenerateData> chunkGenerateDataList2 = new List<ChunkGenerateData>();
-    for (int index29 = 2; index29 < _sectionXSize - 2; ++index29)
+    for (int index29 = 16; index29 < _sectionXSize - 1; ++index29)
     {
-      for (int index30 = 2; index30 < _sectionYSize - 2; ++index30)
+      for (int index30 = 16; index30 < _sectionYSize - 1; ++index30)
       {
-        if (sectionGenerate2.NewChunks[index29, index30].WorldChunkType == e_WorldChunkType.Plain)
-          chunkGenerateDataList2.Add(sectionGenerate2.NewChunks[index29, index30]);
-      }
-    }
-    for (int index31 = 0; index31 < num37; ++index31)
-    {
-      if (chunkGenerateDataList2.Count > 0)
-      {
-        int index32 = UnityEngine.Random.Range(0, chunkGenerateDataList2.Count);
-        chunkGenerateDataList2[index32].Structure = UnityEngine.Random.Range(1, sectionGenerate2.PrefabStructures.Count + 1);
-        chunkGenerateDataList2.RemoveAt(index32);
-      }
-    }
-    for (int index33 = 16; index33 < _sectionXSize - 1; ++index33)
-    {
-      for (int index34 = 16; index34 < _sectionYSize - 1; ++index34)
-      {
-        if (sectionGenerate2.NewChunks[index33, index34].WorldChunkType == e_WorldChunkType.Plain && !sectionGenerate2.NewChunks[index33, index34].Road)
+        if (sectionGenerate2.NewChunks[index29, index30].WorldChunkType == e_WorldChunkType.Plain && !sectionGenerate2.NewChunks[index29, index30].Road)
         {
-          sectionGenerate2.NewChunks[index33, index34].Structure = 0;
-          sectionGenerate2.NewChunks[index33, index34].WorldChunkType = e_WorldChunkType.PlayerStart;
-          goto label_296;
+          sectionGenerate2.NewChunks[index29, index30].Structure = 0;
+          sectionGenerate2.NewChunks[index29, index30].WorldChunkType = e_WorldChunkType.PlayerStart;
+          goto label_281;
         }
       }
     }
-label_296:
+label_281:
+    List<ChunkGenerateData> chunkGenerateDataList2 = new List<ChunkGenerateData>();
+    for (int index31 = 2; index31 < _sectionXSize - 2; ++index31)
+    {
+      for (int index32 = 2; index32 < _sectionYSize - 2; ++index32)
+      {
+        if (sectionGenerate2.NewChunks[index31, index32].WorldChunkType == e_WorldChunkType.Plain)
+          chunkGenerateDataList2.Add(sectionGenerate2.NewChunks[index31, index32]);
+      }
+    }
+    for (int index33 = 0; index33 < sectionGenerate2.PrefabStructures.Count; ++index33)
+    {
+      int minInclusive4;
+      int maxExclusive4;
+      if (bl_SectionGenerate2.SmallWorld)
+      {
+        minInclusive4 = sectionGenerate2.StructuresMin_small[index33];
+        maxExclusive4 = sectionGenerate2.StructuresMax_small[index33];
+      }
+      else
+      {
+        minInclusive4 = sectionGenerate2.StructuresMin_big[index33];
+        maxExclusive4 = sectionGenerate2.StructuresMax_big[index33];
+      }
+      int num37 = UnityEngine.Random.Range(minInclusive4, maxExclusive4);
+      for (int index34 = 0; index34 < num37 && chunkGenerateDataList2.Count > 0; ++index34)
+      {
+        int index35 = UnityEngine.Random.Range(0, chunkGenerateDataList2.Count);
+        chunkGenerateDataList2[index35].Structure = index33 + 1;
+        chunkGenerateDataList2.RemoveAt(index35);
+      }
+    }
+    yield return (object) null;
+    sectionGenerate2.StartCoroutine(sectionGenerate2.SpawnChunks(sectionGenerate2.NewChunks, _sectionXSize, _sectionYSize, startingPos, false));
+  }
+
+  public IEnumerator SpawnChunks(
+    ChunkGenerateData[,] newChunks,
+    int _sectionXSize,
+    int _sectionYSize,
+    Vector3 startingPos,
+    bool loadingGame)
+  {
+    bl_SectionGenerate2 sectionGenerate2 = this;
+    for (int index = 0; index < Main.Instance.GameplayMenu.NewGoals.Length; ++index)
+      Main.Instance.GameplayMenu.NewGoals[index].gameObject.SetActive(false);
     int _totalChunks = _sectionXSize * _sectionYSize;
     int _currentChunk = 0;
     Main.Instance.NewGameMenu.ExtraLoadingText.text = "0/" + _totalChunks.ToString();
@@ -751,8 +777,8 @@ label_296:
     {
       for (int y = 1; y < _sectionYSize - 1; ++y)
       {
-        int worldChunkType = (int) sectionGenerate2.NewChunks[x, y].WorldChunkType;
-        int structure = sectionGenerate2.NewChunks[x, y].Structure;
+        int worldChunkType = (int) newChunks[x, y].WorldChunkType;
+        int structure = newChunks[x, y].Structure;
         Transform transform1;
         if (worldChunkType == 21)
         {
@@ -765,7 +791,7 @@ label_296:
         }
         else
         {
-          switch (sectionGenerate2.NewChunks[x, y].Biome)
+          switch (newChunks[x, y].Biome)
           {
             case e_WorldBiome.Desert:
               transform1 = UnityEngine.Object.Instantiate<bl_WorldChunk>(sectionGenerate2.PrefabChunks_Desert[worldChunkType]).transform;
@@ -787,29 +813,33 @@ label_296:
               break;
           }
         }
-        transform1.transform.position = startingPos + new Vector3((float) (x * 27), (float) (sectionGenerate2.NewChunks[x, y].Height * 9), (float) (y * 27));
-        transform1.transform.eulerAngles = new Vector3(-90f, 0.0f, (float) (90 * sectionGenerate2.NewChunks[x, y].Rot));
-        transform1.localScale = new Vector3(100f, sectionGenerate2.NewChunks[x, y].Reverse ? -100f : 100f, 100f);
+        transform1.transform.position = startingPos + new Vector3((float) (x * 27), (float) (newChunks[x, y].Height * 9), (float) (y * 27));
+        transform1.transform.eulerAngles = new Vector3(-90f, 0.0f, (float) (90 * newChunks[x, y].Rot));
+        transform1.localScale = new Vector3(100f, newChunks[x, y].Reverse ? -100f : 100f, 100f);
         transform1.name = "Chunk_" + x.ToString() + "_" + y.ToString();
         bl_WorldChunk component1 = transform1.gameObject.GetComponent<bl_WorldChunk>();
         component1.XCordinate = x;
         component1.YCordinate = y;
         component1.ThisType = (e_WorldChunkType) worldChunkType;
-        component1.ThisData = sectionGenerate2.NewChunks[x, y];
-        component1.OnSpawnChunk();
+        component1.ThisData = newChunks[x, y];
+        if (!loadingGame)
+          component1.OnSpawnChunk();
         if (structure != 0)
         {
           Transform transform2 = UnityEngine.Object.Instantiate<GameObject>(sectionGenerate2.PrefabStructures[structure - 1]).transform;
           transform2.position = transform1.transform.position;
-          transform2.eulerAngles = new Vector3(0.0f, (float) (UnityEngine.Random.Range(0, 3) * 90), 0.0f);
+          transform2.eulerAngles = new Vector3(0.0f, (float) (newChunks[x, y].Rot * 90), 0.0f);
           transform2.gameObject.SetActive(true);
           transform2.SetParent(transform1, true);
+          bl_WorldStructure component2 = transform2.GetComponent<bl_WorldStructure>();
+          if ((UnityEngine.Object) component2 != (UnityEngine.Object) null)
+            component2.GetSpawned(loadingGame);
         }
         component1.ChunkObtainLODs();
-        bl_Temp_onChunkSpawn component2 = transform1.GetComponent<bl_Temp_onChunkSpawn>();
-        if ((UnityEngine.Object) component2 != (UnityEngine.Object) null)
-          component2.OnChunkSpawn();
-        component1.ThisData = (ChunkGenerateData) null;
+        bl_Temp_onChunkSpawn component3 = transform1.GetComponent<bl_Temp_onChunkSpawn>();
+        if ((UnityEngine.Object) component3 != (UnityEngine.Object) null)
+          component3.OnChunkSpawn();
+        component1.ThisData.ConnectedChunks = (ChunkGenerateData[]) null;
         if (++_currentChunk % (_sectionXSize * 2) == 0)
         {
           Main.Instance.NewGameMenu.ExtraLoadingText.text = _currentChunk.ToString() + "/" + _totalChunks.ToString();
@@ -823,31 +853,34 @@ label_296:
     for (int index = 1; index < _sectionXSize - 1; ++index)
     {
       Transform transform = UnityEngine.Object.Instantiate<GameObject>(sectionGenerate2.BorderPrefab).transform;
-      transform.transform.position = new Vector3((float) (index * 27), (float) (sectionGenerate2.NewChunks[index, 0].Height * 9), 27f);
+      transform.transform.position = new Vector3((float) (index * 27), (float) (newChunks[index, 1].Height * 9), 27f);
       transform.transform.eulerAngles = new Vector3(0.0f, 180f, 0.0f);
     }
     for (int index = 1; index < _sectionXSize - 1; ++index)
     {
       Transform transform = UnityEngine.Object.Instantiate<GameObject>(sectionGenerate2.BorderPrefab).transform;
-      transform.transform.position = new Vector3(27f, (float) (sectionGenerate2.NewChunks[0, index].Height * 9), (float) (index * 27));
+      transform.transform.position = new Vector3(27f, (float) (newChunks[1, index].Height * 9), (float) (index * 27));
       transform.transform.eulerAngles = new Vector3(0.0f, -90f, 0.0f);
     }
     for (int index = 1; index < _sectionXSize - 1; ++index)
     {
       Transform transform = UnityEngine.Object.Instantiate<GameObject>(sectionGenerate2.BorderPrefab).transform;
-      transform.transform.position = new Vector3((float) (index * 27), (float) (sectionGenerate2.NewChunks[index, _sectionXSize - 1].Height * 9), (float) ((_sectionXSize - 2) * 27));
+      transform.transform.position = new Vector3((float) (index * 27), (float) (newChunks[index, _sectionXSize - 2].Height * 9), (float) ((_sectionXSize - 2) * 27));
       transform.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
     }
     for (int index = 1; index < _sectionXSize - 1; ++index)
     {
       Transform transform = UnityEngine.Object.Instantiate<GameObject>(sectionGenerate2.BorderPrefab).transform;
-      transform.transform.position = new Vector3((float) ((_sectionXSize - 2) * 27), (float) (sectionGenerate2.NewChunks[_sectionXSize - 1, index].Height * 9), (float) (index * 27));
+      transform.transform.position = new Vector3((float) ((_sectionXSize - 2) * 27), (float) (newChunks[_sectionXSize - 2, index].Height * 9), (float) (index * 27));
       transform.transform.eulerAngles = new Vector3(0.0f, 90f, 0.0f);
     }
-    Debug.Log((object) "placing player");
     Transform Spot = _PlayerStartChunk.Find("PlayerStart");
-    Main.Instance.Player.PlaceAt(Spot);
-    Main.Instance.Player.transform.eulerAngles = Vector3.zero;
+    if (!loadingGame)
+    {
+      Debug.Log((object) "placing player");
+      Main.Instance.Player.PlaceAt(Spot);
+      Main.Instance.Player.transform.eulerAngles = Vector3.zero;
+    }
     Main.Instance.PlayerWakeupPlaces.Clear();
     Main.Instance.PlayerWakeupPlaces.Add(Spot);
     Main.Instance.Player.UserControl.ResetSpot = Spot;

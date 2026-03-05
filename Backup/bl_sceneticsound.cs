@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_sceneticsound
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -45,16 +45,23 @@ public class bl_sceneticsound : MonoBehaviour
 
   public void SelectRandomMusic()
   {
-    int index = UnityEngine.Random.Range(0, this.Clips.Length);
-    if (this.Clips.Length != 1 && index == this._CurrentClip)
-      return;
-    this._CurrentClip = index;
-    this.Sound.time = 0.0f;
-    this.Sound.clip = this.Clips[index];
-    if (!((UnityEngine.Object) this.ExteriorSound != (UnityEngine.Object) null))
-      return;
-    this.ExteriorSound.time = 0.0f;
-    this.ExteriorSound.clip = this.Clips[index];
+    if ((UnityEngine.Object) this.Sound == (UnityEngine.Object) null)
+    {
+      this.enabled = false;
+    }
+    else
+    {
+      int index = UnityEngine.Random.Range(0, this.Clips.Length);
+      if (this.Clips.Length != 1 && index == this._CurrentClip)
+        return;
+      this._CurrentClip = index;
+      this.Sound.time = 0.0f;
+      this.Sound.clip = this.Clips[index];
+      if (!((UnityEngine.Object) this.ExteriorSound != (UnityEngine.Object) null))
+        return;
+      this.ExteriorSound.time = 0.0f;
+      this.ExteriorSound.clip = this.Clips[index];
+    }
   }
 
   public void FixedUpdate()
@@ -94,7 +101,9 @@ public class bl_sceneticsound : MonoBehaviour
 
   public void Update()
   {
-    if (this.Positive)
+    if ((UnityEngine.Object) this.Sound == (UnityEngine.Object) null)
+      this.enabled = false;
+    else if (this.Positive)
     {
       this.Sound.volume += Time.deltaTime;
       if ((double) this.Sound.volume >= (double) this.Volume)

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_J_PopulationEntry
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ public class bl_J_PopulationEntry : MonoBehaviour
   public int ThisPersonRel;
   public InputField NoteText;
   public Button InfoBtn;
+  public MeshRenderer[] Rens;
   public GameObject[] ClassLockIcons;
   public Button ClassLockBtn;
   public int ThisPatrol;
@@ -58,8 +59,8 @@ public class bl_J_PopulationEntry : MonoBehaviour
     if (this.Class_drop.value <= 1)
     {
       this.Rels[2].SetActive(true);
-      this.RelsValues[5].fillAmount = Main.POfVal(100f, 0.0f, person.TrainingValue);
-      this.Rels[3].SetActive((double) this.PersonThisIs.TrainingValue >= 99.0);
+      this.RelsValues[5].fillAmount = Main.POfVal(100f, 0.0f, (float) person.TrainingValue);
+      this.Rels[3].SetActive(this.PersonThisIs.TrainingValue >= 99);
     }
     else
       this.Rels[2].SetActive(false);
@@ -73,9 +74,9 @@ public class bl_J_PopulationEntry : MonoBehaviour
       if (this.Class_drop.value <= 1)
       {
         this.Rels[2].SetActive(true);
-        this.RelsValues[5].fillAmount = Main.POfVal(100f, 0.0f, this.PersonThisIs.TrainingValue);
+        this.RelsValues[5].fillAmount = Main.POfVal(100f, 0.0f, (float) this.PersonThisIs.TrainingValue);
       }
-      if ((double) this.PersonThisIs.TrainingValue < 99.0)
+      if (this.PersonThisIs.TrainingValue < 99)
       {
         if (!((UnityEngine.Object) transform != (UnityEngine.Object) null) || !((UnityEngine.Object) transform.GetChild(3) != (UnityEngine.Object) null) || !((UnityEngine.Object) transform.GetChild(3).GetChild(4) != (UnityEngine.Object) null))
           return;
@@ -91,11 +92,11 @@ public class bl_J_PopulationEntry : MonoBehaviour
 
   public void ChangePersonClass()
   {
-    if (Main.Instance.OpenWorld && this.Class_drop.value > 1 && (double) this.PersonThisIs.TrainingValue < 99.0)
+    if (Main.Instance.OpenWorld && this.Class_drop.value > 1 && this.PersonThisIs.TrainingValue < 99)
     {
       this.Class_drop.value = 1;
       this.Rels[2].SetActive(true);
-      this.RelsValues[5].fillAmount = Main.POfVal(100f, 0.0f, this.PersonThisIs.TrainingValue);
+      this.RelsValues[5].fillAmount = Main.POfVal(100f, 0.0f, (float) this.PersonThisIs.TrainingValue);
     }
     switch (this.Class_drop.value)
     {
@@ -348,5 +349,12 @@ public class bl_J_PopulationEntry : MonoBehaviour
   public void On_TrainDropValue()
   {
     this.PersonThisIs.SaveableVars.Set("TrainData", this.Dropsdowns[0].value.ToString());
+  }
+
+  public void Click_ThisCustiomTexture()
+  {
+    int_CustomPoster component = this.Rels[0].GetComponent<int_CustomPoster>();
+    component.ThisCustomTexture = Main.Instance.GameplayMenu.ImagesListTexturePaths[this.ThisPersonRel];
+    component.AssignTexture();
   }
 }

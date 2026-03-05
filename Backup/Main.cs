@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Main
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -11,15 +11,19 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using UnityStandardAssets.Cameras;
 
 #nullable disable
 public class Main : MonoBehaviour
 {
-  public const string BuildVersion = "10.e";
-  public const string BuildVersionInt = "10";
-  public const string BuildExpireDate = "2026/01/01";
+  public const string BuildVersion = "11.a";
+  public const string BuildVersionInt = "11";
+  public const string BuildExpireDate = "2026/06/06";
   public static bool DebugLog;
   public static Main Instance;
   public bool FirstRunThisVersion;
@@ -29,6 +33,9 @@ public class Main : MonoBehaviour
   public GameObject PersonGuyPrefab;
   public GameObject PersonGuy2Prefab;
   public MonoBehaviour Nav;
+  public MonoBehaviour Nav2;
+  public LayerMask ResourceCheckLayers;
+  public LayerMask RoomSizeCheckLayers;
   public GameObject PreloadCam;
   public UI_Gameplay GameplayMenu;
   public UI_NewGame NewGameMenu;
@@ -37,6 +44,7 @@ public class Main : MonoBehaviour
   public UI_SexScene SexScene;
   public UI_Settings SettingsMenu;
   public UI_LoadCustomNPC LoadCustomNPCMenu;
+  public UI_LoadGame LoadGameMenu;
   public bl_LipSync LipSync;
   public Transform DisabledObjects;
   public RuntimeAnimatorController OrgPlayerController;
@@ -53,6 +61,7 @@ public class Main : MonoBehaviour
   public string[] DoorKeysNames;
   public Texture[] ESB_markings;
   public Texture[] BL_markings;
+  public List<bl_Patrol> AllPatrols = new List<bl_Patrol>();
   public Texture2D[] Tex_BodySkin;
   public Texture2D[] Tex_FaceSkin;
   public Texture2D Inv1k;
@@ -76,7 +85,7 @@ public class Main : MonoBehaviour
   public static byte[] OnePixel = new byte[120]
   {
     (byte) 137,
-    (byte) 80 /*0x50*/,
+    (byte) 80,
     (byte) 78,
     (byte) 71,
     (byte) 13,
@@ -104,7 +113,7 @@ public class Main : MonoBehaviour
     (byte) 0,
     (byte) 0,
     (byte) 0,
-    (byte) 31 /*0x1F*/,
+    (byte) 31,
     (byte) 21,
     (byte) 196,
     (byte) 137,
@@ -141,7 +150,7 @@ public class Main : MonoBehaviour
     (byte) 0,
     (byte) 0,
     (byte) 9,
-    (byte) 112 /*0x70*/,
+    (byte) 112,
     (byte) 72,
     (byte) 89,
     (byte) 115,
@@ -173,7 +182,7 @@ public class Main : MonoBehaviour
     byte.MaxValue,
     byte.MaxValue,
     byte.MaxValue,
-    (byte) 127 /*0x7F*/,
+    (byte) 127,
     (byte) 0,
     (byte) 9,
     (byte) 251,
@@ -193,7 +202,7 @@ public class Main : MonoBehaviour
     (byte) 68,
     (byte) 174,
     (byte) 66,
-    (byte) 96 /*0x60*/,
+    (byte) 96,
     (byte) 130
   };
   public List<string> FemaleNames = new List<string>();
@@ -215,6 +224,8 @@ public class Main : MonoBehaviour
   public AudioSource MusicPlayer;
   public List<GameObject> Prefabs_Plans = new List<GameObject>();
   public List<GameObject> AllPrefabs = new List<GameObject>();
+  public Dictionary<string, int> AllPrefabsIndexes = new Dictionary<string, int>();
+  public Dictionary<string, int> AllPlansIndexes = new Dictionary<string, int>();
   public GameObject Feet;
   public List<GameObject> Prefabs_Any = new List<GameObject>();
   public List<GameObject> Prefabs_Shoes = new List<GameObject>();
@@ -274,6 +285,7 @@ public class Main : MonoBehaviour
   public AudioClip[] MaleMoans;
   public AudioClip[] MeatSlapSounds;
   public AudioClip[] SuccSounds;
+  public AudioClip FemaleScream;
   public Transform Clinic;
   public bl_CityCharacters CityCharacters;
   public DayNightCycle DayCycle;
@@ -355,7 +367,10 @@ public class Main : MonoBehaviour
   public List<Func<Person, int>> OnNpcGenerate = new List<Func<Person, int>>();
   public string StartOnMenu;
   public bool OpenWorld;
+  public int CurrentSection;
+  public AudioClip PickAxeSound;
   public List<Action> MainThreads = new List<Action>();
+  public List<Action> MainThreads_Late = new List<Action>();
   public bool MusicInCombat;
   public float MusicTimer;
   public int Seconds;
@@ -363,15 +378,26 @@ public class Main : MonoBehaviour
   public bool AutosaveEnable = true;
   public float AutoSaveTimer;
   public float AutoSaveTimerMax = 120f;
+  public bool AutosaveWarningShown;
+  public bool _MainRanFine;
+  public int _MainIndex;
+  public bool _LateRanFine;
+  public int _LateIndex;
+  public static bool GeneratingOWNav;
   public int _waitedFrames;
   public List<Transform> StaticRoots = new List<Transform>();
+  public bool HasUpdatedNavmeshAfterBuildYet;
   public List<UI_Menu> Menus = new List<UI_Menu>();
   public List<string[]> PlayerData = new List<string[]>();
   public List<Person> SpawnedPeople = new List<Person>();
   public List<SaveableBehaviour> SpawnedObjects = new List<SaveableBehaviour>();
   public List<Person> SpawnedPopulation = new List<Person>();
+  public List<Person> SpawnedPeople_World = new List<Person>();
+  public List<SaveableBehaviour> SpawnedObjects_World = new List<SaveableBehaviour>();
+  public List<bl_WorldSection> WorldSections = new List<bl_WorldSection>();
   public List<GameObject> EnableAfterSave = new List<GameObject>();
   public List<List<Person>> SpawnedPeopleOfType = new List<List<Person>>();
+  public List<List<Person>> SpawnedPeopleOfType_World = new List<List<Person>>();
   public string CurrentSavePath;
   public List<string> _CanSaveFlags = new List<string>();
   public static bool LoadMedFromHard;
@@ -397,11 +423,14 @@ public class Main : MonoBehaviour
   public List<AudioClip> ShitSounds = new List<AudioClip>();
   public static bool AlreadyStartedCombat;
   public List<bl_CraftRecipes> BuildRecs_Misc = new List<bl_CraftRecipes>();
-  public List<bl_CraftRecipes> BuildRecs_Sex = new List<bl_CraftRecipes>();
-  public List<bl_CraftRecipes> BuildRecs_Food = new List<bl_CraftRecipes>();
-  public List<bl_CraftRecipes> BuildRecs_Items = new List<bl_CraftRecipes>();
+  public List<bl_CraftRecipes> BuildRecs_Presets = new List<bl_CraftRecipes>();
+  public List<bl_CraftRecipes> BuildRecs_Furniture = new List<bl_CraftRecipes>();
+  public List<bl_CraftRecipes> BuildRecs_SexFurniture = new List<bl_CraftRecipes>();
   public List<bl_CraftRecipes> BuildRecs_Defence = new List<bl_CraftRecipes>();
   public List<bl_CraftRecipes> BuildRecs_Loaded;
+  public GameObject[] HangZonesDynamics;
+  public Material Mat_BuiltMat;
+  public Material Mat_Pivot4;
 
   public static void Log(string text, bool error = false)
   {
@@ -426,9 +455,9 @@ public class Main : MonoBehaviour
       if (this._CustomBodySkins.Count - 1 <= index1)
         this._CustomBodySkins.Add(new Texture2D(0, 0));
       this._CustomBodySkins[index1].LoadImage(File.ReadAllBytes(files1[index1]));
-      if (this._CustomBodySkins[index1].width != 2048 /*0x0800*/ || this._CustomBodySkins[index1].height != 2048 /*0x0800*/)
+      if (this._CustomBodySkins[index1].width != 2048 || this._CustomBodySkins[index1].height != 2048)
       {
-        Texture2D texture2D = this.ResizeTexture(this._CustomBodySkins[index1], 2048 /*0x0800*/, 2048 /*0x0800*/);
+        Texture2D texture2D = this.ResizeTexture(this._CustomBodySkins[index1], 2048, 2048);
         this._CustomBodySkins[index1].LoadImage(Main.OnePixel);
         this._CustomBodySkins[index1] = texture2D;
       }
@@ -444,9 +473,9 @@ public class Main : MonoBehaviour
       if (this._CustomFaceSkins.Count - 1 <= index2)
         this._CustomFaceSkins.Add(new Texture2D(0, 0));
       this._CustomFaceSkins[index2].LoadImage(File.ReadAllBytes(files2[index2]));
-      if (this._CustomFaceSkins[index2].width != 1024 /*0x0400*/ || this._CustomFaceSkins[index2].height != 1024 /*0x0400*/)
+      if (this._CustomFaceSkins[index2].width != 1024 || this._CustomFaceSkins[index2].height != 1024)
       {
-        Texture2D texture2D = this.ResizeTexture(this._CustomFaceSkins[index2], 1024 /*0x0400*/, 1024 /*0x0400*/);
+        Texture2D texture2D = this.ResizeTexture(this._CustomFaceSkins[index2], 1024, 1024);
         this._CustomFaceSkins[index2].LoadImage(Main.OnePixel);
         this._CustomFaceSkins[index2] = texture2D;
       }
@@ -490,7 +519,7 @@ public class Main : MonoBehaviour
     if (string.IsNullOrEmpty(input))
       return input;
     char[] charArray = input.ToCharArray();
-    charArray[0] = (char) ((uint) charArray[0] - 32U /*0x20*/);
+    charArray[0] = (char) ((uint) charArray[0] - 32U);
     return new string(charArray);
   }
 
@@ -512,6 +541,47 @@ public class Main : MonoBehaviour
   {
     get => this._FetishChas;
     set => this._FetishChas = value;
+  }
+
+  public void UpdateAllPrefabsIndexes()
+  {
+    this.AllPrefabsIndexes.Clear();
+    for (int index = 0; index < this.AllPrefabs.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.AllPrefabs[index] != (UnityEngine.Object) null)
+        this.AllPrefabsIndexes.Add(this.AllPrefabs[index].name, index);
+    }
+    this.AllPlansIndexes.Clear();
+    for (int index = 0; index < this.Prefabs_Plans.Count; ++index)
+    {
+      if ((UnityEngine.Object) this.Prefabs_Plans[index] != (UnityEngine.Object) null)
+        this.AllPlansIndexes.Add(this.Prefabs_Plans[index].name, index);
+    }
+  }
+
+  public int AllPrefabsIndexOf(string value)
+  {
+    int num;
+    return this.AllPrefabsIndexes.TryGetValue(value, out num) ? num : -1;
+  }
+
+  public GameObject GetPrefab(string value)
+  {
+    int index1 = this.AllPrefabsIndexOf(value);
+    if (index1 >= 0)
+      return this.AllPrefabs[index1];
+    for (int index2 = 0; index2 < this.Prefabs_Weapons.Count; ++index2)
+    {
+      if ((UnityEngine.Object) this.Prefabs_Weapons[index2] != (UnityEngine.Object) null && this.Prefabs_Weapons[index2].PrefabName == value)
+        return this.Prefabs_Weapons[index2].gameObject;
+    }
+    return (GameObject) null;
+  }
+
+  public GameObject GetPlan(string value)
+  {
+    int index;
+    return this.AllPlansIndexes.TryGetValue(value, out index) ? this.Prefabs_Plans[index] : (GameObject) null;
   }
 
   public void ActionWhenNav(Action action)
@@ -541,6 +611,7 @@ public class Main : MonoBehaviour
   public void Start()
   {
     Main.Instance = this;
+    this.UpdateAllPrefabsIndexes();
     this.RandomizeFloatSafes();
     if (File.Exists(Main.AssetsFolder + "/debuglog.txt"))
     {
@@ -616,7 +687,7 @@ public class Main : MonoBehaviour
                   }
                   catch (Exception ex)
                   {
-                    Main.Log($"ERROR: Calling Init() \"{files[index3]}\"\r\n{ex.Message}\r\n{ex.StackTrace}");
+                    Main.Log("ERROR: Calling Init() \"" + files[index3] + "\"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                   }
                   try
                   {
@@ -625,23 +696,26 @@ public class Main : MonoBehaviour
                   }
                   catch (Exception ex)
                   {
-                    Main.Log($"ERROR: getting EnableMod() \"{files[index3]}\"\r\n{ex.Message}\r\n{ex.StackTrace}");
+                    Main.Log("ERROR: getting EnableMod() \"" + files[index3] + "\"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                   }
                 }
               }
               if (!flag2)
-                Main.Log($"Module \"{files[index3]}\"  \"BitchLand.Mod.Init()\" function not found, make sure it's static!");
+                Main.Log("Module \"" + files[index3] + "\"  \"BitchLand.Mod.Init()\" function not found, make sure it's static!");
             }
           }
           catch (Exception ex)
           {
-            Main.Log($"ERROR: Loading module \"{files[index3]}\"\r\n{ex.Message}\r\n{ex.StackTrace}");
+            Main.Log("ERROR: Loading module \"" + files[index3] + "\"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
           }
         }
       }
     }
     for (int index = 0; index < 10; ++index)
+    {
       this.SpawnedPeopleOfType.Add(new List<Person>());
+      this.SpawnedPeopleOfType_World.Add(new List<Person>());
+    }
     string[] files1 = Directory.GetFiles(Main.AssetsFolder + "/CustomImport/", "*.txt", SearchOption.AllDirectories);
     Main.Log("CustomImport txt files found: " + files1.Length.ToString());
     for (int index = 0; index < files1.Length; ++index)
@@ -741,8 +815,67 @@ public class Main : MonoBehaviour
     return false;
   }
 
+  public void LateUpdate()
+  {
+    if (!this._LateRanFine)
+    {
+      Debug.LogError((object) ("Error at MainThreads_Late " + this._LateIndex.ToString()));
+      if (this.MainThreads_Late.Count < this._LateIndex)
+      {
+        if (this.MainThreads_Late[this._LateIndex] == null)
+        {
+          this.MainThreads_Late.RemoveAt(this._LateIndex);
+        }
+        else
+        {
+          try
+          {
+            this.MainThreads_Late[this._LateIndex]();
+          }
+          catch (Exception ex)
+          {
+            Debug.LogError((object) (ex.Message + "\n" + ex.StackTrace));
+            this.MainThreads_Late.RemoveAt(this._LateIndex);
+          }
+        }
+      }
+    }
+    this._LateRanFine = false;
+    for (this._LateIndex = 0; this._LateIndex < this.MainThreads_Late.Count; ++this._LateIndex)
+    {
+      if (this.MainThreads_Late.Count > this._LateIndex && this.MainThreads_Late[this._LateIndex] != null)
+        this.MainThreads_Late[this._LateIndex]();
+    }
+    this._LateRanFine = true;
+  }
+
   public void Update()
   {
+    if (!this._MainRanFine)
+    {
+      Debug.LogError((object) ("Error at MainThreads " + this._MainIndex.ToString()));
+      if (this.MainThreads.Count < this._MainIndex)
+      {
+        if (this.MainThreads[this._MainIndex] == null)
+        {
+          this.MainThreads.RemoveAt(this._MainIndex);
+        }
+        else
+        {
+          try
+          {
+            this.MainThreads[this._MainIndex]();
+          }
+          catch (Exception ex)
+          {
+            Debug.LogError((object) (ex.Message + "\n" + ex.StackTrace));
+            this.MainThreads.RemoveAt(this._MainIndex);
+          }
+        }
+      }
+    }
+    this._MainRanFine = false;
+    this._MainIndex = 0;
     this.SkyRot += Time.deltaTime / 2f;
     if ((double) this.SkyRot >= 360.0)
       this.SkyRot = 0.0f;
@@ -756,16 +889,28 @@ public class Main : MonoBehaviour
     if (this.AutosaveEnable && Main.Instance.GameplayMenu.gameObject.activeInHierarchy)
     {
       this.AutoSaveTimer += Time.deltaTime;
+      if (!this.AutosaveWarningShown && (double) this.AutoSaveTimer > (double) this.AutoSaveTimerMax - 3.0)
+      {
+        this.AutosaveWarningShown = true;
+        Main.Instance.GameplayMenu.ShowNotification("Autosaving...");
+      }
       if ((double) this.AutoSaveTimer > (double) this.AutoSaveTimerMax)
       {
         this.AutoSaveTimer = 0.0f;
         if (this.CanSaveGame && (UnityEngine.Object) this.Player.InteractingWith == (UnityEngine.Object) null)
+        {
+          this.AutosaveWarningShown = false;
           this.SaveGame(true);
+        }
       }
     }
     this.RandomizeFloatSafes();
-    for (int index = 0; index < this.MainThreads.Count; ++index)
-      this.MainThreads[index]();
+    for (; this._MainIndex < this.MainThreads.Count; ++this._MainIndex)
+    {
+      if (this.MainThreads.Count > this._MainIndex && this.MainThreads[this._MainIndex] != null)
+        this.MainThreads[this._MainIndex]();
+    }
+    this._MainRanFine = true;
     if ((UnityEngine.Object) this.CurrentArea != (UnityEngine.Object) null)
     {
       if (this.MusicInCombat)
@@ -803,44 +948,57 @@ public class Main : MonoBehaviour
 
   public void GenerateNav()
   {
-    if (!this.OpenWorld)
-      this.Nav.GetType().GetMethod("BuildNavMesh").Invoke((object) this.Nav, (object[]) null);
+    this.Nav.GetType().GetMethod("BuildNavMesh").Invoke((object) this.Nav, (object[]) null);
     this.MainThreads.Add(new Action(this.WaitNav));
+  }
+
+  public IEnumerator OWGenerateNav(int xChunks, int yChunks, Slider sliderInUse)
+  {
+    NavMeshDataInstance[,] navMeshChunks = new NavMeshDataInstance[xChunks, yChunks];
+    int totalChunks = xChunks * yChunks;
+    int processed = 0;
+    float chunkSize = 27f;
+    for (int x = 0; x < xChunks; ++x)
+    {
+      for (int z = 0; z < yChunks; ++z)
+      {
+        Bounds bounds = new Bounds(new Vector3((float) x * chunkSize, -100f, (float) z * chunkSize), new Vector3(chunkSize + 10f, 200f, chunkSize + 10f));
+        navMeshChunks[x, z] = NavMesh.AddNavMeshData(NavMeshBuilder.BuildNavMeshData(NavMesh.GetSettingsByID(0), this.CollectSources(bounds), bounds, Vector3.zero, Quaternion.identity));
+        ++processed;
+        if (processed % 16 == 0)
+        {
+          Main.Instance.NewGameMenu.ExtraLoadingText.text = processed.ToString() + "/" + totalChunks.ToString();
+          sliderInUse.value = (float) processed / (float) totalChunks;
+          yield return (object) null;
+        }
+      }
+    }
+    Main.GeneratingOWNav = false;
+  }
+
+  public List<NavMeshBuildSource> CollectSources(Bounds bounds)
+  {
+    List<NavMeshBuildSource> results = new List<NavMeshBuildSource>();
+    NavMeshBuilder.CollectSources(bounds, LayerMask.GetMask("Default"), NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), results);
+    return results;
   }
 
   public void WaitNav()
   {
-    if (this.OpenWorld)
+    if (this.Nav.GetType().GetProperty("navMeshData").GetValue((object) this.Nav) == null)
+      return;
+    this.NavGenerated = true;
+    for (int index = 0; index < this.OnFinallyGenerate.Count; ++index)
+      this.OnFinallyGenerate[index]();
+    this.OnFinallyGenerate.Clear();
+    Main.RunInNextFrame((Action) (() =>
     {
-      this.NavGenerated = true;
-      for (int index = 0; index < this.OnFinallyGenerate.Count; ++index)
-        this.OnFinallyGenerate[index]();
-      this.OnFinallyGenerate.Clear();
-      Main.RunInNextFrame((Action) (() =>
-      {
-        for (int index = 0; index < this.OnAfterFinallyGenerate.Count; ++index)
-          this.OnAfterFinallyGenerate[index]();
-        this.OnAfterFinallyGenerate.Clear();
-      }), 60);
-      this.MainThreads.Remove(new Action(this.WaitNav));
-    }
-    else
-    {
-      if (this.Nav.GetType().GetProperty("navMeshData").GetValue((object) this.Nav) == null)
-        return;
-      this.NavGenerated = true;
-      for (int index = 0; index < this.OnFinallyGenerate.Count; ++index)
-        this.OnFinallyGenerate[index]();
-      this.OnFinallyGenerate.Clear();
-      Main.RunInNextFrame((Action) (() =>
-      {
-        for (int index = 0; index < this.OnAfterFinallyGenerate.Count; ++index)
-          this.OnAfterFinallyGenerate[index]();
-        this.OnAfterFinallyGenerate.Clear();
-      }), 60);
-      this.MainThreads.Remove(new Action(this.WaitNav));
-      this.Bake();
-    }
+      for (int index = 0; index < this.OnAfterFinallyGenerate.Count; ++index)
+        this.OnAfterFinallyGenerate[index]();
+      this.OnAfterFinallyGenerate.Clear();
+    }), 60);
+    this.MainThreads.Remove(new Action(this.WaitNav));
+    this.Bake();
   }
 
   public void Bake()
@@ -882,6 +1040,20 @@ public class Main : MonoBehaviour
     }
   }
 
+  public void GarbageCollect()
+  {
+    this.SpawnedPeople.RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    this.SpawnedObjects.RemoveAll((Predicate<SaveableBehaviour>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    this.SpawnedPeople_World.RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    this.SpawnedObjects_World.RemoveAll((Predicate<SaveableBehaviour>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    for (int index = 0; index < this.SpawnedPeopleOfType.Count; ++index)
+      this.SpawnedPeopleOfType[index].RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    for (int index = 0; index < this.SpawnedPeopleOfType_World.Count; ++index)
+      this.SpawnedPeopleOfType_World[index].RemoveAll((Predicate<Person>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    bl_SectionGenerate2.ItemFallRespawnSpots.RemoveAll((Predicate<Transform>) (item => (UnityEngine.Object) item == (UnityEngine.Object) null));
+    GC.Collect();
+  }
+
   public virtual void OpenMenu(string menu)
   {
     this.MainMenuCam.gameObject.SetActive(false);
@@ -894,7 +1066,7 @@ public class Main : MonoBehaviour
         break;
       }
     }
-    GC.Collect();
+    this.GarbageCollect();
   }
 
   public virtual void CloseMenus()
@@ -931,7 +1103,10 @@ public class Main : MonoBehaviour
     Main.Instance.GameplayMenu.SaveButton.interactable = this.CanSaveGame;
   }
 
-  public bool CanSaveGame => this._CanSaveFlags.Count == 0;
+  public bool CanSaveGame
+  {
+    get => this._CanSaveFlags.Count == 0 && !this.GameplayMenu.JournalMenu.activeSelf;
+  }
 
   public void SaveGame(bool autosave = false)
   {
@@ -949,7 +1124,7 @@ public class Main : MonoBehaviour
       int num = 0;
       do
       {
-        this.CurrentSavePath = $"{Main.AssetsFolder}/Saves/{num++.ToString("0000")}/";
+        this.CurrentSavePath = Main.AssetsFolder + "/Saves/" + num++.ToString("0000") + "/";
       }
       while (Directory.Exists(this.CurrentSavePath));
     }
@@ -967,11 +1142,11 @@ public class Main : MonoBehaviour
         break;
       }
     }
-    string path = this.CurrentSavePath + "info.txt";
+    string path1 = this.CurrentSavePath + "info.txt";
     string[] contents = new string[6]
     {
       DateTime.Now.ToString(),
-      $"({Main.Instance.Player.Personality.ToString()}) {Main.Instance.Player.Name}",
+      "(" + Main.Instance.Player.Personality.ToString() + ") " + Main.Instance.Player.Name,
       "Mission: " + str1,
       null,
       null,
@@ -980,12 +1155,12 @@ public class Main : MonoBehaviour
     string str2 = Main.Instance.Player.Perks.Count.ToString();
     int num1 = UnityEngine.Object.FindObjectsOfType<misc_Perk>(true).Length;
     string str3 = num1.ToString();
-    contents[3] = $"{str2}/{str3} Level up perks";
+    contents[3] = str2 + "/" + str3 + " Level up perks";
     contents[4] = "Sex unknown times";
     contents[5] = Main.Instance.Player is Girl ? (Main.Instance.Player as Girl).HadPregnancies.ToString() + " Pregnancies" : "unknown Impregnations";
-    File.WriteAllLines(path, contents);
+    File.WriteAllLines(path1, contents);
     List<string> stringList1 = new List<string>();
-    stringList1.Add("10".ToString());
+    stringList1.Add("11".ToString());
     List<string> stringList2 = stringList1;
     num1 = Main.Instance.AllMissions.Count;
     string str4 = num1.ToString();
@@ -1029,7 +1204,7 @@ public class Main : MonoBehaviour
     File.WriteAllLines(this.CurrentSavePath + "missions.txt", stringList1.ToArray());
     List<string> stringList5 = new List<string>();
     List<byte> byteList = new List<byte>();
-    stringList5.Add("10.e");
+    stringList5.Add("11.a");
     stringList5.Add(Main.Instance.NewGameMenu.DificultySelected.ToString());
     stringList5.Add(Main.Float2Str(this.DayCycle.timeOfDay));
     List<string> stringList6 = stringList5;
@@ -1037,7 +1212,7 @@ public class Main : MonoBehaviour
     string str7 = num1.ToString();
     stringList6.Add(str7);
     for (int index = 0; index < Main.Instance.GlobalVars.Count; ++index)
-      stringList5.Add($"{Main.Instance.GlobalVars.Keys[index]};{Main.Instance.GlobalVars.Values[index]}");
+      stringList5.Add(Main.Instance.GlobalVars.Keys[index] + ";" + Main.Instance.GlobalVars.Values[index]);
     List<string> stringList7 = stringList5;
     num1 = Main.Instance.GameplayMenu.Relationships.Count;
     string str8 = num1.ToString();
@@ -1049,69 +1224,76 @@ public class Main : MonoBehaviour
     else
       stringList5.Add(Main.Instance.CurrentArea.name);
     stringList5.Add(this.Seconds.ToString());
-    File.WriteAllLines(this.CurrentSavePath + "data.bl", stringList5.ToArray());
-    List<string> stringList8 = new List<string>();
-    List<string> stringList9 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasBitchNotes10.Length;
+    stringList5.Add(this.OpenWorld ? "1" : "0");
+    stringList5.Add(this.CurrentSection.ToString());
+    List<string> stringList8 = stringList5;
+    num1 = Main.Instance.WorldSections.Count;
     string str9 = num1.ToString();
-    stringList9.Add(str9);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes10.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasBitchNotes10[index] ? "1" : "0");
-    List<string> stringList10 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasBitchNotes20.Length;
+    stringList8.Add(str9);
+    stringList5.Add(bl_SectionGenerate2.SmallWorld ? "1" : "0");
+    File.WriteAllLines(this.CurrentSavePath + "data.bl", stringList5.ToArray());
+    List<string> stringList9 = new List<string>();
+    List<string> stringList10 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasBitchNotes10.Length;
     string str10 = num1.ToString();
     stringList10.Add(str10);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes20.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasBitchNotes20[index] ? "1" : "0");
-    List<string> stringList11 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasBitchNotes50.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes10.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasBitchNotes10[index] ? "1" : "0");
+    List<string> stringList11 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasBitchNotes20.Length;
     string str11 = num1.ToString();
     stringList11.Add(str11);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes50.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasBitchNotes50[index] ? "1" : "0");
-    List<string> stringList12 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasBitchNotes100.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes20.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasBitchNotes20[index] ? "1" : "0");
+    List<string> stringList12 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasBitchNotes50.Length;
     string str12 = num1.ToString();
     stringList12.Add(str12);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes100.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasBitchNotes100[index] ? "1" : "0");
-    List<string> stringList13 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasBitchNotes1000.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes50.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasBitchNotes50[index] ? "1" : "0");
+    List<string> stringList13 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasBitchNotes100.Length;
     string str13 = num1.ToString();
     stringList13.Add(str13);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes1000.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasBitchNotes1000[index] ? "1" : "0");
-    List<string> stringList14 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasBitchNotesProt.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes100.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasBitchNotes100[index] ? "1" : "0");
+    List<string> stringList14 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasBitchNotes1000.Length;
     string str14 = num1.ToString();
     stringList14.Add(str14);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotesProt.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasBitchNotesProt[index] ? "1" : "0");
-    List<string> stringList15 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasPostersBC.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotes1000.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasBitchNotes1000[index] ? "1" : "0");
+    List<string> stringList15 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasBitchNotesProt.Length;
     string str15 = num1.ToString();
     stringList15.Add(str15);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBC.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasPostersBC[index] ? "1" : "0");
-    List<string> stringList16 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasPostersBCLeg.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasBitchNotesProt.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasBitchNotesProt[index] ? "1" : "0");
+    List<string> stringList16 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasPostersBC.Length;
     string str16 = num1.ToString();
     stringList16.Add(str16);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBCLeg.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasPostersBCLeg[index] ? "1" : "0");
-    List<string> stringList17 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasPostersBCBEL.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBC.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasPostersBC[index] ? "1" : "0");
+    List<string> stringList17 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasPostersBCLeg.Length;
     string str17 = num1.ToString();
     stringList17.Add(str17);
-    for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBCBEL.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasPostersBCBEL[index] ? "1" : "0");
-    List<string> stringList18 = stringList8;
-    num1 = Main.Instance.GameplayMenu.HasPostersBCCap.Length;
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBCLeg.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasPostersBCLeg[index] ? "1" : "0");
+    List<string> stringList18 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasPostersBCBEL.Length;
     string str18 = num1.ToString();
     stringList18.Add(str18);
+    for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBCBEL.Length; ++index)
+      stringList9.Add(Main.Instance.GameplayMenu.HasPostersBCBEL[index] ? "1" : "0");
+    List<string> stringList19 = stringList9;
+    num1 = Main.Instance.GameplayMenu.HasPostersBCCap.Length;
+    string str19 = num1.ToString();
+    stringList19.Add(str19);
     for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBCCap.Length; ++index)
-      stringList8.Add(Main.Instance.GameplayMenu.HasPostersBCCap[index] ? "1" : "0");
-    File.WriteAllLines(this.CurrentSavePath + "Collectibles.txt", stringList8.ToArray());
+      stringList9.Add(Main.Instance.GameplayMenu.HasPostersBCCap[index] ? "1" : "0");
+    File.WriteAllLines(this.CurrentSavePath + "Collectibles.txt", stringList9.ToArray());
     if (this.Player is Girl)
     {
       this.Player.SaveToFile(this.CurrentSavePath + "Player.chr");
@@ -1121,31 +1303,139 @@ public class Main : MonoBehaviour
       this.Player.WeaponInv.DropAllWeapons();
       this.Player.SaveToFile(this.CurrentSavePath + "Player_m.chr");
     }
-    for (int index = 0; index < this.SpawnedPeople.Count; ++index)
+    for (int index = 0; index < this.WorldSections.Count; ++index)
     {
-      if (!((UnityEngine.Object) this.SpawnedPeople[index] == (UnityEngine.Object) null) && !this.SpawnedPeople[index].IsPlayer && !this.SpawnedPeople[index].DontSaveInMain)
-        this.SpawnedPeople[index].SaveToFile($"{this.CurrentSavePath}{this.SpawnedPeople[index].name}{this.SpawnedPeople[index].WorldSaveID}{(this.SpawnedPeople[index] is Girl ? "_f" : "_m")}.chr");
-    }
-    for (int index = 0; index < this.SpawnedObjects.Count; ++index)
-    {
-      if (!((UnityEngine.Object) this.SpawnedObjects[index] == (UnityEngine.Object) null) && !this.SpawnedObjects[index].DontSaveInMain && this.SpawnedObjects[index].CanSave && this.SpawnedObjects[index].gameObject.activeInHierarchy)
+      string path2 = this.CurrentSavePath + "Section_" + index.ToString();
+      Directory.CreateDirectory(path2);
+      if ((UnityEngine.Object) this.WorldSections[index] != (UnityEngine.Object) null)
       {
-        string str19 = "null";
-        if (this.SpawnedObjects[index].WorldSaveID != null && this.SpawnedObjects[index].WorldSaveID.Length > 0)
-          str19 = this.SpawnedObjects[index].WorldSaveID;
-        this.SpawnedObjects[index].SaveToFile($"{this.CurrentSavePath}{str19}_{index.ToString()}.obj");
+        bl_WorldSection worldSection = this.WorldSections[index];
+        File.WriteAllLines(path2 + "/data.txt", new List<string>()
+        {
+          worldSection.SectionID.ToString(),
+          worldSection.ChunksX.ToString(),
+          worldSection.ChunksY.ToString()
+        }.ToArray());
       }
     }
+    if (Main.Instance.OpenWorld)
+    {
+      bl_WorldChunk[] objectsOfType = UnityEngine.Object.FindObjectsOfType<bl_WorldChunk>();
+      string str20 = this.CurrentSavePath + "Section_" + this.CurrentSection.ToString() + "/";
+      using (BinaryWriter binaryWriter = new BinaryWriter((Stream) File.Open(str20 + "chunks.dat", FileMode.Create)))
+      {
+        binaryWriter.Write("11");
+        binaryWriter.Write(this.CurrentSection);
+        binaryWriter.Write(Main.Instance.WorldSections[this.CurrentSection].ChunksX);
+        binaryWriter.Write(Main.Instance.WorldSections[this.CurrentSection].ChunksY);
+        binaryWriter.Write(objectsOfType.Length);
+        for (int index5 = 0; index5 < objectsOfType.Length; ++index5)
+        {
+          binaryWriter.Write(objectsOfType[index5].XCordinate);
+          binaryWriter.Write(objectsOfType[index5].YCordinate);
+          binaryWriter.Write(objectsOfType[index5].ThisData.Height);
+          binaryWriter.Write(objectsOfType[index5].ThisData.Rot);
+          binaryWriter.Write((int) objectsOfType[index5].ThisData.WorldChunkType);
+          binaryWriter.Write((int) objectsOfType[index5].ThisData.Biome);
+          binaryWriter.Write(objectsOfType[index5].ThisData.Reverse);
+          binaryWriter.Write(objectsOfType[index5].ThisData.Road);
+          binaryWriter.Write(objectsOfType[index5].ThisData.Structure);
+          binaryWriter.Write(objectsOfType[index5].ThisData.MineEntrance);
+          binaryWriter.Write(objectsOfType[index5].transform.childCount);
+          for (int index6 = 0; index6 < objectsOfType[index5].transform.childCount; ++index6)
+          {
+            SaveableBehaviour componentInChildren = objectsOfType[index5].transform.GetChild(index6).GetComponentInChildren<SaveableBehaviour>();
+            if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null && componentInChildren.HasByte2Data && !componentInChildren.DontSaveInMain)
+            {
+              binaryWriter.Write(true);
+              binaryWriter.Write(componentInChildren.ow_oddsaving);
+              if (componentInChildren.ow_oddsaving)
+              {
+                binaryWriter.Write(componentInChildren.WorldSaveID);
+              }
+              else
+              {
+                byte[] byteSaveableData2 = componentInChildren.ByteSaveableData2;
+                binaryWriter.Write(byteSaveableData2.Length);
+                binaryWriter.Write(byteSaveableData2);
+              }
+            }
+            else
+              binaryWriter.Write(false);
+          }
+        }
+      }
+      for (int index = 0; index < this.SpawnedPeople_World.Count; ++index)
+      {
+        if (!((UnityEngine.Object) this.SpawnedPeople_World[index] == (UnityEngine.Object) null) && !this.SpawnedPeople_World[index].IsPlayer && !this.SpawnedPeople_World[index].DontSaveInMain)
+          this.SpawnedPeople_World[index].SaveToFile(str20 + this.SpawnedPeople_World[index].name + this.SpawnedPeople_World[index].WorldSaveID + (this.SpawnedPeople_World[index] is Girl ? "_f" : "_m") + ".chr");
+      }
+      List<SaveableBehaviour> saveableBehaviourList = new List<SaveableBehaviour>();
+      for (int index = 0; index < this.SpawnedObjects_World.Count; ++index)
+      {
+        if (!saveableBehaviourList.Contains(this.SpawnedObjects_World[index]) && !this.SpawnedObjects_World[index].DontSaveInMain)
+          saveableBehaviourList.Add(this.SpawnedObjects_World[index]);
+      }
+      this.SpawnedObjects_World = saveableBehaviourList;
+      for (int index = 0; index < this.SpawnedObjects_World.Count; ++index)
+      {
+        if (!((UnityEngine.Object) this.SpawnedObjects_World[index] == (UnityEngine.Object) null) && this.SpawnedObjects_World[index].CanSave && this.SpawnedObjects_World[index].gameObject.activeInHierarchy)
+        {
+          string str21 = "null";
+          if (this.SpawnedObjects_World[index].WorldSaveID != null && this.SpawnedObjects_World[index].WorldSaveID.Length > 0)
+            str21 = this.SpawnedObjects_World[index].WorldSaveID;
+          string str22;
+          if ((!(this.SpawnedObjects_World[index] is bl_MinableObject) ? 0 : (((bl_MinableObject) this.SpawnedObjects_World[index]).BakeNavmeshOnBuild ? 1 : 0)) == 0)
+            str22 = str20 + str21 + "_" + index.ToString() + ".obj";
+          else
+            str22 = str20 + str21 + "_" + index.ToString() + ".nav";
+          string filename = str22;
+          this.SpawnedObjects_World[index].SaveToFile(filename);
+        }
+      }
+    }
+    else
+    {
+      for (int index = 0; index < this.SpawnedPeople.Count; ++index)
+      {
+        if (!((UnityEngine.Object) this.SpawnedPeople[index] == (UnityEngine.Object) null) && !this.SpawnedPeople[index].IsPlayer && !this.SpawnedPeople[index].DontSaveInMain)
+          this.SpawnedPeople[index].SaveToFile(this.CurrentSavePath + this.SpawnedPeople[index].name + this.SpawnedPeople[index].WorldSaveID + (this.SpawnedPeople[index] is Girl ? "_f" : "_m") + ".chr");
+      }
+      List<SaveableBehaviour> saveableBehaviourList = new List<SaveableBehaviour>();
+      for (int index = 0; index < this.SpawnedObjects.Count; ++index)
+      {
+        if (!saveableBehaviourList.Contains(this.SpawnedObjects[index]))
+          saveableBehaviourList.Add(this.SpawnedObjects[index]);
+      }
+      this.SpawnedObjects = saveableBehaviourList;
+      for (int index = 0; index < this.SpawnedObjects.Count; ++index)
+      {
+        if (!((UnityEngine.Object) this.SpawnedObjects[index] == (UnityEngine.Object) null) && !this.SpawnedObjects[index].DontSaveInMain && this.SpawnedObjects[index].CanSave && this.SpawnedObjects[index].gameObject.activeInHierarchy)
+        {
+          string str23 = "null";
+          if (this.SpawnedObjects[index].WorldSaveID != null && this.SpawnedObjects[index].WorldSaveID.Length > 0)
+            str23 = this.SpawnedObjects[index].WorldSaveID;
+          this.SpawnedObjects[index].SaveToFile(this.CurrentSavePath + str23 + "_" + index.ToString() + ".obj");
+        }
+      }
+    }
+    for (int index = 0; index < this.PeopleFollowingPlayer.Count; ++index)
+    {
+      int num3 = this.PeopleFollowingPlayer[index].Leashed ? 1 : 0;
+    }
     for (int index = 0; index < Main.Instance.EnableAfterSave.Count; ++index)
-      Main.Instance.EnableAfterSave[index].SetActive(true);
+    {
+      if ((UnityEngine.Object) Main.Instance.EnableAfterSave[index] != (UnityEngine.Object) null)
+        Main.Instance.EnableAfterSave[index].SetActive(true);
+    }
     if (!autosave)
       return;
-    string str20 = Main.AssetsFolder + "/Saves/_autosave/";
-    if (Directory.Exists(str20))
-      Directory.Delete(str20, true);
+    string str24 = Main.AssetsFolder + "/Saves/_autosave/";
+    if (Directory.Exists(str24))
+      Directory.Delete(str24, true);
     if (Directory.Exists(this.CurrentSavePath))
-      Directory.Move(this.CurrentSavePath, str20);
-    this.CurrentSavePath = str20;
+      Directory.Move(this.CurrentSavePath, str24);
+    this.CurrentSavePath = str24;
     Main.Instance.GameplayMenu.ShowNotification("Autosaved");
   }
 
@@ -1273,8 +1563,8 @@ public class Main : MonoBehaviour
     StreamReader data = new StreamReader((Stream) new MemoryStream(File.ReadAllBytes(filename)));
     int num = 0;
     string str = data.ReadLine();
-    if (str != "10.e")
-      Debug.LogError((object) ("Save with diferent version! Current Game Version=10.e / Save Version=" + str));
+    if (str != "11.a")
+      Debug.LogError((object) ("Save with diferent version! Current Game Version=11.a / Save Version=" + str));
     this.LoadCharacter(this.Player, data);
     while (!data.EndOfStream)
     {
@@ -1287,35 +1577,94 @@ public class Main : MonoBehaviour
   {
     this.LoadedGame = true;
     this.CurrentSavePath = directory;
+    Main.Instance.LoadGameMenu.Close();
     Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
     this.Invoke("LoadGame_2", 0.1f);
   }
 
   public void LoadGame_2()
   {
-    string[] _data = (string[]) null;
-    int _dataindex = 0;
+    List<string> _rels = new List<string>();
+    int num1 = 0;
     int _saveVersion = 0;
+    string empty = string.Empty;
+    string _currentArea = string.Empty;
     Main.Instance.NewGameMenu.DificultySelected = 2;
     if (File.Exists(this.CurrentSavePath + "data.bl"))
     {
-      _data = File.ReadAllLines(this.CurrentSavePath + "data.bl");
-      string str = _data[_dataindex++];
+      string[] strArray1 = File.ReadAllLines(this.CurrentSavePath + "data.bl");
+      string[] strArray2 = strArray1;
+      int index1 = num1;
+      int num2 = index1 + 1;
+      Debug.Log((object) ("Loading save from string version " + strArray2[index1]));
       if (File.Exists(this.CurrentSavePath + "missions.txt"))
       {
         Main.Log("reading missions version check");
         _saveVersion = int.Parse(File.ReadAllLines(this.CurrentSavePath + "missions.txt")[0]);
+        Debug.Log((object) ("Loading save from int version " + _saveVersion.ToString()));
       }
-      string s = _data[_dataindex++];
+      else
+        Debug.LogError((object) "missions.txt does not exist");
+      string[] strArray3 = strArray1;
+      int index2 = num2;
+      int num3 = index2 + 1;
+      string s = strArray3[index2];
       Main.Instance.NewGameMenu.DificultySelected = int.Parse(s);
-      this.DayCycle.timeOfDay = Main.ParseFloat(_data[_dataindex++]);
-      int num = int.Parse(_data[_dataindex++]);
-      for (int index = 0; index < num; ++index)
+      string[] strArray4 = strArray1;
+      int index3 = num3;
+      int num4 = index3 + 1;
+      this.DayCycle.timeOfDay = Main.ParseFloat(strArray4[index3]);
+      string[] strArray5 = strArray1;
+      int index4 = num4;
+      int num5 = index4 + 1;
+      int num6 = int.Parse(strArray5[index4]);
+      for (int index5 = 0; index5 < num6; ++index5)
       {
-        string[] strArray = _data[_dataindex++].Split(';', StringSplitOptions.None);
-        this.GlobalVars.Add(strArray[0], strArray[1]);
+        string[] strArray6 = strArray1[num5++].Split(';', StringSplitOptions.None);
+        this.GlobalVars.Add(strArray6[0], strArray6[1]);
+      }
+      string[] strArray7 = strArray1;
+      int index6 = num5;
+      int num7 = index6 + 1;
+      int num8 = int.Parse(strArray7[index6]);
+      for (int index7 = 0; index7 < num8; ++index7)
+        _rels.Add(strArray1[num7++]);
+      if (strArray1.Length > num7)
+      {
+        string[] strArray8 = strArray1;
+        int index8 = num7;
+        int num9 = index8 + 1;
+        _currentArea = strArray8[index8];
+        if (strArray1.Length > num9)
+        {
+          string[] strArray9 = strArray1;
+          int index9 = num9;
+          int num10 = index9 + 1;
+          this.Seconds = int.Parse(strArray9[index9]);
+          if (strArray1.Length > num10)
+          {
+            string[] strArray10 = strArray1;
+            int index10 = num10;
+            int num11 = index10 + 1;
+            this.OpenWorld = strArray10[index10] == "1";
+            string[] strArray11 = strArray1;
+            int index11 = num11;
+            int num12 = index11 + 1;
+            this.CurrentSection = int.Parse(strArray11[index11]);
+            string[] strArray12 = strArray1;
+            int index12 = num12;
+            int num13 = index12 + 1;
+            int.Parse(strArray12[index12]);
+            string[] strArray13 = strArray1;
+            int index13 = num13;
+            int num14 = index13 + 1;
+            bl_SectionGenerate2.SmallWorld = strArray13[index13] == "1";
+          }
+        }
       }
     }
+    else
+      Debug.LogError((object) "data.bl does not exist");
     if ((UnityEngine.Object) Main.Instance.NewGameMenu.NewGameThings != (UnityEngine.Object) null)
       UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.NewGameMenu.NewGameThings);
     if ((UnityEngine.Object) Main.Instance.CustomizeMenu.CustomizeRoom != (UnityEngine.Object) null)
@@ -1336,24 +1685,194 @@ public class Main : MonoBehaviour
           UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.NewGameMenu.DestroyWhenStartLoading[index]);
       }
     }
-    Main.Instance.AllJobs = new List<bl_WorkJobManager>();
-    Main.Instance.AllJobs.AddRange((IEnumerable<bl_WorkJobManager>) UnityEngine.Object.FindObjectsOfType<bl_WorkJobManager>(true));
-    Main.Instance.AllHomes = new List<bl_HangZone>();
-    Main.Instance.AllHomes.AddRange((IEnumerable<bl_HangZone>) UnityEngine.Object.FindObjectsOfType<bl_HangZone>(true));
-    if (Main.Instance.NewGameMenu.DificultySelected == 3)
+    string _folderWithNPCsToLoad = this.OpenWorld ? this.CurrentSavePath + "Section_" + this.CurrentSection.ToString() + "/" : this.CurrentSavePath;
+    if (!this.OpenWorld)
     {
-      Main.Instance.DayCycle.sunLight.transform.SetParent((Transform) null);
-      GameObject gameObject = new GameObject();
-      gameObject.transform.SetPositionAndRotation(Main.Instance.NewGameMenu.StartingPositions[2].position, Main.Instance.NewGameMenu.StartingPositions[2].rotation);
-      Main.Instance.PlayerWakeupPlaces.Clear();
-      Main.Instance.PlayerWakeupPlaces.Add(gameObject.transform);
-      if ((UnityEngine.Object) Main.Instance.NewGameMenu.HardGameplayStuff != (UnityEngine.Object) null)
-        Main.Instance.NewGameMenu.HardGameplayStuff.SetActive(true);
+      Main.Instance.AllJobs = new List<bl_WorkJobManager>();
+      Main.Instance.AllJobs.AddRange((IEnumerable<bl_WorkJobManager>) UnityEngine.Object.FindObjectsOfType<bl_WorkJobManager>(true));
+      Main.Instance.AllHomes = new List<bl_HangZone>();
+      Main.Instance.AllHomes.AddRange((IEnumerable<bl_HangZone>) UnityEngine.Object.FindObjectsOfType<bl_HangZone>(true));
+      if (Main.Instance.NewGameMenu.DificultySelected == 3)
+      {
+        Main.Instance.DayCycle.sunLight.transform.SetParent((Transform) null);
+        GameObject gameObject = new GameObject();
+        gameObject.transform.SetPositionAndRotation(Main.Instance.NewGameMenu.StartingPositions[2].position, Main.Instance.NewGameMenu.StartingPositions[2].rotation);
+        Main.Instance.PlayerWakeupPlaces.Clear();
+        Main.Instance.PlayerWakeupPlaces.Add(gameObject.transform);
+        if ((UnityEngine.Object) Main.Instance.NewGameMenu.HardGameplayStuff != (UnityEngine.Object) null)
+          Main.Instance.NewGameMenu.HardGameplayStuff.SetActive(true);
+      }
+      else if ((UnityEngine.Object) Main.Instance.NewGameMenu.MedGameplayStuff != (UnityEngine.Object) null)
+        Main.Instance.NewGameMenu.MedGameplayStuff.SetActive(true);
     }
-    else if ((UnityEngine.Object) Main.Instance.NewGameMenu.MedGameplayStuff != (UnityEngine.Object) null)
-      Main.Instance.NewGameMenu.MedGameplayStuff.SetActive(true);
+    else
+    {
+      string _chunksFile = _folderWithNPCsToLoad + "chunks.dat";
+      Main.Instance.GameplayMenu.PrepareForOWLoad_1(0);
+      Main.Instance.NewGameMenu.ExtraLoadingMainText.text = "Loading [Section 0,0]\nIt's not frozen, just working hard!";
+      Main.RunInNextFrame((Action) (() =>
+      {
+        Main.Instance.GameplayMenu.PrepareForOWLoad_2();
+        Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+        Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Loading Scene";
+        Main.RunInNextFrame((Action) (() =>
+        {
+          SceneManager.LoadScene(5, LoadSceneMode.Additive);
+          Main.Instance.NewGameMenu.ExtraLoadingText.text = string.Empty;
+          Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Loading Terrain";
+          Main.RunInNextFrame((Action) (() =>
+          {
+            using (BinaryReader binaryReader = new BinaryReader((Stream) File.Open(_chunksFile, FileMode.Open)))
+            {
+              Debug.Log((object) ("_datVersion " + binaryReader.ReadString()));
+              Debug.Log((object) ("_datSection " + binaryReader.ReadInt32().ToString()));
+              int _sectionXSize = binaryReader.ReadInt32();
+              int _sectionYSize = binaryReader.ReadInt32();
+              Debug.Log((object) ("_datXY " + _sectionXSize.ToString() + "/" + _sectionYSize.ToString()));
+              ChunkGenerateData[,] newChunks = new ChunkGenerateData[_sectionXSize, _sectionYSize];
+              Main.Instance.WorldSections[this.CurrentSection].ChunksX = _sectionXSize;
+              Main.Instance.WorldSections[this.CurrentSection].ChunksY = _sectionYSize;
+              Main.Instance.WorldSections[this.CurrentSection].ChunksCount = _sectionXSize * _sectionYSize;
+              int num22 = binaryReader.ReadInt32();
+              Debug.Log((object) ("_datChunksLen " + num22.ToString()));
+              for (int index18 = 0; index18 < num22; ++index18)
+              {
+                int index19 = binaryReader.ReadInt32();
+                int index20 = binaryReader.ReadInt32();
+                int num23 = binaryReader.ReadInt32();
+                int num24 = binaryReader.ReadInt32();
+                int num25 = binaryReader.ReadInt32();
+                int num26 = binaryReader.ReadInt32();
+                bool flag4 = binaryReader.ReadBoolean();
+                bool flag5 = binaryReader.ReadBoolean();
+                int num27 = binaryReader.ReadInt32();
+                bool flag6 = binaryReader.ReadBoolean();
+                newChunks[index19, index20] = new ChunkGenerateData();
+                newChunks[index19, index20].Height = num23;
+                newChunks[index19, index20].Rot = num24;
+                newChunks[index19, index20].WorldChunkType = (e_WorldChunkType) num25;
+                newChunks[index19, index20].Biome = (e_WorldBiome) num26;
+                newChunks[index19, index20].Reverse = flag4;
+                newChunks[index19, index20].Road = flag5;
+                newChunks[index19, index20].Structure = num27;
+                newChunks[index19, index20].MineEntrance = flag6;
+                int num28 = binaryReader.ReadInt32();
+                for (int index21 = 0; index21 < num28; ++index21)
+                {
+                  if (binaryReader.ReadBoolean())
+                  {
+                    if (binaryReader.ReadBoolean())
+                    {
+                      string str = binaryReader.ReadString();
+                      newChunks[index19, index20].Odds.Add(str);
+                    }
+                    else
+                    {
+                      int count = binaryReader.ReadInt32();
+                      byte[] numArray = binaryReader.ReadBytes(count);
+                      newChunks[index19, index20].Trees.Add(numArray);
+                    }
+                  }
+                }
+              }
+              foreach (string file in Directory.GetFiles(_folderWithNPCsToLoad, "*.nav"))
+                this.SpawnLoadObj(file);
+              bl_SectionGenerate2 objectOfType = UnityEngine.Object.FindObjectOfType<bl_SectionGenerate2>();
+              UI_Gameplay.OWGenerating = true;
+              Main.Instance.MainThreads.Add(new Action(Main.Instance.GameplayMenu.WaitingForGenerationThread_Loading));
+              this.StartCoroutine(objectOfType.SpawnChunks(newChunks, _sectionXSize, _sectionYSize, Vector3.zero, true));
+            }
+          }), 2);
+        }), 3);
+      }), 3);
+    }
+    if (File.Exists(this.CurrentSavePath + "Collectibles.txt"))
+    {
+      string[] strArray14 = File.ReadAllLines(this.CurrentSavePath + "Collectibles.txt");
+      int num29 = int.Parse(strArray14[0]);
+      int num30 = 1;
+      for (int index = 0; index < num29; ++index)
+        Main.Instance.GameplayMenu.HasBitchNotes10[index] = strArray14[num30++] == "1";
+      string[] strArray15 = strArray14;
+      int index22 = num30;
+      int num31 = index22 + 1;
+      int num32 = int.Parse(strArray15[index22]);
+      for (int index23 = 0; index23 < num32; ++index23)
+        Main.Instance.GameplayMenu.HasBitchNotes20[index23] = strArray14[num31++] == "1";
+      string[] strArray16 = strArray14;
+      int index24 = num31;
+      int num33 = index24 + 1;
+      int num34 = int.Parse(strArray16[index24]);
+      for (int index25 = 0; index25 < num34; ++index25)
+        Main.Instance.GameplayMenu.HasBitchNotes50[index25] = strArray14[num33++] == "1";
+      string[] strArray17 = strArray14;
+      int index26 = num33;
+      int num35 = index26 + 1;
+      int num36 = int.Parse(strArray17[index26]);
+      for (int index27 = 0; index27 < num36; ++index27)
+        Main.Instance.GameplayMenu.HasBitchNotes100[index27] = strArray14[num35++] == "1";
+      string[] strArray18 = strArray14;
+      int index28 = num35;
+      int num37 = index28 + 1;
+      int num38 = int.Parse(strArray18[index28]);
+      for (int index29 = 0; index29 < num38; ++index29)
+        Main.Instance.GameplayMenu.HasBitchNotes1000[index29] = strArray14[num37++] == "1";
+      string[] strArray19 = strArray14;
+      int index30 = num37;
+      int num39 = index30 + 1;
+      int num40 = int.Parse(strArray19[index30]);
+      for (int index31 = 0; index31 < num40; ++index31)
+        Main.Instance.GameplayMenu.HasBitchNotesProt[index31] = strArray14[num39++] == "1";
+      string[] strArray20 = strArray14;
+      int index32 = num39;
+      int num41 = index32 + 1;
+      int num42 = int.Parse(strArray20[index32]);
+      for (int index33 = 0; index33 < num42; ++index33)
+        Main.Instance.GameplayMenu.HasPostersBC[index33] = strArray14[num41++] == "1";
+      string[] strArray21 = strArray14;
+      int index34 = num41;
+      int num43 = index34 + 1;
+      int num44 = int.Parse(strArray21[index34]);
+      for (int index35 = 0; index35 < num44; ++index35)
+        Main.Instance.GameplayMenu.HasPostersBCLeg[index35] = strArray14[num43++] == "1";
+      string[] strArray22 = strArray14;
+      int index36 = num43;
+      int num45 = index36 + 1;
+      int num46 = int.Parse(strArray22[index36]);
+      for (int index37 = 0; index37 < num46; ++index37)
+        Main.Instance.GameplayMenu.HasPostersBCBEL[index37] = strArray14[num45++] == "1";
+      string[] strArray23 = strArray14;
+      int index38 = num45;
+      int num47 = index38 + 1;
+      int num48 = int.Parse(strArray23[index38]);
+      for (int index39 = 0; index39 < num48; ++index39)
+        Main.Instance.GameplayMenu.HasPostersBCCap[index39] = strArray14[num47++] == "1";
+    }
+    Main.Instance.NewGameMenu.GenerateDefaultsIDsForThisInstance();
     Main.Instance.ActionWhenNav((Action) (() =>
     {
+      if (this.OpenWorld)
+      {
+        bl_WorldChunk[] objectsOfType = UnityEngine.Object.FindObjectsOfType<bl_WorldChunk>();
+        Main.Instance.NewGameMenu.ExtraLoadingText.text = "-/" + objectsOfType.Length.ToString();
+        Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Spawning Chunk Items";
+        for (int index40 = 0; index40 < objectsOfType.Length; ++index40)
+        {
+          ChunkGenerateData thisData = objectsOfType[index40].ThisData;
+          int num49 = 0;
+          while (num49 < thisData.Odds.Count)
+            ++num49;
+          for (int index41 = 0; index41 < thisData.Trees.Count; ++index41)
+          {
+            GameObject gameObject = this.SpawnLoadObj(thisData.Trees[index41]);
+            if ((UnityEngine.Object) gameObject != (UnityEngine.Object) null)
+              gameObject.transform.SetParent(objectsOfType[index40].transform);
+          }
+          objectsOfType[index40].ChunkObtainLODs();
+        }
+        Main.Instance.Player.FootStepsAudio.CurrentTerrain = e_CurrentTerrain.Dirt;
+        Main.Instance.CanSaveFlags_remove("GeneratingOW");
+      }
       if (File.Exists(this.CurrentSavePath + "Player.chr"))
       {
         Main.Instance.Player.LoadFromFile(this.CurrentSavePath + "Player.chr");
@@ -1372,22 +1891,26 @@ public class Main : MonoBehaviour
       Main.Instance.Player.gameObject.SetActive(true);
       Main.Instance.GameplayMenu.RefreshPerks();
       List<Person> _spawnedPpl = new List<Person>();
-      foreach (string file in Directory.GetFiles(this.CurrentSavePath, "*_f.chr"))
+      foreach (string file in Directory.GetFiles(_folderWithNPCsToLoad, "*_f.chr"))
       {
         Person component = UnityEngine.Object.Instantiate<GameObject>(this.PersonPrefab).GetComponent<Person>();
         component.LoadFromFile(file);
         _spawnedPpl.Add(component);
         component.AddMoveBlocker("LOADING GRRRR");
+        component.Eyes.AddFlagger("OpenWorld");
+        component.SetCullLod(true);
       }
-      string[] files1 = Directory.GetFiles(this.CurrentSavePath, "*_m.chr");
-      for (int index = 0; index < files1.Length; ++index)
+      string[] files = Directory.GetFiles(_folderWithNPCsToLoad, "*_m.chr");
+      for (int index = 0; index < files.Length; ++index)
       {
-        if (!(Path.GetFileName(files1[index]) == "Player_m.chr"))
+        if (!(Path.GetFileName(files[index]) == "Player_m.chr"))
         {
           Person component = UnityEngine.Object.Instantiate<GameObject>(this.PersonGuyPrefab).GetComponent<Person>();
-          component.LoadFromFile(files1[index]);
+          component.LoadFromFile(files[index]);
           _spawnedPpl.Add(component);
           component.AddMoveBlocker("LOADING GRRRR");
+          component.Eyes.AddFlagger("OpenWorld");
+          component.SetCullLod(true);
         }
       }
       Main.RunInSeconds((Action) (() =>
@@ -1396,86 +1919,48 @@ public class Main : MonoBehaviour
         Main.Instance.PreloadCam.SetActive(true);
         Main.RunInNextFrame((Action) (() => Main.Instance.PreloadCam.SetActive(false)), 5);
       }), 1f);
-      string[] files2 = Directory.GetFiles(this.CurrentSavePath, "*.obj");
-      string[] strArray1 = File.Exists(this.CurrentSavePath + "defaultsIDs.txt") ? File.ReadAllLines(this.CurrentSavePath + "defaultsIDs.txt") : File.ReadAllLines(Main.AssetsFolder + "/Data/build6defaultsID.txt");
-      for (int index1 = 0; index1 < Main.Instance.SpawnedObjects.Count; ++index1)
+      List<string> stringList = new List<string>();
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(_folderWithNPCsToLoad, "*.obj"));
+      if (!this.OpenWorld)
+        stringList.AddRange((IEnumerable<string>) Directory.GetFiles(_folderWithNPCsToLoad, "*.nav"));
+      string[] array = stringList.ToArray();
+      if (!this.OpenWorld)
       {
-        if (Main.Instance.SpawnedObjects[index1].WorldSaveID != null && Main.Instance.SpawnedObjects[index1].WorldSaveID.Length > 0)
+        string[] strArray = File.Exists(this.CurrentSavePath + "defaultsIDs.txt") ? File.ReadAllLines(this.CurrentSavePath + "defaultsIDs.txt") : File.ReadAllLines(Main.AssetsFolder + "/Data/build6defaultsID.txt");
+        for (int index42 = 0; index42 < Main.Instance.SpawnedObjects.Count; ++index42)
         {
-          for (int index2 = 0; index2 < strArray1.Length; ++index2)
+          if (Main.Instance.SpawnedObjects[index42].WorldSaveID != null && Main.Instance.SpawnedObjects[index42].WorldSaveID.Length > 0)
           {
-            if (strArray1[index2] == Main.Instance.SpawnedObjects[index1].WorldSaveID && (UnityEngine.Object) Main.Instance.SpawnedObjects[index1].gameObject.GetComponentInChildren<Int_Storage>() == (UnityEngine.Object) null)
-              Main.Instance.SpawnedObjects[index1].gameObject.SetActive(false);
+            for (int index43 = 0; index43 < strArray.Length; ++index43)
+            {
+              if (strArray[index43] == Main.Instance.SpawnedObjects[index42].WorldSaveID && (UnityEngine.Object) Main.Instance.SpawnedObjects[index42].gameObject.GetComponentInChildren<Int_Storage>() == (UnityEngine.Object) null)
+                Main.Instance.SpawnedObjects[index42].gameObject.SetActive(false);
+            }
           }
         }
       }
-label_39:
-      for (int index3 = 0; index3 < files2.Length; ++index3)
-      {
-        GameObject prefab = (GameObject) null;
-        string[] Data = File.ReadAllLines(files2[index3]);
-        Main.Log("reading file=" + files2[index3]);
-        string str = Data[0];
-        Main.Log("_curWorldID=" + str);
-        if (str == null || str.Length == 0)
-        {
-          Main.Log("_curWorldID is null");
-          if (Data.Length > 3 && Data[1] != null && Data[1].Length != 0)
-          {
-            for (int index4 = 0; index4 < Main.Instance.AllPrefabs.Count; ++index4)
-            {
-              if (Main.Instance.AllPrefabs[index4].name == Data[1])
-              {
-                prefab = Main.Instance.AllPrefabs[index4];
-                break;
-              }
-            }
-            if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
-            {
-              Debug.LogError((object) ("Error: Prefab not found: " + Data[1]));
-            }
-            else
-            {
-              SaveableBehaviour component = Main.Spawn(prefab).GetComponent<SaveableBehaviour>();
-              if ((UnityEngine.Object) component != (UnityEngine.Object) null)
-                component.SaveableData = Data;
-            }
-          }
-        }
-        else
-        {
-          for (int index5 = 0; index5 < Main.Instance.SpawnedObjects.Count; ++index5)
-          {
-            if (Main.Instance.SpawnedObjects[index5].WorldSaveID == str)
-            {
-              Main.Instance.SpawnedObjects[index5].gameObject.SetActive(true);
-              Main.Instance.SpawnedObjects[index5].sd_LoadData(Data);
-              goto label_39;
-            }
-          }
-          Debug.Log((object) "_curWorldID was NOT found");
-        }
-      }
+      for (int index = 0; index < array.Length; ++index)
+        this.SpawnLoadObj(array[index]);
       if (Main.Instance.NewGameMenu.DificultySelected == 3)
       {
         if ((UnityEngine.Object) Main.Instance.NewGameMenu.Hard_PeopleToSpawn_Specials != (UnityEngine.Object) null)
           Main.Instance.NewGameMenu.Hard_PeopleToSpawn_Specials.SetActive(true);
       }
-      else
+      else if (!this.OpenWorld)
       {
         if ((UnityEngine.Object) Main.Instance.NewGameMenu.Med_PeopleToSpawn_Specials != (UnityEngine.Object) null)
           Main.Instance.NewGameMenu.Med_PeopleToSpawn_Specials.SetActive(true);
-        int num = int.Parse("10");
-        Debug.Log((object) ("Main.BuildVersionInt / _thisVersion " + num.ToString()));
+        int num50 = int.Parse("11");
+        Debug.Log((object) ("Main.BuildVersionInt / _thisVersion " + num50.ToString()));
         Debug.Log((object) ("_saveVersion " + _saveVersion.ToString()));
-        Debug.Log((object) ("(_saveVersion < _thisVersion) " + (_saveVersion < num).ToString()));
-        if (_saveVersion < num)
+        Debug.Log((object) ("(_saveVersion < _thisVersion) " + (_saveVersion < num50).ToString()));
+        if (_saveVersion < num50)
         {
           List<Transform> transformList = new List<Transform>();
           for (int index = 0; index < Main.Instance.NewGameMenu.Med_PeopleToSpawn.transform.childCount; ++index)
           {
             RandomNPCHere component = Main.Instance.NewGameMenu.Med_PeopleToSpawn.transform.GetChild(index).GetComponent<RandomNPCHere>();
-            if ((UnityEngine.Object) component != (UnityEngine.Object) null && component.BuildVersionAdded >= num)
+            if ((UnityEngine.Object) component != (UnityEngine.Object) null && component.BuildVersionAdded >= num50)
               transformList.Add(component.transform);
           }
           for (int index = 0; index < transformList.Count; ++index)
@@ -1492,200 +1977,226 @@ label_39:
       }
       if (File.Exists(this.CurrentSavePath + "data.bl"))
       {
-        int num = int.Parse(_data[_dataindex++]);
-        for (int index6 = 0; index6 < num; ++index6)
+label_73:
+        for (int index44 = 0; index44 < _rels.Count; ++index44)
         {
-          string str = _data[_dataindex++];
-          for (int index7 = 0; index7 < Main.Instance.SpawnedPeople.Count; ++index7)
+          string str = _rels[index44];
+          for (int index45 = 0; index45 < Main.Instance.SpawnedPeople.Count; ++index45)
           {
-            if (Main.Instance.SpawnedPeople[index7].WorldSaveID == str)
+            if (Main.Instance.SpawnedPeople[index45].WorldSaveID == str)
             {
-              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople[index7]);
+              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople[index45]);
+              goto label_73;
+            }
+          }
+          for (int index46 = 0; index46 < Main.Instance.SpawnedPeople_World.Count; ++index46)
+          {
+            if (Main.Instance.SpawnedPeople_World[index46].WorldSaveID == str)
+            {
+              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople_World[index46]);
               break;
             }
           }
         }
         this.Default_Area.OnEnter();
-        if (_data.Length > _dataindex)
+        if (_currentArea.Length != 0)
         {
-          string str = _data[_dataindex++];
-          if (str.Length != 0)
+          for (int index = 0; index < this.MapAreas.Count; ++index)
           {
-            for (int index = 0; index < this.MapAreas.Count; ++index)
+            if (this.MapAreas[index].name == _currentArea)
             {
-              if (this.MapAreas[index].name == str)
-              {
-                this.MapAreas[index].OnEnter();
-                break;
-              }
+              this.MapAreas[index].OnEnter();
+              break;
             }
           }
-          if (_data.Length > _dataindex)
-            this.Seconds = int.Parse(_data[_dataindex++]);
         }
       }
       Main.Log("reading missions");
-      string[] strArray2 = File.ReadAllLines(this.CurrentSavePath + "missions.txt");
-      int num1 = 0;
-      string[] strArray3 = strArray2;
-      int index8 = num1;
-      int num2 = index8 + 1;
-      _saveVersion = int.Parse(strArray3[index8]);
-      string[] strArray4 = strArray2;
-      int index9 = num2;
-      int num3 = index9 + 1;
-      int num4 = int.Parse(strArray4[index9]);
-      Main.Log("_allMissionsCount " + num4.ToString());
-      for (int index10 = 0; index10 < num4; ++index10)
+      string[] strArray24 = File.ReadAllLines(this.CurrentSavePath + "missions.txt");
+      int num51 = 0;
+      string[] strArray25 = strArray24;
+      int index47 = num51;
+      int num52 = index47 + 1;
+      _saveVersion = int.Parse(strArray25[index47]);
+      string[] strArray26 = strArray24;
+      int index48 = num52;
+      int num53 = index48 + 1;
+      int num54 = int.Parse(strArray26[index48]);
+      Main.Log("_allMissionsCount " + num54.ToString());
+      for (int index49 = 0; index49 < num54; ++index49)
       {
-        Main.Log("_allMissionsCount i " + index10.ToString());
-        Mission allMission = Main.Instance.AllMissions[index10];
-        string[] strArray5 = strArray2;
-        int index11 = num3;
-        int num5 = index11 + 1;
-        int num6 = strArray5[index11] == "1" ? 1 : 0;
-        allMission.CompletedMission = num6 != 0;
-        Main.Log("CompletedMission " + Main.Instance.AllMissions[index10].CompletedMission.ToString());
-        string[] strArray6 = strArray2;
-        int index12 = num5;
-        int num7 = index12 + 1;
-        if (strArray6[index12] != "None")
+        Main.Log("_allMissionsCount i " + index49.ToString());
+        Mission allMission = Main.Instance.AllMissions[index49];
+        string[] strArray27 = strArray24;
+        int index50 = num53;
+        int num55 = index50 + 1;
+        int num56 = strArray27[index50] == "1" ? 1 : 0;
+        allMission.CompletedMission = num56 != 0;
+        Main.Log("CompletedMission " + Main.Instance.AllMissions[index49].CompletedMission.ToString());
+        string[] strArray28 = strArray24;
+        int index51 = num55;
+        int num57 = index51 + 1;
+        if (strArray28[index51] != "None")
         {
-          int index13 = int.Parse(strArray2[num7 - 1]);
-          Main.Log("_curgoal " + index13.ToString());
-          if (index13 != 0 && index13 < Main.Instance.AllMissions[index10].Goals.Count)
+          int index52 = int.Parse(strArray24[num57 - 1]);
+          Main.Log("_curgoal " + index52.ToString());
+          if (index52 != 0 && index52 < Main.Instance.AllMissions[index49].Goals.Count)
           {
-            Main.Instance.AllMissions[index10].CurrentGoal = Main.Instance.AllMissions[index10].Goals[index13];
-            Main.Instance.AllMissions[index10].CurrentGoalIndex = index13;
+            Main.Instance.AllMissions[index49].CurrentGoal = Main.Instance.AllMissions[index49].Goals[index52];
+            Main.Instance.AllMissions[index49].CurrentGoalIndex = index52;
           }
         }
         else
           Main.Log("_curgoal None");
-        string[] strArray7 = strArray2;
-        int index14 = num7;
-        num3 = index14 + 1;
-        int num8 = int.Parse(strArray7[index14]);
-        Main.Log("_goalsCount " + num8.ToString());
-        for (int index15 = 0; index15 < num8; ++index15)
+        string[] strArray29 = strArray24;
+        int index53 = num57;
+        num53 = index53 + 1;
+        int num58 = int.Parse(strArray29[index53]);
+        Main.Log("_goalsCount " + num58.ToString());
+        for (int index54 = 0; index54 < num58; ++index54)
         {
-          if (index15 >= Main.Instance.AllMissions[index10].Goals.Count)
+          if (index54 >= Main.Instance.AllMissions[index49].Goals.Count)
           {
-            Main.Log($"broke at {index15.ToString()} / {Main.Instance.AllMissions[index10].Goals.Count.ToString()}");
-            num3 += 2;
+            Main.Log("broke at " + index54.ToString() + " / " + Main.Instance.AllMissions[index49].Goals.Count.ToString());
+            num53 += 2;
           }
           else
           {
-            MissionGoal goal1 = Main.Instance.AllMissions[index10].Goals[index15];
-            string[] strArray8 = strArray2;
-            int index16 = num3;
-            int num9 = index16 + 1;
-            int num10 = strArray8[index16] == "1" ? 1 : 0;
-            goal1.Completed = num10 != 0;
-            MissionGoal goal2 = Main.Instance.AllMissions[index10].Goals[index15];
-            string[] strArray9 = strArray2;
-            int index17 = num9;
-            num3 = index17 + 1;
-            int num11 = strArray9[index17] == "1" ? 1 : 0;
-            goal2.Failed = num11 != 0;
+            MissionGoal goal1 = Main.Instance.AllMissions[index49].Goals[index54];
+            string[] strArray30 = strArray24;
+            int index55 = num53;
+            int num59 = index55 + 1;
+            int num60 = strArray30[index55] == "1" ? 1 : 0;
+            goal1.Completed = num60 != 0;
+            MissionGoal goal2 = Main.Instance.AllMissions[index49].Goals[index54];
+            string[] strArray31 = strArray24;
+            int index56 = num59;
+            num53 = index56 + 1;
+            int num61 = strArray31[index56] == "1" ? 1 : 0;
+            goal2.Failed = num61 != 0;
           }
         }
       }
-      Main.Log("end1 _readindex " + num3.ToString());
-      int num12 = int.Parse(strArray2[num3++]);
-      Main.Log("_curMissionsCount " + num12.ToString());
+      Main.Log("end1 _readindex " + num53.ToString());
+      string[] strArray32 = strArray24;
+      int index57 = num53;
+      int num62 = index57 + 1;
+      int num63 = int.Parse(strArray32[index57]);
+      Main.Log("_curMissionsCount " + num63.ToString());
       this._MissionsToinit.Clear();
-      for (int index18 = 0; index18 < num12; ++index18)
+      for (int index58 = 0; index58 < num63; ++index58)
       {
-        Main.Log("_curMissionsCount i " + index18.ToString());
-        int index19 = int.Parse(strArray2[num3++]);
-        Main.Instance.GameplayMenu.CurrentMissions.Add(Main.Instance.AllMissions[index19]);
-        Main.Log("init AllMissions[" + index19.ToString());
-        if (!this._MissionsToinit.Contains(Main.Instance.AllMissions[index19]))
-          this._MissionsToinit.Add(Main.Instance.AllMissions[index19]);
+        Main.Log("_curMissionsCount i " + index58.ToString());
+        int index59 = int.Parse(strArray24[num62++]);
+        Main.Instance.GameplayMenu.CurrentMissions.Add(Main.Instance.AllMissions[index59]);
+        if (!this.OpenWorld)
+        {
+          Main.Log("init AllMissions[" + index59.ToString());
+          if (!this._MissionsToinit.Contains(Main.Instance.AllMissions[index59]))
+            this._MissionsToinit.Add(Main.Instance.AllMissions[index59]);
+        }
       }
       Main.Log("end2 ");
-      int index20 = int.Parse(strArray2[num3++]);
-      Main.Log("_curMission " + index20.ToString());
-      if (index20 != -1)
-        Main.Instance.GameplayMenu.CurrentMission = Main.Instance.AllMissions[index20];
+      string[] strArray33 = strArray24;
+      int index60 = num62;
+      int num64 = index60 + 1;
+      int index61 = int.Parse(strArray33[index60]);
+      Main.Log("_curMission " + index61.ToString());
+      if (index61 != -1)
+        Main.Instance.GameplayMenu.CurrentMission = Main.Instance.AllMissions[index61];
       Main.RunInNextFrame((Action) (() =>
       {
         Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
+        Main.Instance.NewGameMenu.ExtraLoading.SetActive(false);
         Main.Instance.OpenMenu("Gameplay");
-        for (int index21 = 0; index21 < _spawnedPpl.Count; ++index21)
-          _spawnedPpl[index21].RemoveMoveBlocker("LOADING GRRRR");
+        for (int index62 = 0; index62 < _spawnedPpl.Count; ++index62)
+          _spawnedPpl[index62].RemoveMoveBlocker("LOADING GRRRR");
       }));
     }));
-    if (File.Exists(this.CurrentSavePath + "Collectibles.txt"))
-    {
-      string[] strArray10 = File.ReadAllLines(this.CurrentSavePath + "Collectibles.txt");
-      int num13 = int.Parse(strArray10[0]);
-      int num14 = 1;
-      for (int index = 0; index < num13; ++index)
-        Main.Instance.GameplayMenu.HasBitchNotes10[index] = strArray10[num14++] == "1";
-      string[] strArray11 = strArray10;
-      int index22 = num14;
-      int num15 = index22 + 1;
-      int num16 = int.Parse(strArray11[index22]);
-      for (int index23 = 0; index23 < num16; ++index23)
-        Main.Instance.GameplayMenu.HasBitchNotes20[index23] = strArray10[num15++] == "1";
-      string[] strArray12 = strArray10;
-      int index24 = num15;
-      int num17 = index24 + 1;
-      int num18 = int.Parse(strArray12[index24]);
-      for (int index25 = 0; index25 < num18; ++index25)
-        Main.Instance.GameplayMenu.HasBitchNotes50[index25] = strArray10[num17++] == "1";
-      string[] strArray13 = strArray10;
-      int index26 = num17;
-      int num19 = index26 + 1;
-      int num20 = int.Parse(strArray13[index26]);
-      for (int index27 = 0; index27 < num20; ++index27)
-        Main.Instance.GameplayMenu.HasBitchNotes100[index27] = strArray10[num19++] == "1";
-      string[] strArray14 = strArray10;
-      int index28 = num19;
-      int num21 = index28 + 1;
-      int num22 = int.Parse(strArray14[index28]);
-      for (int index29 = 0; index29 < num22; ++index29)
-        Main.Instance.GameplayMenu.HasBitchNotes1000[index29] = strArray10[num21++] == "1";
-      string[] strArray15 = strArray10;
-      int index30 = num21;
-      int num23 = index30 + 1;
-      int num24 = int.Parse(strArray15[index30]);
-      for (int index31 = 0; index31 < num24; ++index31)
-        Main.Instance.GameplayMenu.HasBitchNotesProt[index31] = strArray10[num23++] == "1";
-      string[] strArray16 = strArray10;
-      int index32 = num23;
-      int num25 = index32 + 1;
-      int num26 = int.Parse(strArray16[index32]);
-      for (int index33 = 0; index33 < num26; ++index33)
-        Main.Instance.GameplayMenu.HasPostersBC[index33] = strArray10[num25++] == "1";
-      string[] strArray17 = strArray10;
-      int index34 = num25;
-      int num27 = index34 + 1;
-      int num28 = int.Parse(strArray17[index34]);
-      for (int index35 = 0; index35 < num28; ++index35)
-        Main.Instance.GameplayMenu.HasPostersBCLeg[index35] = strArray10[num27++] == "1";
-      string[] strArray18 = strArray10;
-      int index36 = num27;
-      int num29 = index36 + 1;
-      int num30 = int.Parse(strArray18[index36]);
-      for (int index37 = 0; index37 < num30; ++index37)
-        Main.Instance.GameplayMenu.HasPostersBCBEL[index37] = strArray10[num29++] == "1";
-      string[] strArray19 = strArray10;
-      int index38 = num29;
-      int num31 = index38 + 1;
-      int num32 = int.Parse(strArray19[index38]);
-      for (int index39 = 0; index39 < num32; ++index39)
-        Main.Instance.GameplayMenu.HasPostersBCCap[index39] = strArray10[num31++] == "1";
-    }
-    Main.Instance.NewGameMenu.GenerateDefaultsIDsForThisInstance();
-    Main.RunInNextFrame(new Action(this.GenerateNav), 3);
+    if (!this.OpenWorld)
+      Main.RunInNextFrame(new Action(this.GenerateNav), 3);
     Main.RunInNextFrame((Action) (() =>
     {
       for (int index = 0; index < this._MissionsToinit.Count; ++index)
         this._MissionsToinit[index].InitMission();
       this._MissionsToinit.Clear();
     }), 60);
+  }
+
+  public void SpawnLoadObj(string filename)
+  {
+    string[] Data = File.ReadAllLines(filename);
+    Main.Log("reading file=" + filename);
+    string str = Data[0];
+    Main.Log("_curWorldID=" + str);
+    if (str == null || str.Length == 0)
+    {
+      Main.Log("_curWorldID is null");
+      if (Data.Length <= 3 || Data[1] == null || Data[1].Length == 0)
+        return;
+      GameObject prefab = !Data[1].StartsWith("PLAN_") ? Main.Instance.GetPrefab(Data[1]) : this.GetPlan(Data[1]);
+      if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
+      {
+        Debug.LogError((object) ("Error: Prefab not found: " + Data[1]));
+      }
+      else
+      {
+        SaveableBehaviour[] componentsInChildren = Main.Spawn(prefab).GetComponentsInChildren<SaveableBehaviour>();
+        for (int index = 0; index < componentsInChildren.Length; ++index)
+        {
+          if (!componentsInChildren[index].DontSaveInMain && componentsInChildren[index].AddToSaveableOnStart)
+          {
+            if (componentsInChildren[index].HasByte2Data)
+              break;
+            componentsInChildren[index].SaveableData = Data;
+            break;
+          }
+        }
+      }
+    }
+    else
+    {
+      for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
+      {
+        if (Main.Instance.SpawnedObjects[index].WorldSaveID == str)
+        {
+          Main.Instance.SpawnedObjects[index].gameObject.SetActive(true);
+          Main.Instance.SpawnedObjects[index].sd_LoadData(Data);
+          return;
+        }
+      }
+      Debug.Log((object) "_curWorldID was NOT found");
+    }
+  }
+
+  public GameObject SpawnLoadObj(byte[] fileData)
+  {
+    GameObject gameObject = (GameObject) null;
+    using (MemoryStream input = new MemoryStream(fileData))
+    {
+      using (BinaryReader binaryReader = new BinaryReader((Stream) input))
+      {
+        int count1 = binaryReader.ReadInt32();
+        binaryReader.ReadBytes(count1);
+        int count2 = binaryReader.ReadInt32();
+        string str = Encoding.UTF8.GetString(binaryReader.ReadBytes(count2));
+        GameObject prefab = !str.StartsWith("PLAN_") ? Main.Instance.GetPrefab(str) : this.GetPlan(str);
+        if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
+        {
+          Debug.LogError((object) ("Error: Prefab not found: " + str));
+        }
+        else
+        {
+          SaveableBehaviour componentInChildren = (gameObject = Main.Spawn(prefab)).GetComponentInChildren<SaveableBehaviour>();
+          if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null)
+          {
+            if (componentInChildren.HasByte2Data)
+              componentInChildren.ByteSaveableData2 = fileData;
+          }
+        }
+      }
+    }
+    return gameObject;
   }
 
   public static void RunInNextFrame(Action action, int frames = 1)
@@ -1799,7 +2310,7 @@ label_39:
     string assetName,
     Main.CustomBundleAssetType assetType)
   {
-    Main.Log($"RegisterCustomBundle: {assetName} - {bundleName}");
+    Main.Log("RegisterCustomBundle: " + assetName + " - " + bundleName);
     this.RegisteredCustomBundles.Add(new Main.RegisteredCustomBundle()
     {
       BundleFileName = bundleName,
@@ -1831,7 +2342,7 @@ label_39:
       }
       catch (Exception ex)
       {
-        Main.Log($"SpawnFromCustomBundle ERROR: {ex.Message}\n{ex.StackTrace}");
+        Main.Log("SpawnFromCustomBundle ERROR: " + ex.Message + "\n" + ex.StackTrace);
       }
     }
     return (GameObject) null;
@@ -1849,7 +2360,7 @@ label_39:
 
   public void ReadTextLinesIn(string language)
   {
-    this._AllTextLines = File.ReadAllLines($"{Main.AssetsFolder}/Data/TextLines/{language}.txt");
+    this._AllTextLines = File.ReadAllLines(Main.AssetsFolder + "/Data/TextLines/" + language + ".txt");
     int num = 0;
     while (num < this._AllTextLines.Length)
     {
@@ -1933,7 +2444,12 @@ label_39:
       if ((UnityEngine.Object) saveableBehaviour == (UnityEngine.Object) null)
         saveableBehaviour = gameObject.GetComponent<SaveableBehaviour>();
       if ((UnityEngine.Object) saveableBehaviour != (UnityEngine.Object) null)
-        Main.Instance.SpawnedObjects.Add(saveableBehaviour);
+      {
+        if (Main.Instance.OpenWorld)
+          Main.Instance.SpawnedObjects_World.Add(saveableBehaviour);
+        else
+          Main.Instance.SpawnedObjects.Add(saveableBehaviour);
+      }
     }
     return gameObject;
   }
@@ -1954,7 +2470,7 @@ label_39:
   {
     char[] chArray = new char[length];
     for (int index = 0; index < length; ++index)
-      chArray[index] = (char) (48 /*0x30*/ + UnityEngine.Random.Range(0, 10));
+      chArray[index] = (char) (48 + UnityEngine.Random.Range(0, 10));
     return new string(chArray);
   }
 
@@ -1970,12 +2486,12 @@ label_39:
 
   public static string Vector32Str(Vector3 value)
   {
-    return $"({Main.Float2Str(value.x)},{Main.Float2Str(value.y)},{Main.Float2Str(value.z)})";
+    return "(" + Main.Float2Str(value.x) + "," + Main.Float2Str(value.y) + "," + Main.Float2Str(value.z) + ")";
   }
 
   public static string Color2Str(Color value)
   {
-    return $"({Main.Float2Str(value.r)},{Main.Float2Str(value.g)},{Main.Float2Str(value.b)},{Main.Float2Str(value.a)})";
+    return "(" + Main.Float2Str(value.r) + "," + Main.Float2Str(value.g) + "," + Main.Float2Str(value.b) + "," + Main.Float2Str(value.a) + ")";
   }
 
   public static void AdjustCharacterPosition(
@@ -2075,7 +2591,7 @@ label_39:
 
   public static bool GeneBoolSelect(bool value1, bool value2, float probability = 0.5f)
   {
-    return value1 == value2 ? value1 : (double) UnityEngine.Random.Range(0, 1) < (double) probability;
+    return value1 == value2 ? value1 : (double) UnityEngine.Random.Range(0.0f, 1f) < (double) probability;
   }
 
   public static float GeneSelect(float value1, float value2, bool randIsHalfVal = false)
@@ -2179,7 +2695,7 @@ label_39:
         randomFaceRange.GetRangesFrom(parent1.Neck, parent2.Neck);
         randomFaceRange.ApplyTo(component.Neck);
         randomFaceRange.GetRangesFrom(parent1.BoobLeft, parent2.BoobLeft);
-        randomFaceRange.ApplyTo(component.BoobLeft, component.BoobRight);
+        randomFaceRange.ApplyTo(component.BoobLeft, component.BoobRight, rotationGlitchFix: true);
         randomFaceRange.GetRangesFrom(parent1.NippleLeft, parent2.NippleLeft);
         randomFaceRange.ApplyTo(component.NippleLeft, component.NippleRight);
         randomFaceRange.GetRangesFrom(parent1.Hips, parent2.Hips);
@@ -2226,7 +2742,7 @@ label_39:
     bool flag5 = false;
     List<e_Fetish> list = Enum.GetValues(typeof (e_Fetish)).Cast<e_Fetish>().ToList<e_Fetish>();
     list.Remove(e_Fetish.MAX);
-    Person.Shuffle<e_Fetish>(list);
+    Person.Shuffle<e_Fetish>(ref list);
     for (int index = 0; index < num3; ++index)
     {
       if (list[index] == e_Fetish.Clean || list[index] == e_Fetish.Dirty)
@@ -2255,6 +2771,79 @@ label_39:
     component.Parent2 = flag3 ? (Person) null : parent2;
     component.PutFeet();
     return component;
+  }
+
+  public static void SaveNavMesh(string path)
+  {
+    NavMeshTriangulation triangulation = NavMesh.CalculateTriangulation();
+    using (BinaryWriter binaryWriter = new BinaryWriter((Stream) File.Open(path, FileMode.Create)))
+    {
+      binaryWriter.Write(triangulation.vertices.Length);
+      for (int index = 0; index < triangulation.vertices.Length; ++index)
+      {
+        binaryWriter.Write(triangulation.vertices[index].x);
+        binaryWriter.Write(triangulation.vertices[index].y);
+        binaryWriter.Write(triangulation.vertices[index].z);
+      }
+      binaryWriter.Write(triangulation.indices.Length);
+      for (int index = 0; index < triangulation.indices.Length; ++index)
+        binaryWriter.Write(triangulation.indices[index]);
+      binaryWriter.Write(triangulation.areas.Length);
+      for (int index = 0; index < triangulation.areas.Length; ++index)
+        binaryWriter.Write(triangulation.areas[index]);
+    }
+    Debug.Log((object) ("NavMesh saved (legacy) to: " + path));
+  }
+
+  public static void LoadNavMesh(string path)
+  {
+    if (!File.Exists(path))
+    {
+      Debug.LogError((object) ("NavMesh file not found: " + path));
+    }
+    else
+    {
+      Vector3[] vector3Array;
+      int[] numArray1;
+      using (BinaryReader binaryReader = new BinaryReader((Stream) File.Open(path, FileMode.Open)))
+      {
+        int length1 = binaryReader.ReadInt32();
+        vector3Array = new Vector3[length1];
+        for (int index = 0; index < length1; ++index)
+          vector3Array[index] = new Vector3(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
+        int length2 = binaryReader.ReadInt32();
+        numArray1 = new int[length2];
+        for (int index = 0; index < length2; ++index)
+          numArray1[index] = binaryReader.ReadInt32();
+        int length3 = binaryReader.ReadInt32();
+        int[] numArray2 = new int[length3];
+        for (int index = 0; index < length3; ++index)
+          numArray2[index] = binaryReader.ReadInt32();
+      }
+      Mesh mesh = new Mesh();
+      mesh.vertices = vector3Array;
+      mesh.triangles = numArray1;
+      mesh.RecalculateBounds();
+      NavMeshBuildSource navMeshBuildSource = new NavMeshBuildSource()
+      {
+        shape = NavMeshBuildSourceShape.Mesh,
+        sourceObject = (UnityEngine.Object) mesh,
+        transform = Matrix4x4.identity,
+        area = 0
+      };
+      List<NavMeshBuildSource> sources = new List<NavMeshBuildSource>();
+      sources.Add(navMeshBuildSource);
+      Bounds bounds = mesh.bounds;
+      NavMeshData navMeshData = NavMeshBuilder.BuildNavMeshData(NavMesh.GetSettingsByID(0), sources, bounds, Vector3.zero, Quaternion.identity);
+      if ((UnityEngine.Object) navMeshData != (UnityEngine.Object) null)
+      {
+        NavMesh.RemoveAllNavMeshData();
+        NavMesh.AddNavMeshData(navMeshData);
+        Debug.Log((object) "NavMesh loaded and rebuilt (legacy).");
+      }
+      else
+        Debug.LogError((object) "Failed to rebuild NavMesh.");
+    }
   }
 
   [Serializable]
@@ -2294,11 +2883,29 @@ label_39:
         part.localScale = new Vector3((double) this.SclMin.x == (double) this.SclMax.x ? part.localScale.x : UnityEngine.Random.Range(this.SclMin.x, this.SclMax.x), (double) this.SclMin.y == (double) this.SclMax.y ? part.localScale.y : UnityEngine.Random.Range(this.SclMin.y, this.SclMax.y), (double) this.SclMin.z == (double) this.SclMax.z ? part.localScale.z : UnityEngine.Random.Range(this.SclMin.z, this.SclMax.z));
     }
 
-    public void ApplyTo(Transform leftPart, Transform rightPart, bool wholeScale = false)
+    public void ApplyTo(
+      Transform leftPart,
+      Transform rightPart,
+      bool wholeScale = false,
+      bool rotationGlitchFix = false)
     {
       leftPart.localPosition = new Vector3((double) this.PosMin.x == (double) this.PosMax.x ? leftPart.localPosition.x : UnityEngine.Random.Range(this.PosMin.x, this.PosMax.x), (double) this.PosMin.y == (double) this.PosMax.y ? leftPart.localPosition.y : UnityEngine.Random.Range(this.PosMin.y, this.PosMax.y), (double) this.PosMin.z == (double) this.PosMax.z ? leftPart.localPosition.z : UnityEngine.Random.Range(this.PosMin.z, this.PosMax.z));
       rightPart.localPosition = new Vector3(-leftPart.localPosition.x, leftPart.localPosition.y, leftPart.localPosition.z);
-      leftPart.localEulerAngles = new Vector3((double) this.RotMin.x == (double) this.RotMax.x ? leftPart.localEulerAngles.x : UnityEngine.Random.Range(this.RotMin.x, this.RotMax.x), (double) this.RotMin.y == (double) this.RotMax.y ? leftPart.localEulerAngles.y : UnityEngine.Random.Range(this.RotMin.y, this.RotMax.y), (double) this.RotMin.z == (double) this.RotMax.z ? leftPart.localEulerAngles.z : UnityEngine.Random.Range(this.RotMin.z, this.RotMax.z));
+      if (rotationGlitchFix)
+      {
+        float[] numArray = new float[6]
+        {
+          (double) this.RotMin.x < 180.0 ? this.RotMin.x : this.RotMin.x - 360f,
+          (double) this.RotMax.x < 180.0 ? this.RotMax.x : this.RotMax.x - 360f,
+          (double) this.RotMin.y < 180.0 ? this.RotMin.y : this.RotMin.y - 360f,
+          (double) this.RotMax.y < 180.0 ? this.RotMax.y : this.RotMax.y - 360f,
+          (double) this.RotMin.z < 180.0 ? this.RotMin.z : this.RotMin.z - 360f,
+          (double) this.RotMax.z < 180.0 ? this.RotMax.z : this.RotMax.z - 360f
+        };
+        leftPart.localEulerAngles = new Vector3((double) this.RotMin.x == (double) this.RotMax.x ? leftPart.localEulerAngles.x : UnityEngine.Random.Range(numArray[0], numArray[1]), (double) this.RotMin.y == (double) this.RotMax.y ? leftPart.localEulerAngles.y : UnityEngine.Random.Range(numArray[2], numArray[3]), (double) this.RotMin.z == (double) this.RotMax.z ? leftPart.localEulerAngles.z : UnityEngine.Random.Range(numArray[4], numArray[5]));
+      }
+      else
+        leftPart.localEulerAngles = new Vector3((double) this.RotMin.x == (double) this.RotMax.x ? leftPart.localEulerAngles.x : UnityEngine.Random.Range(this.RotMin.x, this.RotMax.x), (double) this.RotMin.y == (double) this.RotMax.y ? leftPart.localEulerAngles.y : UnityEngine.Random.Range(this.RotMin.y, this.RotMax.y), (double) this.RotMin.z == (double) this.RotMax.z ? leftPart.localEulerAngles.z : UnityEngine.Random.Range(this.RotMin.z, this.RotMax.z));
       rightPart.localEulerAngles = new Vector3(leftPart.localEulerAngles.x, -leftPart.localEulerAngles.y, -leftPart.localEulerAngles.z);
       if (wholeScale)
       {
@@ -2334,8 +2941,15 @@ label_39:
       --this.Counter;
       if (this.Counter > 0)
         return;
-      this.TheAction();
-      UnityEngine.Object.Destroy((UnityEngine.Object) this.gameObject);
+      if (this.Counter <= -50)
+      {
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.gameObject);
+      }
+      else
+      {
+        this.TheAction();
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.gameObject);
+      }
     }
   }
 
@@ -2349,8 +2963,15 @@ label_39:
       this.Counter -= Time.deltaTime;
       if ((double) this.Counter > 0.0)
         return;
-      this.TheAction();
-      UnityEngine.Object.Destroy((UnityEngine.Object) this.gameObject);
+      if ((double) this.Counter <= -3.0)
+      {
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.gameObject);
+      }
+      else
+      {
+        this.TheAction();
+        UnityEngine.Object.Destroy((UnityEngine.Object) this.gameObject);
+      }
     }
 
     public void Stop()

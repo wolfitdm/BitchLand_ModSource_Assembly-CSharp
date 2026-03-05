@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_CityCharacters
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -40,6 +40,8 @@ public class bl_CityCharacters : MonoBehaviour
 
   public void SetPerson(Person person)
   {
+    if ((Object) person == (Object) null)
+      return;
     string name = person.Name;
     // ISSUE: reference to a compiler-generated method
     switch (\u003CPrivateImplementationDetails\u003E.ComputeStringHash(name))
@@ -281,7 +283,8 @@ public class bl_CityCharacters : MonoBehaviour
         this.Sarah.Fertility = 0.0f;
         this.Sarah.StoryModeFertility = 5f;
         this.Sarah.Favor = 10000;
-        this.Sarah.FootStepsAudio.gameObject.SetActive(false);
+        if ((Object) this.Sarah.FootStepsAudio.gameObject != (Object) null)
+          this.Sarah.FootStepsAudio.gameObject.SetActive(false);
         this.Sarah.CantBeHit = true;
         this.Sarah.Energy = 100f;
         this.Sarah.NoEnergyLoss = true;

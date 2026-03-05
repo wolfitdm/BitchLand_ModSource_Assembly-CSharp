@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Wild
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -28,7 +28,7 @@ public class Wild : BaseType
           person.StartingClothes.Add(this.Prefabs_Any[Random.Range(0, this.Prefabs_Any.Count)]);
       }
     }
-    base.ApplyTo(person, addClothing, addWeapon, addHair);
+    base.ApplyTo(person, addClothing, addWeapon, addHair, commingFrom);
     if ((Object) commingFrom != (Object) null && commingFrom.SpawnClean)
       return;
     switch (Random.Range(0, 7))
@@ -58,11 +58,17 @@ public class Wild : BaseType
         person.States[15] = true;
         break;
       case 5:
-        person.States[16 /*0x10*/] = true;
+        person.States[16] = true;
         break;
     }
     if (Random.Range(0, 3) == 0)
       person.States[20] = true;
     person.DirtySkin = true;
+  }
+
+  public override void GetAssignedto(Person person)
+  {
+    base.GetAssignedto(person);
+    person.State = Person_State.Free;
   }
 }

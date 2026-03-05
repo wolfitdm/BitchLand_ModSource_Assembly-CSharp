@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Terra.Nodes.Generation.VoronoiValleysNode
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using Terra.CoherentNoise;
 using Terra.CoherentNoise.Generation.Voronoi;
@@ -10,18 +10,19 @@ using Terra.Terrain;
 using XNode;
 
 #nullable disable
-namespace Terra.Nodes.Generation;
-
-[Node.CreateNodeMenu("Terrain/Noise/Voronoi/Valleys")]
-public class VoronoiValleysNode : AbsVoronoiNoiseNode
+namespace Terra.Nodes.Generation
 {
-  public override Generator GetGenerator()
+  [Node.CreateNodeMenu("Terrain/Noise/Voronoi/Valleys")]
+  public class VoronoiValleysNode : AbsVoronoiNoiseNode
   {
-    VoronoiValleys2D generator = new VoronoiValleys2D(TerraSettings.GenerationSeed);
-    generator.Frequency = this.Frequency;
-    generator.Period = (int) this.Period;
-    return (Generator) generator;
-  }
+    public override Generator GetGenerator()
+    {
+      VoronoiValleys2D generator = new VoronoiValleys2D(TerraSettings.GenerationSeed);
+      generator.Frequency = this.Frequency;
+      generator.Period = (int) this.Period;
+      return (Generator) generator;
+    }
 
-  public override string GetTitle() => "Voronoi Valleys";
+    public override string GetTitle() => "Voronoi Valleys";
+  }
 }

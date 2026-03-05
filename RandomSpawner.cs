@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: RandomSpawner
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 2DEADBA5-E10A-4E88-A1ED-0D4DF3F1CF20
-// Assembly location: E:\sw_games\build11_0\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -11,6 +11,7 @@ public class RandomSpawner : MonoBehaviour
 {
   public GameObject[] RandomObjects;
   public bool SpawnNonDespawnable;
+  public bool SpawnNonSaveble;
 
   private void Start()
   {
@@ -19,6 +20,13 @@ public class RandomSpawner : MonoBehaviour
     transform.rotation = this.transform.rotation;
     if (this.SpawnNonDespawnable)
       transform.GetComponentInChildren<bl_MinableObject>().SpawnNonDespawnable = true;
+    if (this.SpawnNonSaveble)
+    {
+      bl_MinableObject componentInChildren = transform.GetComponentInChildren<bl_MinableObject>();
+      componentInChildren.DontSaveInMain = true;
+      componentInChildren.AddToSaveableOnStart = false;
+      componentInChildren.enabled = false;
+    }
     Object.Destroy((Object) this.gameObject);
   }
 }

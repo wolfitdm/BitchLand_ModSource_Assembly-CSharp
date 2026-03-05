@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: CFX_SpawnSystem
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,7 +26,7 @@ public class CFX_SpawnSystem : MonoBehaviour
     int instanceId = sourceObj.GetInstanceID();
     if (!CFX_SpawnSystem.instance.poolCursors.ContainsKey(instanceId))
     {
-      Debug.LogError((object) $"[CFX_SpawnSystem.GetNextObject()] Object hasn't been preloaded: {sourceObj.name} (ID:{instanceId.ToString()})\n", (Object) CFX_SpawnSystem.instance);
+      Debug.LogError((object) ("[CFX_SpawnSystem.GetNextObject()] Object hasn't been preloaded: " + sourceObj.name + " (ID:" + instanceId.ToString() + ")\n"), (Object) CFX_SpawnSystem.instance);
       return (GameObject) null;
     }
     int poolCursor = CFX_SpawnSystem.instance.poolCursors[instanceId];
@@ -45,14 +45,14 @@ public class CFX_SpawnSystem : MonoBehaviour
       while (poolCursor != num);
       if (CFX_SpawnSystem.instance.instantiateIfNeeded)
       {
-        Debug.Log((object) $"[CFX_SpawnSystem.GetNextObject()] A new instance has been created for \"{sourceObj.name}\" because no active instance were found in the pool.\n", (Object) CFX_SpawnSystem.instance);
+        Debug.Log((object) ("[CFX_SpawnSystem.GetNextObject()] A new instance has been created for \"" + sourceObj.name + "\" because no active instance were found in the pool.\n"), (Object) CFX_SpawnSystem.instance);
         CFX_SpawnSystem.PreloadObject(sourceObj);
         List<GameObject> instantiatedObject = CFX_SpawnSystem.instance.instantiatedObjects[instanceId];
         nextObject = instantiatedObject[instantiatedObject.Count - 1];
       }
       else
       {
-        Debug.LogWarning((object) $"[CFX_SpawnSystem.GetNextObject()] There are no active instances available in the pool for \"{sourceObj.name}\"\nYou may need to increase the preloaded object count for this prefab?", (Object) CFX_SpawnSystem.instance);
+        Debug.LogWarning((object) ("[CFX_SpawnSystem.GetNextObject()] There are no active instances available in the pool for \"" + sourceObj.name + "\"\nYou may need to increase the preloaded object count for this prefab?"), (Object) CFX_SpawnSystem.instance);
         return (GameObject) null;
       }
     }
@@ -108,7 +108,7 @@ label_10:
     int instanceId = sourceObject.GetInstanceID();
     if (!this.instantiatedObjects.ContainsKey(instanceId))
     {
-      Debug.LogWarning((object) $"[CFX_SpawnSystem.removeObjectsFromPool()] There aren't any preloaded object for: {sourceObject.name} (ID:{instanceId.ToString()})\n", (Object) this.gameObject);
+      Debug.LogWarning((object) ("[CFX_SpawnSystem.removeObjectsFromPool()] There aren't any preloaded object for: " + sourceObject.name + " (ID:" + instanceId.ToString() + ")\n"), (Object) this.gameObject);
     }
     else
     {

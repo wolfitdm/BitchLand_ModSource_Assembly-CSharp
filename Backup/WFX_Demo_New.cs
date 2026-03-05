@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: WFX_Demo_New
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections;
 using System.Collections.Generic;
@@ -146,7 +146,7 @@ public class WFX_Demo_New : MonoBehaviour
     string str1 = num.ToString("00");
     num = this.ParticleExamples.Length;
     string str2 = num.ToString("00");
-    string str3 = $"{str1}/{str2}";
+    string str3 = string.Format("{0}/{1}", (object) str1, (object) str2);
     effectIndexLabel.text = str3;
   }
 

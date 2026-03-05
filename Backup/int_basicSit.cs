@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_basicSit
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: E6BFF86D-6970-4C7D-A7B5-75A5C22D94C1
-// Assembly location: C:\Users\CdemyTeilnehmer\Downloads\BitchLand_build10e_preinstalledmods\build10e\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
+// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +18,8 @@ public class int_basicSit : Interactible
   public bool Attach;
   public bool FakeAttach;
   public bool SitTimeDependsOnPreference;
+  public bool Unleashes;
+  public bool Unrestrains;
   public Collider RemoveColOnUse;
   public string LeaveText = "Stand";
   public bool LoopAnims;
@@ -82,6 +84,11 @@ public class int_basicSit : Interactible
       this.AdjustCharacterPosition(this.HeightRegulator, this.InteractingPerson.RagdollParts[this.HeightRegRagBone].transform);
     this.PlayRandomAnimation();
     this.enabled = this.LoopAnims || this.PlayAnimOnce;
+    if (this.Unrestrains)
+      person.Unrestrain();
+    if (!this.Unleashes || !person.Leashed)
+      return;
+    person.ThisPersonInt.Unleash();
   }
 
   public void Thread_LeaveKey()
@@ -120,17 +127,24 @@ public class int_basicSit : Interactible
 
   private void Update()
   {
-    if ((double) this.InteractingPerson.Anim.GetCurrentAnimatorStateInfo(0).normalizedTime < (double) this.CurrentAnim.RunMoreTimes || this.InteractingPerson.Anim.IsInTransition(0))
-      return;
-    if (this.LoopAnims)
+    if ((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null)
     {
-      this.PlayRandomAnimation();
+      this.enabled = false;
     }
     else
     {
-      if (!this.PlayAnimOnce)
+      if ((double) this.InteractingPerson.Anim.GetCurrentAnimatorStateInfo(0).normalizedTime < (double) this.CurrentAnim.RunMoreTimes || this.InteractingPerson.Anim.IsInTransition(0))
         return;
-      this.StopInteracting();
+      if (this.LoopAnims)
+      {
+        this.PlayRandomAnimation();
+      }
+      else
+      {
+        if (!this.PlayAnimOnce)
+          return;
+        this.StopInteracting();
+      }
     }
   }
 
