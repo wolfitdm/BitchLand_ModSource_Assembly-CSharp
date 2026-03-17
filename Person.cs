@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Person
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using DitzelGames.FastIK;
 using System;
@@ -257,6 +257,7 @@ public class Person : SaveableBehaviour
   public bool TEMP_SEXUPDATE_OFF;
   public bool TEMP_UPDATE_OFF;
   public bool TEMP_RUNTIME_OFF;
+  public float OUTOFBOUNDSCOUNTER;
   public float DecideTimer;
   public bool _ShootBlind;
   public float CombatDistance = 50f;
@@ -409,6 +410,7 @@ public class Person : SaveableBehaviour
             this.PersonType = Main.Instance.PersonTypes[2];
           this.TempLivingSpace = this.transform.position;
           this.WeaponInv.DropAllWeapons();
+          this.StopFighting();
           return true;
         }
       }
@@ -445,7 +447,7 @@ public class Person : SaveableBehaviour
       this.States[0] = true;
     using (BinaryWriter writer = new BinaryWriter((Stream) File.Open(filename, FileMode.Create)))
     {
-      writer.Write("11");
+      writer.Write("12");
       writer.Write(this.WorldSaveID);
       writer.Write(this.Name);
       this.WriteVector3(writer, this.transform.position);
@@ -472,6 +474,11 @@ public class Person : SaveableBehaviour
             str = str + ";" + this.EquippedClothes[index].sv_SaveData();
         }
         writer.Write(str);
+      }
+      if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null)
+      {
+        string[] saveableData = this.CurrentBackpack.SaveableData;
+        File.WriteAllLines(filename.Replace(".chr", ".backpack"), saveableData);
       }
       for (int index = 0; index < this.AllFaceBones.Length; ++index)
       {
@@ -1040,6 +1047,13 @@ label_20:
             }
           }
         }
+        string str = filename.Replace(".chr", ".backpack");
+        if (File.Exists(str))
+        {
+          GameObject prefab = Main.Instance.SpawnLoadObj(str);
+          if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
+            this.DressClothe(prefab, false);
+        }
       }
       catch (Exception ex)
       {
@@ -1056,7 +1070,7 @@ label_20:
   public override string[] sd_SaveData(char SlitChar = ':')
   {
     List<string> stringList1 = new List<string>();
-    stringList1.Add("11");
+    stringList1.Add("12");
     stringList1.Add(this.WorldSaveID);
     stringList1.Add(this.Name);
     stringList1.Add(this.transform.position.ToString());
@@ -1116,7 +1130,7 @@ label_20:
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     base.sd_LoadData(Data, SlitChar);
-    if (Data[0] != "11")
+    if (Data[0] != "12")
       Debug.LogError((object) "DiferentVersion");
     this.WorldSaveID = Data[1];
     this.Name = Data[2];
@@ -1642,7 +1656,7 @@ label_20:
 label_93:
       if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
       {
-        if (assetName != "invmouthopen2")
+        if (assetName != "invmouthopen2" && !assetName.StartsWith("internal_"))
         {
           Debug.LogError((object) ("Missing Asset> " + this.Name + " > \"" + assetName + "\""));
           Main.Instance.GameplayMenu.MissingModsNotif.SetActive(true);
@@ -2319,7 +2333,8 @@ label_93:
     if ((UnityEngine.Object) this.InventoryStorage != (UnityEngine.Object) null)
     {
       this.InventoryStorage.AddBlocker("Awake");
-      this.StartSleepingSex.AddBlocker("Awake");
+      if ((UnityEngine.Object) this.StartSleepingSex != (UnityEngine.Object) null)
+        this.StartSleepingSex.AddBlocker("Awake");
     }
     Girl component3 = this.GetComponent<Girl>();
     if ((UnityEngine.Object) component3 != (UnityEngine.Object) null)
@@ -2407,7 +2422,8 @@ label_93:
     if ((UnityEngine.Object) this.InventoryStorage != (UnityEngine.Object) null)
     {
       this.InventoryStorage.RemoveBlocker("Awake");
-      this.StartSleepingSex.RemoveBlocker("Awake");
+      if ((UnityEngine.Object) this.StartSleepingSex != (UnityEngine.Object) null)
+        this.StartSleepingSex.RemoveBlocker("Awake");
     }
     this.Eyes.gameObject.SetActive(false);
     if (!this.CinematicCharacter)
@@ -3194,6 +3210,19 @@ label_29:
       if (!this.TEMP_HANDLENEEDS_OFF)
         this.HandleNeeds();
     }
+    if (Main.Instance.OpenWorld && !this.IsPlayer && this.navMesh.enabled && !this.navMesh.isOnNavMesh)
+    {
+      if (Physics.Raycast(this.transform.position - new Vector3(0.0f, 0.02f, 0.0f), this.transform.TransformDirection(Vector3.down), out RaycastHit _, 1f, (int) Main.Instance.RoomSizeCheckLayers, QueryTriggerInteraction.Collide))
+      {
+        this.OUTOFBOUNDSCOUNTER = 0.0f;
+      }
+      else
+      {
+        this.OUTOFBOUNDSCOUNTER += Time.deltaTime;
+        if ((double) this.OUTOFBOUNDSCOUNTER > 10.0)
+          this.TheHealth.Incapacitate();
+      }
+    }
     if (!this.InCombat)
     {
       if (!this.IsPlayer)
@@ -3884,6 +3913,7 @@ label_29:
       }
     }
     GameObject gameObject = !spawnNew ? prefab : Main.Spawn(prefab);
+    gameObject.SetActive(true);
     SkinnedMeshRenderer[] componentsInChildren = gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(true);
     Dressable componentInChildren2 = gameObject.GetComponentInChildren<Dressable>();
     switch (componentInChildren2.GenderFor)
@@ -4303,6 +4333,7 @@ label_29:
     this.GetClothingCondition();
     if ((UnityEngine.Object) this.ThisPersonInt != (UnityEngine.Object) null && this.CanMove)
       this.ThisPersonInt.RestrainedCheck();
+    gameObject.gameObject.SetActive(true);
     return gameObject;
   }
 

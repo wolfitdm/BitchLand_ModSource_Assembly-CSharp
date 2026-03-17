@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: BackPack
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,13 @@ public class BackPack : Dressable
   {
     base.OnUndressed();
     this.ThisMulti.CanInteract = true;
+  }
+
+  public override void SaveToFile(string filename)
+  {
+    if (this.Equipped)
+      return;
+    base.SaveToFile(filename);
   }
 
   public override string[] sd_SaveData(char SlitChar = ':')
@@ -51,28 +58,17 @@ public class BackPack : Dressable
     Transform transform = this.transform;
     transform.position = Main.ParseVector3(Data[2]);
     transform.eulerAngles = Main.ParseVector3(Data[3]);
-    string str1 = Data[4];
-    if (str1 != "NULL")
-    {
-      for (int index = 0; index < Main.Instance.SpawnedPeople.Count; ++index)
-      {
-        if (Main.Instance.SpawnedPeople[index].WorldSaveID == str1)
-        {
-          Main.Instance.SpawnedPeople[index].DressClothe(this.gameObject, false);
-          break;
-        }
-      }
-    }
+    int num1 = Data[4] != "NULL" ? 1 : 0;
     this._CurrentLoadingIndex = 5;
-    int num = int.Parse(Data[this._CurrentLoadingIndex++]);
-    for (int index = 0; index < num; ++index)
+    int num2 = int.Parse(Data[this._CurrentLoadingIndex++]);
+    for (int index = 0; index < num2; ++index)
     {
-      string str2 = Data[this._CurrentLoadingIndex++];
-      if (str2 != null && str2.Length != 0)
+      string str = Data[this._CurrentLoadingIndex++];
+      if (str != null && str.Length != 0)
       {
-        if (str2.Contains("="))
+        if (str.Contains("="))
         {
-          string[] Data1 = str2.Split("=", StringSplitOptions.None);
+          string[] Data1 = str.Split("=", StringSplitOptions.None);
           GameObject prefab = Main.Instance.GetPrefab(Data1[1]);
           if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
           {
@@ -85,7 +81,7 @@ public class BackPack : Dressable
         }
         else
         {
-          GameObject prefab = Main.Instance.GetPrefab(str2);
+          GameObject prefab = Main.Instance.GetPrefab(str);
           if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
             this.ThisStorage.AddItem(Main.Spawn(prefab, saveable: true));
         }

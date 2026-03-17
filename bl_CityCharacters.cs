@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_CityCharacters
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -220,6 +220,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.War.Energy = 100f;
         this.War.NoEnergyLoss = true;
         this.War.RefreshColors();
+        this.War.PersonType = Main.Instance.PersonTypes[7];
         this.WarPos = this.War.transform.position;
         Main.Instance.GameplayMenu.MapTrackers[0] = this.War.transform;
         return;
@@ -238,6 +239,11 @@ public class bl_CityCharacters : MonoBehaviour
         this.Sadie.ThisPersonInt.SetDefaultInteraction();
         this.Sadie.TheHealth.AlwaysDie = true;
         Object.FindObjectOfType<Mis_Zea2_refs>().SadieSpawn(this.Sadie);
+        return;
+      case 2476545120:
+        if (!(name == "Rit"))
+          return;
+        this.Rit.PersonType = Main.Instance.PersonTypes[7];
         return;
       case 2512061727:
         if (!(name == "Merussy"))
@@ -261,6 +267,11 @@ public class bl_CityCharacters : MonoBehaviour
         this.Lai._DirtySkin = false;
         this.Lai.SetBodyTexture();
         return;
+      case 3583585522:
+        if (!(name == "Jeanne"))
+          return;
+        this.Jeanne.PersonType = Main.Instance.PersonTypes[7];
+        return;
       case 3633252167:
         if (!(name == "Ely"))
           return;
@@ -275,6 +286,7 @@ public class bl_CityCharacters : MonoBehaviour
         this.Ely.NoEnergyLoss = true;
         this.Ely.VoicePitch = 0.96f;
         this.Ely.CantBeRestrained = true;
+        this.Ely.PersonType = Main.Instance.PersonTypes[7];
         return;
       case 3919353448:
         if (!(name == "Sarah"))
@@ -302,6 +314,7 @@ public class bl_CityCharacters : MonoBehaviour
     this.Merussy.Energy = 100f;
     this.Merussy.NoEnergyLoss = true;
     this.Merussy.CantBeRestrained = true;
+    this.Merussy.PersonType = Main.Instance.PersonTypes[7];
     if ((double) UI_Customize.FutaChanceValue != 0.0)
       return;
     ((Girl) this.Merussy).Futa = false;

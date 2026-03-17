@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Main
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -21,9 +21,9 @@ using UnityStandardAssets.Cameras;
 #nullable disable
 public class Main : MonoBehaviour
 {
-  public const string BuildVersion = "11.a";
-  public const string BuildVersionInt = "11";
-  public const string BuildExpireDate = "2026/06/06";
+  public const string BuildVersion = "11.c";
+  public const string BuildVersionInt = "12";
+  public const string BuildExpireDate = "2026/07/07";
   public static bool DebugLog;
   public static Main Instance;
   public bool FirstRunThisVersion;
@@ -36,6 +36,7 @@ public class Main : MonoBehaviour
   public MonoBehaviour Nav2;
   public LayerMask ResourceCheckLayers;
   public LayerMask RoomSizeCheckLayers;
+  public LayerMask Layers_LookForNPCs;
   public GameObject PreloadCam;
   public UI_Gameplay GameplayMenu;
   public UI_NewGame NewGameMenu;
@@ -369,6 +370,7 @@ public class Main : MonoBehaviour
   public bool OpenWorld;
   public int CurrentSection;
   public AudioClip PickAxeSound;
+  public static bool StrictFileNames;
   public List<Action> MainThreads = new List<Action>();
   public List<Action> MainThreads_Late = new List<Action>();
   public bool MusicInCombat;
@@ -403,6 +405,12 @@ public class Main : MonoBehaviour
   public static bool LoadMedFromHard;
   public static bool LoadMedFromHard_Escape;
   public List<Mission> _MissionsToinit = new List<Mission>();
+  public static string _INTERNAL_CurrentSavePath;
+  public static bool _INTERNAL_LoadCity;
+  public static bool _INTERNAL_LoadSpecificSection;
+  public static int _INTERNAL_SectionToLoad;
+  public int _SaveVersionLoaded;
+  public Action _AfterLoadGame;
   public List<Main.RegisteredCustomBundle> RegisteredCustomBundles = new List<Main.RegisteredCustomBundle>();
   public List<bl_WorkJobManager> AllJobs = new List<bl_WorkJobManager>();
   public List<bl_HangZone> AllHomes = new List<bl_HangZone>();
@@ -611,6 +619,7 @@ public class Main : MonoBehaviour
   public void Start()
   {
     Main.Instance = this;
+    Main.StrictFileNames = Directory.GetFiles(Main.AssetsFolder + "/Data/FileChecking/").Length == 1;
     this.UpdateAllPrefabsIndexes();
     this.RandomizeFloatSafes();
     if (File.Exists(Main.AssetsFolder + "/debuglog.txt"))
@@ -732,7 +741,7 @@ public class Main : MonoBehaviour
       }
     }
     this.GetCustomTextures();
-    if (this.StartOnMenu != null && this.StartOnMenu.Length > 0)
+    if (!Main._INTERNAL_LoadCity && !Main._INTERNAL_LoadSpecificSection && this.StartOnMenu != null && this.StartOnMenu.Length > 0)
       this.OpenMenu(this.StartOnMenu);
     if ((UnityEngine.Object) this.PreloadCam != (UnityEngine.Object) null)
     {
@@ -747,40 +756,53 @@ public class Main : MonoBehaviour
       this.NewGameMenu.DificultySelected = 2;
       this.NewGameMenu.FinallyStartGamePlay();
     }
-    if (!Main.LoadMedFromHard)
-      return;
-    Main.LoadMedFromHard = false;
-    this.GlobalVars.Add("ReleasedFromHardmode", "1");
-    if (Main.LoadMedFromHard_Escape)
-      this.GlobalVars.Add("EscapedFromHardmode", "1");
-    Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
-    this.MainMenuCam.gameObject.SetActive(false);
-    Main.RunInNextFrame((Action) (() =>
+    if (Main.LoadMedFromHard)
     {
-      string[] strArray = File.ReadAllLines(Main.AssetsFolder + "/HardToMedTransfer/data.txt");
-      Main.Instance.CustomizeMenu.GenderSettings.value = int.Parse(strArray[1]);
-      Main.Instance.CustomizeMenu.FutaChanceSlider.value = Main.ParseFloat(strArray[2]);
-      this.NewGameMenu.DificultySelected = 2;
-      this.NewGameMenu.FinallyStartGamePlay();
-      if (File.Exists(Main.AssetsFolder + "/HardToMedTransfer/Player.chr"))
+      Main.LoadMedFromHard = false;
+      this.GlobalVars.Add("ReleasedFromHardmode", "1");
+      if (Main.LoadMedFromHard_Escape)
+        this.GlobalVars.Add("EscapedFromHardmode", "1");
+      Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
+      this.MainMenuCam.gameObject.SetActive(false);
+      Main.RunInNextFrame((Action) (() =>
       {
-        Main.Instance.Player.LoadFromFile(Main.AssetsFolder + "/HardToMedTransfer/Player.chr");
-      }
-      else
-      {
-        Main.Instance.Player = Main.Instance.MalePlayer;
-        Main.Instance.Player.LoadFromFile(Main.AssetsFolder + "/HardToMedTransfer/Player_m.chr");
-      }
-      Main.Instance.GameplayMenu.RefreshPerks();
-      this.AllMissions[1].Goals[0].Completed = true;
-      this.AllMissions[1].Goals[1].Completed = true;
-      this.AllMissions[1].Goals[2].Completed = true;
-      this.AllMissions[1].Goals[3].Completed = true;
-      this.AllMissions[1].Goals[4].Completed = true;
-      this.GameplayMenu.StartMission(this.AllMissions[1]);
-      this.Default_Area.OnEnter();
-      Main.RunInNextFrame((Action) (() => this.SaveGame(true)), 30);
-    }), 2);
+        string[] strArray = File.ReadAllLines(Main.AssetsFolder + "/HardToMedTransfer/data.txt");
+        Main.Instance.CustomizeMenu.GenderSettings.value = int.Parse(strArray[1]);
+        Main.Instance.CustomizeMenu.FutaChanceSlider.value = Main.ParseFloat(strArray[2]);
+        this.NewGameMenu.DificultySelected = 2;
+        this.NewGameMenu.FinallyStartGamePlay();
+        if (File.Exists(Main.AssetsFolder + "/HardToMedTransfer/Player.chr"))
+        {
+          Main.Instance.Player.LoadFromFile(Main.AssetsFolder + "/HardToMedTransfer/Player.chr");
+        }
+        else
+        {
+          Main.Instance.Player = Main.Instance.MalePlayer;
+          Main.Instance.Player.LoadFromFile(Main.AssetsFolder + "/HardToMedTransfer/Player_m.chr");
+        }
+        Main.Instance.GameplayMenu.RefreshPerks();
+        this.AllMissions[1].Goals[0].Completed = true;
+        this.AllMissions[1].Goals[1].Completed = true;
+        this.AllMissions[1].Goals[2].Completed = true;
+        this.AllMissions[1].Goals[3].Completed = true;
+        this.AllMissions[1].Goals[4].Completed = true;
+        this.GameplayMenu.StartMission(this.AllMissions[1]);
+        this.Default_Area.OnEnter();
+        Main.RunInNextFrame((Action) (() => this.SaveGame(true)), 30);
+      }), 2);
+    }
+    if (Main._INTERNAL_LoadCity)
+    {
+      this.CurrentSavePath = Main._INTERNAL_CurrentSavePath;
+      this.LoadGame(this.CurrentSavePath);
+    }
+    else
+    {
+      if (!Main._INTERNAL_LoadSpecificSection)
+        return;
+      this.CurrentSavePath = Main._INTERNAL_CurrentSavePath;
+      this.LoadGame(this.CurrentSavePath);
+    }
   }
 
   public bool EnableFreeWorld(bool value)
@@ -890,10 +912,7 @@ public class Main : MonoBehaviour
     {
       this.AutoSaveTimer += Time.deltaTime;
       if (!this.AutosaveWarningShown && (double) this.AutoSaveTimer > (double) this.AutoSaveTimerMax - 3.0)
-      {
         this.AutosaveWarningShown = true;
-        Main.Instance.GameplayMenu.ShowNotification("Autosaving...");
-      }
       if ((double) this.AutoSaveTimer > (double) this.AutoSaveTimerMax)
       {
         this.AutoSaveTimer = 0.0f;
@@ -1112,27 +1131,24 @@ public class Main : MonoBehaviour
   {
     if (UI_Settings._SpeedrunValue != 0)
       return;
-    this.AutoSaveTimer = 0.0f;
-    if (autosave)
-    {
-      this.CurrentSavePath = Main.AssetsFolder + "/Temp_autosave/";
-      if (Directory.Exists(this.CurrentSavePath))
-        Directory.Delete(this.CurrentSavePath, true);
-    }
-    else
+    if ((this.CurrentSavePath == null ? 0 : (this.CurrentSavePath.Length > 0 ? 1 : 0)) == 0)
     {
       int num = 0;
       do
       {
-        this.CurrentSavePath = Main.AssetsFolder + "/Saves/" + num++.ToString("0000") + "/";
+        this.CurrentSavePath = Main.AssetsFolder + "/Saves/" + num++.ToString("0000");
       }
       while (Directory.Exists(this.CurrentSavePath));
     }
-    string currentSavePath = this.CurrentSavePath;
+    this.AutoSaveTimer = 0.0f;
+    if (autosave)
+      return;
+    string path1 = this.CurrentSavePath + "/";
     Main.Instance.EnableAfterSave.Clear();
-    Directory.CreateDirectory(this.CurrentSavePath);
-    File.WriteAllBytes(this.CurrentSavePath + "pic.png", ScreenCapture.CaptureScreenshotAsTexture().EncodeToPNG());
-    File.WriteAllLines(this.CurrentSavePath + "defaultsIDs.txt", Main.Instance.NewGameMenu.DefaultIDs.ToArray());
+    Directory.CreateDirectory(path1);
+    byte[] png = ScreenCapture.CaptureScreenshotAsTexture().EncodeToPNG();
+    File.WriteAllBytes(path1 + "pic.png", png);
+    File.WriteAllLines(path1 + "defaultsIDs.txt", Main.Instance.NewGameMenu.DefaultIDs.ToArray());
     string str1 = "None";
     for (int index = Main.Instance.AllMissions.Count - 1; index >= 0; --index)
     {
@@ -1142,7 +1158,7 @@ public class Main : MonoBehaviour
         break;
       }
     }
-    string path1 = this.CurrentSavePath + "info.txt";
+    string path2 = path1 + "info.txt";
     string[] contents = new string[6]
     {
       DateTime.Now.ToString(),
@@ -1152,15 +1168,16 @@ public class Main : MonoBehaviour
       null,
       null
     };
-    string str2 = Main.Instance.Player.Perks.Count.ToString();
-    int num1 = UnityEngine.Object.FindObjectsOfType<misc_Perk>(true).Length;
+    int num1 = Main.Instance.Player.Perks.Count;
+    string str2 = num1.ToString();
+    num1 = UnityEngine.Object.FindObjectsOfType<misc_Perk>(true).Length;
     string str3 = num1.ToString();
     contents[3] = str2 + "/" + str3 + " Level up perks";
     contents[4] = "Sex unknown times";
     contents[5] = Main.Instance.Player is Girl ? (Main.Instance.Player as Girl).HadPregnancies.ToString() + " Pregnancies" : "unknown Impregnations";
-    File.WriteAllLines(path1, contents);
+    File.WriteAllLines(path2, contents);
     List<string> stringList1 = new List<string>();
-    stringList1.Add("11".ToString());
+    stringList1.Add("12".ToString());
     List<string> stringList2 = stringList1;
     num1 = Main.Instance.AllMissions.Count;
     string str4 = num1.ToString();
@@ -1201,10 +1218,10 @@ public class Main : MonoBehaviour
       }
     }
     stringList1.Add(num2.ToString());
-    File.WriteAllLines(this.CurrentSavePath + "missions.txt", stringList1.ToArray());
+    File.WriteAllLines(path1 + "missions.txt", stringList1.ToArray());
     List<string> stringList5 = new List<string>();
     List<byte> byteList = new List<byte>();
-    stringList5.Add("11.a");
+    stringList5.Add("11.c");
     stringList5.Add(Main.Instance.NewGameMenu.DificultySelected.ToString());
     stringList5.Add(Main.Float2Str(this.DayCycle.timeOfDay));
     List<string> stringList6 = stringList5;
@@ -1231,7 +1248,7 @@ public class Main : MonoBehaviour
     string str9 = num1.ToString();
     stringList8.Add(str9);
     stringList5.Add(bl_SectionGenerate2.SmallWorld ? "1" : "0");
-    File.WriteAllLines(this.CurrentSavePath + "data.bl", stringList5.ToArray());
+    File.WriteAllLines(path1 + "data.bl", stringList5.ToArray());
     List<string> stringList9 = new List<string>();
     List<string> stringList10 = stringList9;
     num1 = Main.Instance.GameplayMenu.HasBitchNotes10.Length;
@@ -1293,24 +1310,15 @@ public class Main : MonoBehaviour
     stringList19.Add(str19);
     for (int index = 0; index < Main.Instance.GameplayMenu.HasPostersBCCap.Length; ++index)
       stringList9.Add(Main.Instance.GameplayMenu.HasPostersBCCap[index] ? "1" : "0");
-    File.WriteAllLines(this.CurrentSavePath + "Collectibles.txt", stringList9.ToArray());
-    if (this.Player is Girl)
-    {
-      this.Player.SaveToFile(this.CurrentSavePath + "Player.chr");
-    }
-    else
-    {
-      this.Player.WeaponInv.DropAllWeapons();
-      this.Player.SaveToFile(this.CurrentSavePath + "Player_m.chr");
-    }
+    File.WriteAllLines(path1 + "Collectibles.txt", stringList9.ToArray());
     for (int index = 0; index < this.WorldSections.Count; ++index)
     {
-      string path2 = this.CurrentSavePath + "Section_" + index.ToString();
-      Directory.CreateDirectory(path2);
+      string path3 = path1 + "Section_" + index.ToString();
+      Directory.CreateDirectory(path3);
       if ((UnityEngine.Object) this.WorldSections[index] != (UnityEngine.Object) null)
       {
         bl_WorldSection worldSection = this.WorldSections[index];
-        File.WriteAllLines(path2 + "/data.txt", new List<string>()
+        File.WriteAllLines(path3 + "/data.txt", new List<string>()
         {
           worldSection.SectionID.ToString(),
           worldSection.ChunksX.ToString(),
@@ -1321,30 +1329,62 @@ public class Main : MonoBehaviour
     if (Main.Instance.OpenWorld)
     {
       bl_WorldChunk[] objectsOfType = UnityEngine.Object.FindObjectsOfType<bl_WorldChunk>();
-      string str20 = this.CurrentSavePath + "Section_" + this.CurrentSection.ToString() + "/";
-      using (BinaryWriter binaryWriter = new BinaryWriter((Stream) File.Open(str20 + "chunks.dat", FileMode.Create)))
+      string path4 = path1 + "Section_" + this.CurrentSection.ToString() + "/";
+      List<string> stringList20 = new List<string>();
+      stringList20.AddRange((IEnumerable<string>) Directory.GetFiles(path4, "*.chr"));
+      stringList20.AddRange((IEnumerable<string>) Directory.GetFiles(path4, "*.obj"));
+      stringList20.AddRange((IEnumerable<string>) Directory.GetFiles(path4, "*.nav"));
+      for (int index = 0; index < stringList20.Count; ++index)
+        File.Delete(stringList20[index]);
+      if (this.Player is Girl)
       {
-        binaryWriter.Write("11");
+        this.Player.SaveToFile(path1 + "Player.chr");
+      }
+      else
+      {
+        this.Player.WeaponInv.DropAllWeapons();
+        this.Player.SaveToFile(path1 + "Player_m.chr");
+      }
+      List<string> stringList21 = new List<string>();
+      for (int index5 = 0; index5 < this.AllPatrols.Count; ++index5)
+      {
+        bl_Patrol allPatrol = this.AllPatrols[index5];
+        if (allPatrol != null)
+        {
+          string str20 = allPatrol.Name;
+          for (int index6 = 0; index6 < allPatrol.Spots.Count; ++index6)
+          {
+            if ((UnityEngine.Object) allPatrol.Spots[index6] != (UnityEngine.Object) null)
+              str20 = str20 + ":" + allPatrol.Spots[index6].name;
+          }
+          stringList21.Add(str20);
+        }
+      }
+      if (stringList21.Count != 0)
+        File.WriteAllLines(path4 + "patrols.txt", stringList21.ToArray());
+      using (BinaryWriter binaryWriter = new BinaryWriter((Stream) File.Open(path4 + "chunks.dat", FileMode.Create)))
+      {
+        binaryWriter.Write("12");
         binaryWriter.Write(this.CurrentSection);
         binaryWriter.Write(Main.Instance.WorldSections[this.CurrentSection].ChunksX);
         binaryWriter.Write(Main.Instance.WorldSections[this.CurrentSection].ChunksY);
         binaryWriter.Write(objectsOfType.Length);
-        for (int index5 = 0; index5 < objectsOfType.Length; ++index5)
+        for (int index7 = 0; index7 < objectsOfType.Length; ++index7)
         {
-          binaryWriter.Write(objectsOfType[index5].XCordinate);
-          binaryWriter.Write(objectsOfType[index5].YCordinate);
-          binaryWriter.Write(objectsOfType[index5].ThisData.Height);
-          binaryWriter.Write(objectsOfType[index5].ThisData.Rot);
-          binaryWriter.Write((int) objectsOfType[index5].ThisData.WorldChunkType);
-          binaryWriter.Write((int) objectsOfType[index5].ThisData.Biome);
-          binaryWriter.Write(objectsOfType[index5].ThisData.Reverse);
-          binaryWriter.Write(objectsOfType[index5].ThisData.Road);
-          binaryWriter.Write(objectsOfType[index5].ThisData.Structure);
-          binaryWriter.Write(objectsOfType[index5].ThisData.MineEntrance);
-          binaryWriter.Write(objectsOfType[index5].transform.childCount);
-          for (int index6 = 0; index6 < objectsOfType[index5].transform.childCount; ++index6)
+          binaryWriter.Write(objectsOfType[index7].XCordinate);
+          binaryWriter.Write(objectsOfType[index7].YCordinate);
+          binaryWriter.Write(objectsOfType[index7].ThisData.Height);
+          binaryWriter.Write(objectsOfType[index7].ThisData.Rot);
+          binaryWriter.Write((int) objectsOfType[index7].ThisData.WorldChunkType);
+          binaryWriter.Write((int) objectsOfType[index7].ThisData.Biome);
+          binaryWriter.Write(objectsOfType[index7].ThisData.Reverse);
+          binaryWriter.Write(objectsOfType[index7].ThisData.Road);
+          binaryWriter.Write(objectsOfType[index7].ThisData.Structure);
+          binaryWriter.Write(objectsOfType[index7].ThisData.MineEntrance);
+          binaryWriter.Write(objectsOfType[index7].transform.childCount);
+          for (int index8 = 0; index8 < objectsOfType[index7].transform.childCount; ++index8)
           {
-            SaveableBehaviour componentInChildren = objectsOfType[index5].transform.GetChild(index6).GetComponentInChildren<SaveableBehaviour>();
+            SaveableBehaviour componentInChildren = objectsOfType[index7].transform.GetChild(index8).GetComponentInChildren<SaveableBehaviour>();
             if ((UnityEngine.Object) componentInChildren != (UnityEngine.Object) null && componentInChildren.HasByte2Data && !componentInChildren.DontSaveInMain)
             {
               binaryWriter.Write(true);
@@ -1368,12 +1408,12 @@ public class Main : MonoBehaviour
       for (int index = 0; index < this.SpawnedPeople_World.Count; ++index)
       {
         if (!((UnityEngine.Object) this.SpawnedPeople_World[index] == (UnityEngine.Object) null) && !this.SpawnedPeople_World[index].IsPlayer && !this.SpawnedPeople_World[index].DontSaveInMain)
-          this.SpawnedPeople_World[index].SaveToFile(str20 + this.SpawnedPeople_World[index].name + this.SpawnedPeople_World[index].WorldSaveID + (this.SpawnedPeople_World[index] is Girl ? "_f" : "_m") + ".chr");
+          this.SpawnedPeople_World[index].SaveToFile(path4 + this.SpawnedPeople_World[index].name + this.SpawnedPeople_World[index].WorldSaveID + (this.SpawnedPeople_World[index] is Girl ? "_f" : "_m") + ".chr");
       }
       List<SaveableBehaviour> saveableBehaviourList = new List<SaveableBehaviour>();
       for (int index = 0; index < this.SpawnedObjects_World.Count; ++index)
       {
-        if (!saveableBehaviourList.Contains(this.SpawnedObjects_World[index]) && !this.SpawnedObjects_World[index].DontSaveInMain)
+        if (!saveableBehaviourList.Contains(this.SpawnedObjects_World[index]) && !this.SpawnedObjects_World[index].DontSaveInMain && !this.SpawnedObjects_World[index].ow_oddsaving)
           saveableBehaviourList.Add(this.SpawnedObjects_World[index]);
       }
       this.SpawnedObjects_World = saveableBehaviourList;
@@ -1386,9 +1426,9 @@ public class Main : MonoBehaviour
             str21 = this.SpawnedObjects_World[index].WorldSaveID;
           string str22;
           if ((!(this.SpawnedObjects_World[index] is bl_MinableObject) ? 0 : (((bl_MinableObject) this.SpawnedObjects_World[index]).BakeNavmeshOnBuild ? 1 : 0)) == 0)
-            str22 = str20 + str21 + "_" + index.ToString() + ".obj";
+            str22 = path4 + str21 + "_" + index.ToString() + ".obj";
           else
-            str22 = str20 + str21 + "_" + index.ToString() + ".nav";
+            str22 = path4 + str21 + "_" + index.ToString() + ".nav";
           string filename = str22;
           this.SpawnedObjects_World[index].SaveToFile(filename);
         }
@@ -1396,10 +1436,25 @@ public class Main : MonoBehaviour
     }
     else
     {
+      List<string> stringList22 = new List<string>();
+      stringList22.AddRange((IEnumerable<string>) Directory.GetFiles(path1, "*.chr"));
+      stringList22.AddRange((IEnumerable<string>) Directory.GetFiles(path1, "*.obj"));
+      stringList22.AddRange((IEnumerable<string>) Directory.GetFiles(path1, "*.nav"));
+      for (int index = 0; index < stringList22.Count; ++index)
+        File.Delete(stringList22[index]);
+      if (this.Player is Girl)
+      {
+        this.Player.SaveToFile(path1 + "Player.chr");
+      }
+      else
+      {
+        this.Player.WeaponInv.DropAllWeapons();
+        this.Player.SaveToFile(path1 + "Player_m.chr");
+      }
       for (int index = 0; index < this.SpawnedPeople.Count; ++index)
       {
         if (!((UnityEngine.Object) this.SpawnedPeople[index] == (UnityEngine.Object) null) && !this.SpawnedPeople[index].IsPlayer && !this.SpawnedPeople[index].DontSaveInMain)
-          this.SpawnedPeople[index].SaveToFile(this.CurrentSavePath + this.SpawnedPeople[index].name + this.SpawnedPeople[index].WorldSaveID + (this.SpawnedPeople[index] is Girl ? "_f" : "_m") + ".chr");
+          this.SpawnedPeople[index].SaveToFile(path1 + this.SpawnedPeople[index].name + this.SpawnedPeople[index].WorldSaveID + (this.SpawnedPeople[index] is Girl ? "_f" : "_m") + ".chr");
       }
       List<SaveableBehaviour> saveableBehaviourList = new List<SaveableBehaviour>();
       for (int index = 0; index < this.SpawnedObjects.Count; ++index)
@@ -1415,7 +1470,7 @@ public class Main : MonoBehaviour
           string str23 = "null";
           if (this.SpawnedObjects[index].WorldSaveID != null && this.SpawnedObjects[index].WorldSaveID.Length > 0)
             str23 = this.SpawnedObjects[index].WorldSaveID;
-          this.SpawnedObjects[index].SaveToFile(this.CurrentSavePath + str23 + "_" + index.ToString() + ".obj");
+          this.SpawnedObjects[index].SaveToFile(path1 + str23 + "_" + index.ToString() + ".obj");
         }
       }
     }
@@ -1430,12 +1485,6 @@ public class Main : MonoBehaviour
     }
     if (!autosave)
       return;
-    string str24 = Main.AssetsFolder + "/Saves/_autosave/";
-    if (Directory.Exists(str24))
-      Directory.Delete(str24, true);
-    if (Directory.Exists(this.CurrentSavePath))
-      Directory.Move(this.CurrentSavePath, str24);
-    this.CurrentSavePath = str24;
     Main.Instance.GameplayMenu.ShowNotification("Autosaved");
   }
 
@@ -1563,8 +1612,8 @@ public class Main : MonoBehaviour
     StreamReader data = new StreamReader((Stream) new MemoryStream(File.ReadAllBytes(filename)));
     int num = 0;
     string str = data.ReadLine();
-    if (str != "11.a")
-      Debug.LogError((object) ("Save with diferent version! Current Game Version=11.a / Save Version=" + str));
+    if (str != "11.c")
+      Debug.LogError((object) ("Save with diferent version! Current Game Version=11.c / Save Version=" + str));
     this.LoadCharacter(this.Player, data);
     while (!data.EndOfStream)
     {
@@ -1577,8 +1626,11 @@ public class Main : MonoBehaviour
   {
     this.LoadedGame = true;
     this.CurrentSavePath = directory;
+    if (!this.CurrentSavePath.EndsWith("/"))
+      this.CurrentSavePath += "/";
     Main.Instance.LoadGameMenu.Close();
     Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
+    Main.Instance.GameplayMenu.DisableOnOpen[0].SetActive(false);
     this.Invoke("LoadGame_2", 0.1f);
   }
 
@@ -1601,6 +1653,7 @@ public class Main : MonoBehaviour
       {
         Main.Log("reading missions version check");
         _saveVersion = int.Parse(File.ReadAllLines(this.CurrentSavePath + "missions.txt")[0]);
+        this._SaveVersionLoaded = _saveVersion;
         Debug.Log((object) ("Loading save from int version " + _saveVersion.ToString()));
       }
       else
@@ -1685,7 +1738,23 @@ public class Main : MonoBehaviour
           UnityEngine.Object.Destroy((UnityEngine.Object) Main.Instance.NewGameMenu.DestroyWhenStartLoading[index]);
       }
     }
+    if (Main._INTERNAL_LoadCity)
+    {
+      Main._INTERNAL_LoadCity = false;
+      Main._INTERNAL_LoadSpecificSection = false;
+      Main._INTERNAL_SectionToLoad = 0;
+      this.OpenWorld = false;
+      this._AfterLoadGame = (Action) (() => Main.Instance.Player.PlaceAt(Main.Instance.Player.UserControl.ResetSpot));
+    }
+    if (Main._INTERNAL_LoadSpecificSection)
+    {
+      Main._INTERNAL_LoadSpecificSection = false;
+      this.OpenWorld = true;
+      this.CurrentSection = Main._INTERNAL_SectionToLoad;
+      this._AfterLoadGame = (Action) (() => Main.Instance.Player.PlaceAt(Main.Instance.Player.UserControl.ResetSpot));
+    }
     string _folderWithNPCsToLoad = this.OpenWorld ? this.CurrentSavePath + "Section_" + this.CurrentSection.ToString() + "/" : this.CurrentSavePath;
+    string _patrolsFile = _folderWithNPCsToLoad + "patrols.txt";
     if (!this.OpenWorld)
     {
       Main.Instance.AllJobs = new List<bl_WorkJobManager>();
@@ -1724,7 +1793,9 @@ public class Main : MonoBehaviour
           {
             using (BinaryReader binaryReader = new BinaryReader((Stream) File.Open(_chunksFile, FileMode.Open)))
             {
-              Debug.Log((object) ("_datVersion " + binaryReader.ReadString()));
+              string s = binaryReader.ReadString();
+              Debug.Log((object) ("_datVersion " + s));
+              this._SaveVersionLoaded = int.Parse(s);
               Debug.Log((object) ("_datSection " + binaryReader.ReadInt32().ToString()));
               int _sectionXSize = binaryReader.ReadInt32();
               int _sectionYSize = binaryReader.ReadInt32();
@@ -1733,6 +1804,7 @@ public class Main : MonoBehaviour
               Main.Instance.WorldSections[this.CurrentSection].ChunksX = _sectionXSize;
               Main.Instance.WorldSections[this.CurrentSection].ChunksY = _sectionYSize;
               Main.Instance.WorldSections[this.CurrentSection].ChunksCount = _sectionXSize * _sectionYSize;
+              Main.Instance.WorldSections[this.CurrentSection].PreviouslyGenerated = true;
               int num22 = binaryReader.ReadInt32();
               Debug.Log((object) ("_datChunksLen " + num22.ToString()));
               for (int index18 = 0; index18 < num22; ++index18)
@@ -1856,19 +1928,19 @@ public class Main : MonoBehaviour
         bl_WorldChunk[] objectsOfType = UnityEngine.Object.FindObjectsOfType<bl_WorldChunk>();
         Main.Instance.NewGameMenu.ExtraLoadingText.text = "-/" + objectsOfType.Length.ToString();
         Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Spawning Chunk Items";
-        for (int index40 = 0; index40 < objectsOfType.Length; ++index40)
+        for (int index42 = 0; index42 < objectsOfType.Length; ++index42)
         {
-          ChunkGenerateData thisData = objectsOfType[index40].ThisData;
-          int num49 = 0;
-          while (num49 < thisData.Odds.Count)
-            ++num49;
-          for (int index41 = 0; index41 < thisData.Trees.Count; ++index41)
+          ChunkGenerateData thisData = objectsOfType[index42].ThisData;
+          int num50 = 0;
+          while (num50 < thisData.Odds.Count)
+            ++num50;
+          for (int index43 = 0; index43 < thisData.Trees.Count; ++index43)
           {
-            GameObject gameObject = this.SpawnLoadObj(thisData.Trees[index41]);
+            GameObject gameObject = this.SpawnLoadObj(thisData.Trees[index43]);
             if ((UnityEngine.Object) gameObject != (UnityEngine.Object) null)
-              gameObject.transform.SetParent(objectsOfType[index40].transform);
+              gameObject.transform.SetParent(objectsOfType[index42].transform);
           }
-          objectsOfType[index40].ChunkObtainLODs();
+          objectsOfType[index42].ChunkObtainLODs();
         }
         Main.Instance.Player.FootStepsAudio.CurrentTerrain = e_CurrentTerrain.Dirt;
         Main.Instance.CanSaveFlags_remove("GeneratingOW");
@@ -1927,20 +1999,45 @@ public class Main : MonoBehaviour
       if (!this.OpenWorld)
       {
         string[] strArray = File.Exists(this.CurrentSavePath + "defaultsIDs.txt") ? File.ReadAllLines(this.CurrentSavePath + "defaultsIDs.txt") : File.ReadAllLines(Main.AssetsFolder + "/Data/build6defaultsID.txt");
-        for (int index42 = 0; index42 < Main.Instance.SpawnedObjects.Count; ++index42)
+        for (int index44 = 0; index44 < Main.Instance.SpawnedObjects.Count; ++index44)
         {
-          if (Main.Instance.SpawnedObjects[index42].WorldSaveID != null && Main.Instance.SpawnedObjects[index42].WorldSaveID.Length > 0)
+          if (Main.Instance.SpawnedObjects[index44].WorldSaveID != null && Main.Instance.SpawnedObjects[index44].WorldSaveID.Length > 0)
           {
-            for (int index43 = 0; index43 < strArray.Length; ++index43)
+            for (int index45 = 0; index45 < strArray.Length; ++index45)
             {
-              if (strArray[index43] == Main.Instance.SpawnedObjects[index42].WorldSaveID && (UnityEngine.Object) Main.Instance.SpawnedObjects[index42].gameObject.GetComponentInChildren<Int_Storage>() == (UnityEngine.Object) null)
-                Main.Instance.SpawnedObjects[index42].gameObject.SetActive(false);
+              if (strArray[index45] == Main.Instance.SpawnedObjects[index44].WorldSaveID && (UnityEngine.Object) Main.Instance.SpawnedObjects[index44].gameObject.GetComponentInChildren<Int_Storage>() == (UnityEngine.Object) null)
+                Main.Instance.SpawnedObjects[index44].gameObject.SetActive(false);
             }
           }
         }
       }
       for (int index = 0; index < array.Length; ++index)
         this.SpawnLoadObj(array[index]);
+      if (this.OpenWorld && File.Exists(_patrolsFile))
+        Main.RunInSeconds((Action) (() =>
+        {
+          string[] strArray26 = File.ReadAllLines(_patrolsFile);
+          this.AllPatrols.Clear();
+          for (int index46 = 0; index46 < strArray26.Length; ++index46)
+          {
+            bl_Patrol blPatrol = new bl_Patrol();
+            string[] strArray27 = strArray26[index46].Split(':', StringSplitOptions.None);
+            blPatrol.Name = strArray27[0];
+            blPatrol.Spots.AddRange((IEnumerable<Transform>) new Transform[5]);
+            int num51 = 0;
+            for (int index47 = 1; index47 < strArray27.Length; ++index47)
+            {
+              GameObject gameObject = GameObject.Find(strArray27[index47]);
+              if ((UnityEngine.Object) gameObject != (UnityEngine.Object) null)
+              {
+                blPatrol.Spots[num51++] = gameObject.transform;
+                if (num51 >= blPatrol.Spots.Count)
+                  break;
+              }
+            }
+            this.AllPatrols.Add(blPatrol);
+          }
+        }), 1f);
       if (Main.Instance.NewGameMenu.DificultySelected == 3)
       {
         if ((UnityEngine.Object) Main.Instance.NewGameMenu.Hard_PeopleToSpawn_Specials != (UnityEngine.Object) null)
@@ -1950,17 +2047,17 @@ public class Main : MonoBehaviour
       {
         if ((UnityEngine.Object) Main.Instance.NewGameMenu.Med_PeopleToSpawn_Specials != (UnityEngine.Object) null)
           Main.Instance.NewGameMenu.Med_PeopleToSpawn_Specials.SetActive(true);
-        int num50 = int.Parse("11");
-        Debug.Log((object) ("Main.BuildVersionInt / _thisVersion " + num50.ToString()));
+        int num52 = int.Parse("12");
+        Debug.Log((object) ("Main.BuildVersionInt / _thisVersion " + num52.ToString()));
         Debug.Log((object) ("_saveVersion " + _saveVersion.ToString()));
-        Debug.Log((object) ("(_saveVersion < _thisVersion) " + (_saveVersion < num50).ToString()));
-        if (_saveVersion < num50)
+        Debug.Log((object) ("(_saveVersion < _thisVersion) " + (_saveVersion < num52).ToString()));
+        if (_saveVersion < num52)
         {
           List<Transform> transformList = new List<Transform>();
           for (int index = 0; index < Main.Instance.NewGameMenu.Med_PeopleToSpawn.transform.childCount; ++index)
           {
             RandomNPCHere component = Main.Instance.NewGameMenu.Med_PeopleToSpawn.transform.GetChild(index).GetComponent<RandomNPCHere>();
-            if ((UnityEngine.Object) component != (UnityEngine.Object) null && component.BuildVersionAdded >= num50)
+            if ((UnityEngine.Object) component != (UnityEngine.Object) null && component.BuildVersionAdded >= num52)
               transformList.Add(component.transform);
           }
           for (int index = 0; index < transformList.Count; ++index)
@@ -1977,23 +2074,23 @@ public class Main : MonoBehaviour
       }
       if (File.Exists(this.CurrentSavePath + "data.bl"))
       {
-label_73:
-        for (int index44 = 0; index44 < _rels.Count; ++index44)
+label_75:
+        for (int index48 = 0; index48 < _rels.Count; ++index48)
         {
-          string str = _rels[index44];
-          for (int index45 = 0; index45 < Main.Instance.SpawnedPeople.Count; ++index45)
+          string str = _rels[index48];
+          for (int index49 = 0; index49 < Main.Instance.SpawnedPeople.Count; ++index49)
           {
-            if (Main.Instance.SpawnedPeople[index45].WorldSaveID == str)
+            if (Main.Instance.SpawnedPeople[index49].WorldSaveID == str)
             {
-              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople[index45]);
-              goto label_73;
+              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople[index49]);
+              goto label_75;
             }
           }
-          for (int index46 = 0; index46 < Main.Instance.SpawnedPeople_World.Count; ++index46)
+          for (int index50 = 0; index50 < Main.Instance.SpawnedPeople_World.Count; ++index50)
           {
-            if (Main.Instance.SpawnedPeople_World[index46].WorldSaveID == str)
+            if (Main.Instance.SpawnedPeople_World[index50].WorldSaveID == str)
             {
-              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople_World[index46]);
+              Main.Instance.GameplayMenu.Relationships.Add(Main.Instance.SpawnedPeople_World[index50]);
               break;
             }
           }
@@ -2012,105 +2109,105 @@ label_73:
         }
       }
       Main.Log("reading missions");
-      string[] strArray24 = File.ReadAllLines(this.CurrentSavePath + "missions.txt");
-      int num51 = 0;
-      string[] strArray25 = strArray24;
-      int index47 = num51;
-      int num52 = index47 + 1;
-      _saveVersion = int.Parse(strArray25[index47]);
-      string[] strArray26 = strArray24;
-      int index48 = num52;
-      int num53 = index48 + 1;
-      int num54 = int.Parse(strArray26[index48]);
-      Main.Log("_allMissionsCount " + num54.ToString());
-      for (int index49 = 0; index49 < num54; ++index49)
+      string[] strArray28 = File.ReadAllLines(this.CurrentSavePath + "missions.txt");
+      int num53 = 0;
+      string[] strArray29 = strArray28;
+      int index51 = num53;
+      int num54 = index51 + 1;
+      _saveVersion = int.Parse(strArray29[index51]);
+      string[] strArray30 = strArray28;
+      int index52 = num54;
+      int num55 = index52 + 1;
+      int num56 = int.Parse(strArray30[index52]);
+      Main.Log("_allMissionsCount " + num56.ToString());
+      for (int index53 = 0; index53 < num56; ++index53)
       {
-        Main.Log("_allMissionsCount i " + index49.ToString());
-        Mission allMission = Main.Instance.AllMissions[index49];
-        string[] strArray27 = strArray24;
-        int index50 = num53;
-        int num55 = index50 + 1;
-        int num56 = strArray27[index50] == "1" ? 1 : 0;
-        allMission.CompletedMission = num56 != 0;
-        Main.Log("CompletedMission " + Main.Instance.AllMissions[index49].CompletedMission.ToString());
-        string[] strArray28 = strArray24;
-        int index51 = num55;
-        int num57 = index51 + 1;
-        if (strArray28[index51] != "None")
+        Main.Log("_allMissionsCount i " + index53.ToString());
+        Mission allMission = Main.Instance.AllMissions[index53];
+        string[] strArray31 = strArray28;
+        int index54 = num55;
+        int num57 = index54 + 1;
+        int num58 = strArray31[index54] == "1" ? 1 : 0;
+        allMission.CompletedMission = num58 != 0;
+        Main.Log("CompletedMission " + Main.Instance.AllMissions[index53].CompletedMission.ToString());
+        string[] strArray32 = strArray28;
+        int index55 = num57;
+        int num59 = index55 + 1;
+        if (strArray32[index55] != "None")
         {
-          int index52 = int.Parse(strArray24[num57 - 1]);
-          Main.Log("_curgoal " + index52.ToString());
-          if (index52 != 0 && index52 < Main.Instance.AllMissions[index49].Goals.Count)
+          int index56 = int.Parse(strArray28[num59 - 1]);
+          Main.Log("_curgoal " + index56.ToString());
+          if (index56 != 0 && index56 < Main.Instance.AllMissions[index53].Goals.Count)
           {
-            Main.Instance.AllMissions[index49].CurrentGoal = Main.Instance.AllMissions[index49].Goals[index52];
-            Main.Instance.AllMissions[index49].CurrentGoalIndex = index52;
+            Main.Instance.AllMissions[index53].CurrentGoal = Main.Instance.AllMissions[index53].Goals[index56];
+            Main.Instance.AllMissions[index53].CurrentGoalIndex = index56;
           }
         }
         else
           Main.Log("_curgoal None");
-        string[] strArray29 = strArray24;
-        int index53 = num57;
-        num53 = index53 + 1;
-        int num58 = int.Parse(strArray29[index53]);
-        Main.Log("_goalsCount " + num58.ToString());
-        for (int index54 = 0; index54 < num58; ++index54)
+        string[] strArray33 = strArray28;
+        int index57 = num59;
+        num55 = index57 + 1;
+        int num60 = int.Parse(strArray33[index57]);
+        Main.Log("_goalsCount " + num60.ToString());
+        for (int index58 = 0; index58 < num60; ++index58)
         {
-          if (index54 >= Main.Instance.AllMissions[index49].Goals.Count)
+          if (index58 >= Main.Instance.AllMissions[index53].Goals.Count)
           {
-            Main.Log("broke at " + index54.ToString() + " / " + Main.Instance.AllMissions[index49].Goals.Count.ToString());
-            num53 += 2;
+            Main.Log("broke at " + index58.ToString() + " / " + Main.Instance.AllMissions[index53].Goals.Count.ToString());
+            num55 += 2;
           }
           else
           {
-            MissionGoal goal1 = Main.Instance.AllMissions[index49].Goals[index54];
-            string[] strArray30 = strArray24;
-            int index55 = num53;
-            int num59 = index55 + 1;
-            int num60 = strArray30[index55] == "1" ? 1 : 0;
-            goal1.Completed = num60 != 0;
-            MissionGoal goal2 = Main.Instance.AllMissions[index49].Goals[index54];
-            string[] strArray31 = strArray24;
-            int index56 = num59;
-            num53 = index56 + 1;
-            int num61 = strArray31[index56] == "1" ? 1 : 0;
-            goal2.Failed = num61 != 0;
+            MissionGoal goal1 = Main.Instance.AllMissions[index53].Goals[index58];
+            string[] strArray34 = strArray28;
+            int index59 = num55;
+            int num61 = index59 + 1;
+            int num62 = strArray34[index59] == "1" ? 1 : 0;
+            goal1.Completed = num62 != 0;
+            MissionGoal goal2 = Main.Instance.AllMissions[index53].Goals[index58];
+            string[] strArray35 = strArray28;
+            int index60 = num61;
+            num55 = index60 + 1;
+            int num63 = strArray35[index60] == "1" ? 1 : 0;
+            goal2.Failed = num63 != 0;
           }
         }
       }
-      Main.Log("end1 _readindex " + num53.ToString());
-      string[] strArray32 = strArray24;
-      int index57 = num53;
-      int num62 = index57 + 1;
-      int num63 = int.Parse(strArray32[index57]);
-      Main.Log("_curMissionsCount " + num63.ToString());
+      Main.Log("end1 _readindex " + num55.ToString());
+      string[] strArray36 = strArray28;
+      int index61 = num55;
+      int num64 = index61 + 1;
+      int num65 = int.Parse(strArray36[index61]);
+      Main.Log("_curMissionsCount " + num65.ToString());
       this._MissionsToinit.Clear();
-      for (int index58 = 0; index58 < num63; ++index58)
+      for (int index62 = 0; index62 < num65; ++index62)
       {
-        Main.Log("_curMissionsCount i " + index58.ToString());
-        int index59 = int.Parse(strArray24[num62++]);
-        Main.Instance.GameplayMenu.CurrentMissions.Add(Main.Instance.AllMissions[index59]);
+        Main.Log("_curMissionsCount i " + index62.ToString());
+        int index63 = int.Parse(strArray28[num64++]);
+        Main.Instance.GameplayMenu.CurrentMissions.Add(Main.Instance.AllMissions[index63]);
         if (!this.OpenWorld)
         {
-          Main.Log("init AllMissions[" + index59.ToString());
-          if (!this._MissionsToinit.Contains(Main.Instance.AllMissions[index59]))
-            this._MissionsToinit.Add(Main.Instance.AllMissions[index59]);
+          Main.Log("init AllMissions[" + index63.ToString());
+          if (!this._MissionsToinit.Contains(Main.Instance.AllMissions[index63]))
+            this._MissionsToinit.Add(Main.Instance.AllMissions[index63]);
         }
       }
       Main.Log("end2 ");
-      string[] strArray33 = strArray24;
-      int index60 = num62;
-      int num64 = index60 + 1;
-      int index61 = int.Parse(strArray33[index60]);
-      Main.Log("_curMission " + index61.ToString());
-      if (index61 != -1)
-        Main.Instance.GameplayMenu.CurrentMission = Main.Instance.AllMissions[index61];
+      string[] strArray37 = strArray28;
+      int index64 = num64;
+      int num66 = index64 + 1;
+      int index65 = int.Parse(strArray37[index64]);
+      Main.Log("_curMission " + index65.ToString());
+      if (index65 != -1)
+        Main.Instance.GameplayMenu.CurrentMission = Main.Instance.AllMissions[index65];
       Main.RunInNextFrame((Action) (() =>
       {
         Main.Instance.NewGameMenu.SmallLoading.SetActive(false);
         Main.Instance.NewGameMenu.ExtraLoading.SetActive(false);
         Main.Instance.OpenMenu("Gameplay");
-        for (int index62 = 0; index62 < _spawnedPpl.Count; ++index62)
-          _spawnedPpl[index62].RemoveMoveBlocker("LOADING GRRRR");
+        for (int index66 = 0; index66 < _spawnedPpl.Count; ++index66)
+          _spawnedPpl[index66].RemoveMoveBlocker("LOADING GRRRR");
       }));
     }));
     if (!this.OpenWorld)
@@ -2121,19 +2218,29 @@ label_73:
         this._MissionsToinit[index].InitMission();
       this._MissionsToinit.Clear();
     }), 60);
+    if (this._AfterLoadGame == null)
+      return;
+    Main.RunInNextFrame((Action) (() =>
+    {
+      this._AfterLoadGame();
+      this._AfterLoadGame = (Action) null;
+    }), 15);
   }
 
-  public void SpawnLoadObj(string filename)
+  public GameObject SpawnLoadObj(string filename)
   {
+    GameObject gameObject = (GameObject) null;
     string[] Data = File.ReadAllLines(filename);
     Main.Log("reading file=" + filename);
-    string str = Data[0];
-    Main.Log("_curWorldID=" + str);
-    if (str == null || str.Length == 0)
+    string str1 = Data[0];
+    Main.Log("_curWorldID=" + str1);
+    if (str1 == null || str1.Length == 0)
     {
       Main.Log("_curWorldID is null");
-      if (Data.Length <= 3 || Data[1] == null || Data[1].Length == 0)
-        return;
+      if (Data.Length <= 3)
+        return (GameObject) null;
+      if (Data[1] == null || Data[1].Length == 0)
+        return (GameObject) null;
       GameObject prefab = !Data[1].StartsWith("PLAN_") ? Main.Instance.GetPrefab(Data[1]) : this.GetPlan(Data[1]);
       if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
       {
@@ -2141,14 +2248,19 @@ label_73:
       }
       else
       {
-        SaveableBehaviour[] componentsInChildren = Main.Spawn(prefab).GetComponentsInChildren<SaveableBehaviour>();
+        SaveableBehaviour[] componentsInChildren = (gameObject = Main.Spawn(prefab)).GetComponentsInChildren<SaveableBehaviour>();
         for (int index = 0; index < componentsInChildren.Length; ++index)
         {
           if (!componentsInChildren[index].DontSaveInMain && componentsInChildren[index].AddToSaveableOnStart)
           {
-            if (componentsInChildren[index].HasByte2Data)
+            if (!componentsInChildren[index].HasByte2Data)
+            {
+              string str2 = Data[1];
+              if ((str2 == "ConcreteStairsFoundation" || str2 == "PLAN_ConcreteStairsFoundation" || str2 == "WoodStairsFoundation" || str2 == "PLAN_WoodStairsFoundation") && this._SaveVersionLoaded == 11)
+                Data[4] = "(1,1,1)";
+              componentsInChildren[index].SaveableData = Data;
               break;
-            componentsInChildren[index].SaveableData = Data;
+            }
             break;
           }
         }
@@ -2158,15 +2270,18 @@ label_73:
     {
       for (int index = 0; index < Main.Instance.SpawnedObjects.Count; ++index)
       {
-        if (Main.Instance.SpawnedObjects[index].WorldSaveID == str)
+        if (Main.Instance.SpawnedObjects[index].WorldSaveID == str1)
         {
           Main.Instance.SpawnedObjects[index].gameObject.SetActive(true);
           Main.Instance.SpawnedObjects[index].sd_LoadData(Data);
-          return;
+          gameObject = Main.Instance.SpawnedObjects[index].RootObj;
+          goto label_21;
         }
       }
       Debug.Log((object) "_curWorldID was NOT found");
     }
+label_21:
+    return gameObject;
   }
 
   public GameObject SpawnLoadObj(byte[] fileData)

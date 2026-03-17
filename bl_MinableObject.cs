@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_MinableObject
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -40,10 +40,13 @@ public class bl_MinableObject : Interactible
     bool flag = false;
     if ((UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
       return false;
-    for (int index = 0; index < this.OtherIntsToCheckOnCanBreak.Length; ++index)
+    if (this.OtherIntsToCheckOnCanBreak != null)
     {
-      if ((UnityEngine.Object) this.OtherIntsToCheckOnCanBreak[index] != (UnityEngine.Object) null && (UnityEngine.Object) this.OtherIntsToCheckOnCanBreak[index].InteractingPerson != (UnityEngine.Object) null)
-        return false;
+      for (int index = 0; index < this.OtherIntsToCheckOnCanBreak.Length; ++index)
+      {
+        if ((UnityEngine.Object) this.OtherIntsToCheckOnCanBreak[index] != (UnityEngine.Object) null && (UnityEngine.Object) this.OtherIntsToCheckOnCanBreak[index].InteractingPerson != (UnityEngine.Object) null)
+          return false;
+      }
     }
     if (!person.IsPlayer)
       return true;
@@ -99,6 +102,17 @@ public class bl_MinableObject : Interactible
   {
     if (!((UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null) && !this.InteractingPerson.TheHealth.dead && !this.InteractingPerson.TheHealth.Incapacitated)
     {
+      if (this.InteractingPerson.IsPlayer && Main.Instance.CancelKey())
+      {
+        Main.Instance.MainThreads.Remove(new Action(this.MiningThread));
+        this.InteractingPerson.Interacting = false;
+        this.InteractingPerson.RemoveMoveBlocker("Mining");
+        this.InteractingPerson.enabled = true;
+        if (this.InteractingPerson.IsPlayer)
+          Main.Instance.GameplayMenu.WeaponReloadUI.SetActive(false);
+        this.InteractingPerson = (Person) null;
+        return;
+      }
       this._TimeMining -= Time.deltaTime;
       if ((double) this._TimeMining >= 0.0)
       {
@@ -121,7 +135,7 @@ public class bl_MinableObject : Interactible
     this.InteractingPerson = (Person) null;
   }
 
-  public void Break(Person person)
+  public virtual void Break(Person person)
   {
     for (int index = 0; index < this.BreaksInto.Length; ++index)
     {
@@ -135,7 +149,7 @@ public class bl_MinableObject : Interactible
           componentsInChild.Despawnable = false;
       }
     }
-    if ((UnityEngine.Object) person != (UnityEngine.Object) null && person.Perks.Contains("Mining Skill lvl 2"))
+    if ((UnityEngine.Object) person != (UnityEngine.Object) null && person.Perks.Contains("Mining Skill lvl 2") && this.ExtraOre != null && this.ExtraOre.Length != 0 && (UnityEngine.Object) this.ExtraOre[0] != (UnityEngine.Object) null)
     {
       Transform transform3 = Main.Spawn(this.ExtraOre[0], saveable: true).transform;
       Transform transform4 = this.SpawnSpots == null || this.SpawnSpots.Length == 0 ? this.transform : this.SpawnSpots[this.BreaksInto.Length - 1];

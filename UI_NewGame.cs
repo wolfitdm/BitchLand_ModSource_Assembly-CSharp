@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_NewGame
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -329,41 +329,48 @@ public class UI_NewGame : UI_Menu
       this.GenerateDefaultsIDsForThisInstance();
     }));
     Main.RunInNextFrame(new Action(Main.Instance.GenerateNav));
-    if (UI_Settings._SpeedrunValue == 0)
-      return;
-    Main.Instance.GameplayMenu.SpeedrunLabel.gameObject.SetActive(true);
-    Main.Instance.GameplayMenu.SpeedrunTimer = 0.0f;
-    Main.Instance.MainThreads.Add(new Action(Main.Instance.GameplayMenu.SpeedrunThread));
-    Main.Instance.CanSaveFlags_add("Speedrun");
-    switch (UI_Settings._SpeedrunValue - 1)
+    if (UI_Settings._SpeedrunValue != 0)
     {
-      case 1:
-        Mission allMission1 = Main.Instance.AllMissions[1];
-        for (int goal = 0; goal < allMission1.Goals.Count - 1; ++goal)
-          allMission1.CompleteGoal(goal);
-        allMission1.InitMission();
-        Mis_MedTutorial misMedTutorial = (Mis_MedTutorial) allMission1;
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal0));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal0));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal1));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal1));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal2));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal2));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal3));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal3));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal4));
-        Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal4));
-        Mission allMission2 = Main.Instance.AllMissions[3];
-        for (int goal = 0; goal < allMission2.Goals.Count; ++goal)
-          allMission2.CompleteGoal(goal);
-        allMission2.InitMission();
-        for (int index = 0; index < Main.Instance.GameplayMenu.DisableWhenMissionsSklipped.Length; ++index)
-          Main.Instance.GameplayMenu.DisableWhenMissionsSklipped[index].SetActive(false);
-        break;
-      case 2:
-        foreach (Component component in UnityEngine.Object.FindObjectsOfType<int_money>())
-          component.gameObject.SetActive(false);
-        break;
+      Main.Instance.GameplayMenu.SpeedrunLabel.gameObject.SetActive(true);
+      Main.Instance.GameplayMenu.SpeedrunTimer = 0.0f;
+      Main.Instance.MainThreads.Add(new Action(Main.Instance.GameplayMenu.SpeedrunThread));
+      Main.Instance.CanSaveFlags_add("Speedrun");
+      switch (UI_Settings._SpeedrunValue - 1)
+      {
+        case 1:
+          Mission allMission1 = Main.Instance.AllMissions[1];
+          for (int goal = 0; goal < allMission1.Goals.Count - 1; ++goal)
+            allMission1.CompleteGoal(goal);
+          allMission1.InitMission();
+          Mis_MedTutorial misMedTutorial = (Mis_MedTutorial) allMission1;
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal0));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal0));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal1));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal1));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal2));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal2));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal3));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal3));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal4));
+          Main.Instance.MainThreads.Remove(new Action(misMedTutorial.Goal4));
+          Mission allMission2 = Main.Instance.AllMissions[3];
+          for (int goal = 0; goal < allMission2.Goals.Count; ++goal)
+            allMission2.CompleteGoal(goal);
+          allMission2.InitMission();
+          for (int index = 0; index < Main.Instance.GameplayMenu.DisableWhenMissionsSklipped.Length; ++index)
+            Main.Instance.GameplayMenu.DisableWhenMissionsSklipped[index].SetActive(false);
+          break;
+        case 2:
+          foreach (Component component in UnityEngine.Object.FindObjectsOfType<int_money>())
+            component.gameObject.SetActive(false);
+          break;
+      }
+    }
+    else
+    {
+      if (this.DificultySelected != 2)
+        return;
+      Main.RunInSeconds((Action) (() => Main.Instance.GameplayMenu.ShowMessageBox("New \"OpenWorld\" on this build!\n\n-Press F8\n-Pickup an Axe, Pickaxe and Backpack\n-Interact with the White Cube")), 3f);
     }
   }
 

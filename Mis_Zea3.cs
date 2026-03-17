@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea3
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -192,6 +192,8 @@ public class Mis_Zea3 : Mission
                 _zea.LookAtPlayer.playerTransform = Main.Instance.Player.Head;
                 _zea.LookAtPlayer.DontBlockSides = false;
                 _zea.enabled = true;
+                _zea.RemoveMoveBlocker("ElyTalk");
+                _zea.navMesh.enabled = true;
                 _zea.StartScheduleTask(new Person.ScheduleTask()
                 {
                   IDName = "_zeaDest",
@@ -2068,6 +2070,8 @@ public class Mis_Zea3 : Mission
     gameplayMenu.DisplaySubtitle("Stop right there!", voiceLine, after, personSaying);
     _war.enabled = true;
     _war.RemoveMoveBlocker("InTruck");
+    _war.RemoveMoveBlocker("zea3");
+    _war.navMesh.enabled = true;
     _war.A_Walking = "Orc Walk2";
     _war.StartScheduleTask(new Person.ScheduleTask()
     {

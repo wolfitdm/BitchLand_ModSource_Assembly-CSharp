@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Gameplay
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -816,7 +816,8 @@ label_8:
     if ((UnityEngine.Object) this.PersonChattingTo != (UnityEngine.Object) null)
     {
       this.PersonChattingTo.RemoveMoveBlocker("Chat");
-      this.PersonChattingTo.ThisPersonInt.RestrainedCheck();
+      if ((UnityEngine.Object) this.PersonChattingTo.ThisPersonInt != (UnityEngine.Object) null)
+        this.PersonChattingTo.ThisPersonInt.RestrainedCheck();
       this.PersonChattingTo = (Person) null;
     }
     Main.Instance.Player.RemoveMoveBlocker("Chat");
@@ -1036,12 +1037,15 @@ label_8:
     stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.png", SearchOption.AllDirectories));
     stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.jpg", SearchOption.AllDirectories));
     stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.jpeg", SearchOption.AllDirectories));
-    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.PNG", SearchOption.AllDirectories));
-    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.JPG", SearchOption.AllDirectories));
-    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.JPEG", SearchOption.AllDirectories));
-    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Png", SearchOption.AllDirectories));
-    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Jpg", SearchOption.AllDirectories));
-    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Jpeg", SearchOption.AllDirectories));
+    if (Main.StrictFileNames)
+    {
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.PNG", SearchOption.AllDirectories));
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Png", SearchOption.AllDirectories));
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.JPG", SearchOption.AllDirectories));
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Jpg", SearchOption.AllDirectories));
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.JPEG", SearchOption.AllDirectories));
+      stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path, "*.Jpeg", SearchOption.AllDirectories));
+    }
     this.ImagesListTexturePaths.Clear();
     for (int index = 0; index < this.ImagesListEntries.Count; ++index)
       UnityEngine.Object.Destroy((UnityEngine.Object) this.ImagesListEntries[index]);
@@ -1188,7 +1192,7 @@ label_8:
       {
         component.Dropsdowns[index2].ClearOptions();
         component.Dropsdowns[index2].AddOptions(options);
-        if ((UnityEngine.Object) Main.Instance.AllPatrols[index1].Spots[index2] == (UnityEngine.Object) null)
+        if ((UnityEngine.Object) Main.Instance.AllPatrols[index1].Spots[index2] == (UnityEngine.Object) null || (UnityEngine.Object) Main.Instance.AllPatrols[index1].Spots[index2].parent == (UnityEngine.Object) null)
         {
           component.Dropsdowns[index2].SetValueWithoutNotify(0);
         }
@@ -2515,10 +2519,30 @@ label_4:
     return (Texture2D) null;
   }
 
-  public void GoToOpenWorld_11() => this.GoToOpenWorld_Section(0);
+  public void GoToOpenWorld_11()
+  {
+    if (!Main.Instance.CanSaveGame)
+      return;
+    Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
+    if (Directory.Exists(Main.Instance.CurrentSavePath + "Section_0/") && File.Exists(Main.Instance.CurrentSavePath + "Section_0/chunks.dat"))
+      this.Invoke("GoToOWSectionLoad", 0.1f);
+    else
+      this.GoToOpenWorld_Section(0);
+  }
+
+  public void GoToOWSectionLoad()
+  {
+    Main.Instance.SaveGame();
+    Main._INTERNAL_LoadCity = false;
+    Main._INTERNAL_SectionToLoad = 0;
+    Main._INTERNAL_LoadSpecificSection = true;
+    Main._INTERNAL_CurrentSavePath = Main.Instance.CurrentSavePath;
+    LoadingScene.LoadScene(1);
+  }
 
   public void GoToOpenWorld_Section(int section)
   {
+    Main.Instance.SaveGame();
     this.PrepareForOWLoad_1(section);
     Main.RunInNextFrame((Action) (() =>
     {
@@ -2634,7 +2658,7 @@ label_4:
     else
     {
       Main.Instance.NewGameMenu.ExtraLoadingText.text = "0/1";
-      Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Generating Navigation";
+      Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "(Takes a bit.)   Generating Navigation";
     }
     Main.RunInNextFrame((Action) (() =>
     {
@@ -2653,7 +2677,7 @@ label_4:
       return;
     Main.Instance.MainThreads.Remove(new Action(this.WaitingForGenerationThread_Loading));
     Main.Instance.NewGameMenu.ExtraLoadingText.text = "0/1";
-    Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Generating Navigation";
+    Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "(Takes a bit.)   Generating Navigation";
     Main.RunInNextFrame((Action) (() => Main.Instance.GenerateNav()), 4);
   }
 
@@ -2688,6 +2712,15 @@ label_4:
   {
     Debug.Log((object) "GoToCity()");
     Main.Instance.NewGameMenu.SmallLoading.SetActive(true);
+    this.Invoke("GoToCity_11", 0.1f);
+  }
+
+  public void GoToCity_11()
+  {
+    Main.Instance.SaveGame();
+    Main._INTERNAL_LoadCity = true;
+    Main._INTERNAL_CurrentSavePath = Main.Instance.CurrentSavePath;
+    LoadingScene.LoadScene(1);
   }
 
   public void GoToOpenWorld() => Main.Instance.Player.SaveOnThisPlay();

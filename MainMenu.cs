@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: MainMenu
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -66,9 +66,9 @@ public class MainMenu : UI_Menu
     bool flag = PlayerPrefs.GetInt("FirstRun8.5", 0) == 0;
     int index = flag ? this.FirstRunMenu : UnityEngine.Random.Range(0, this.MainMenuPositions.Count);
     PlayerPrefs.SetInt("FirstRun8.5", 1);
-    if (PlayerPrefs.GetInt("FirstRun11.a", 0) == 0)
+    if (PlayerPrefs.GetInt("FirstRun11.c", 0) == 0)
       Main.Instance.FirstRunThisVersion = true;
-    PlayerPrefs.SetInt("FirstRun11.a", 1);
+    PlayerPrefs.SetInt("FirstRun11.c", 1);
     if (this.SpecificBG != -1)
       index = this.SpecificBG;
     Transform mainMenuPosition = this.MainMenuPositions[index];
@@ -111,7 +111,7 @@ public class MainMenu : UI_Menu
     Main.Instance.Lights.transform.localEulerAngles = this.LightsAngle;
     Time.timeScale = 1f;
     DateTime result = new DateTime();
-    DateTime.TryParse("2026/06/06", out result);
+    DateTime.TryParse("2026/07/07", out result);
     this.BuildIsOld.SetActive(result < DateTime.Now);
     this.ModsButton.SetActive(!Main.Instance.FreeWorldPatch);
     switch (UI_Settings._SpeedrunValue)
@@ -178,7 +178,7 @@ public class MainMenu : UI_Menu
   public void UpdateVersionTexts()
   {
     for (int index = 0; index < this.VersionTexts.Length; ++index)
-      this.VersionTexts[index].text = "11.a";
+      this.VersionTexts[index].text = "11.c";
   }
 
   public void Click_ChangeLog()

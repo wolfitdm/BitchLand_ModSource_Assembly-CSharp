@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Army2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -360,6 +360,7 @@ public class Mis_Army2 : Mission
     Main.Instance.GameplayMenu.DisplaySubtitle("Well now that everyone has been here this entire time, and paid attention to the whole plan I just described, let's go.", this.VoiceLines[0], (Action) (() =>
     {
       this.MisArmy1.War.ThisPersonInt.EndTheChat();
+      this.MisArmy1.War.RemoveMoveBlocker("huh?");
       this.AddGoal(1, true);
       this.FakeTruck.SetActive(false);
       this.Truck.gameObject.SetActive(true);
@@ -902,8 +903,8 @@ public class Mis_Army2 : Mission
             Main.Instance.GameplayMenu.SaveButton.interactable = true;
             Main.Instance.GameplayMenu.CantSaveMsg.SetActive(false);
             this.CompleteMission();
-            Main.Instance.CanSaveFlags.Remove("Quest Army2");
-            Main.Instance.CanSaveFlags = Main.Instance.CanSaveFlags;
+            Main.Instance.CanSaveFlags_remove("ArmyMissionGoal2");
+            Main.Instance.CanSaveFlags_remove("Quest Army2");
             this.Sia.StartScheduleTask(new Person.ScheduleTask()
             {
               IDName = "asdasd",

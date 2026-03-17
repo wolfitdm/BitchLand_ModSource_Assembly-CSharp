@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!--Project was exported from assembly: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll-->
+  <!--Project was exported from assembly: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll-->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{12DDD937-9567-4A40-9036-13973703BE5B}</ProjectGuid>
+    <ProjectGuid>{2240F25B-9CF9-490F-9203-A3F7D4F0D82A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AssemblyName>Assembly-CSharp</AssemblyName>
     <ApplicationVersion>1.0.0.0</ApplicationVersion>
@@ -293,6 +293,11 @@
     <Compile Include="e_MiningTool.cs" />
     <Compile Include="bl_MinableObject.cs" />
     <Compile Include="bl_SectionGenerate2.cs" />
+    <Compile Include="e_BlockDirection.cs" />
+    <Compile Include="bl_UndergroundMine_Part.cs" />
+    <Compile Include="bl_UndergroundMine_Block.cs" />
+    <Compile Include="bl_UndergroundMine.cs" />
+    <Compile Include="bl_UndergroundMine2.cs" />
     <Compile Include="bl_WorldBiome.cs" />
     <Compile Include="bl_SpawnableProp.cs" />
     <Compile Include="bl_WorldChunk.cs" />

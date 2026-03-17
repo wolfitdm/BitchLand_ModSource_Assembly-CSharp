@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -170,6 +170,7 @@ public class Mis_Zea2 : Mission
     Action after = new Action(_zea.ThisPersonInt.EndTheChat);
     Person personSaying = _zea;
     gameplayMenu.DisplaySubtitle("okay les'go", voiceLine, after, personSaying);
+    _zea.RemoveMoveBlocker("Quest2");
     _zea.StartScheduleTask(new Person.ScheduleTask()
     {
       IDName = "_zeaentertruck",
@@ -337,6 +338,8 @@ public class Mis_Zea2 : Mission
     _zea.WorkScheduleTasks.Clear();
     _zea.CurrentScheduleTask = (Person.ScheduleTask) null;
     _zea.enabled = true;
+    _zea.transform.SetParent((Transform) null);
+    _zea.RemoveMoveBlocker("InTruck");
     _zea.StartScheduleTask(new Person.ScheduleTask()
     {
       IDName = "_zeaBridgeDest",
@@ -598,17 +601,21 @@ public class Mis_Zea2 : Mission
     this.Areas[0].OnEnter();
     this.SpawnSpots[28].gameObject.SetActive(true);
     Main.Instance.MusicPlayer.PlayOneShot(Main.Instance.DoorMove);
-    Main.RunInNextFrame((Action) (() => _zea.StartScheduleTask(new Person.ScheduleTask()
+    Main.RunInNextFrame((Action) (() =>
     {
-      IDName = "_zeaBridgeDest3",
-      ActionPlace = this.SpawnSpots[19],
-      RunTo = false,
-      OnArrive = (Action) (() =>
+      _zea.navMesh.enabled = true;
+      _zea.StartScheduleTask(new Person.ScheduleTask()
       {
-        _zea.PlaceAt(this.SpawnSpots[19]);
-        Main.Instance.MainThreads.Add(new Action(this.DestIn1));
-      })
-    })), 3);
+        IDName = "_zeaBridgeDest4",
+        ActionPlace = this.SpawnSpots[19],
+        RunTo = false,
+        OnArrive = (Action) (() =>
+        {
+          _zea.PlaceAt(this.SpawnSpots[19]);
+          Main.Instance.MainThreads.Add(new Action(this.DestIn1));
+        })
+      });
+    }), 3);
   }
 
   public void DestIn1()

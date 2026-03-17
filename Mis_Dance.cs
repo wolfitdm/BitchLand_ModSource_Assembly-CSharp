@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Dance
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -144,7 +144,7 @@ public class Mis_Dance : Mission
       return;
     this.CompleteGoal(1);
     Main.Instance.MainThreads.Remove(new Action(this.Goal1));
-    this.HardTut.FirstGuard.navMesh.stoppingDistance = 1.5f;
+    this.HardTut.FirstGuard.NavmeshProxDistance = 1f;
     this._FollowTimer = 0.0f;
     this.HardTut.FirstGuard.StartScheduleTask(new Person.ScheduleTask()
     {
@@ -176,7 +176,7 @@ public class Mis_Dance : Mission
       Main.Instance.GameplayMenu.EndChat();
       this.AddGoal(2, true);
       this.DancePole.GetComponent<Collider>().enabled = false;
-      this.HardTut.FirstGuard.navMesh.stoppingDistance = 0.1f;
+      this.HardTut.FirstGuard.NavmeshProxDistance = 1f;
       this.HardTut.FirstGuard.StartScheduleTask(new Person.ScheduleTask()
       {
         IDName = "7",
@@ -250,7 +250,7 @@ public class Mis_Dance : Mission
       this.AddGoal(4, true);
       Main.Instance.MainThreads.Add(new Action(this.Goal4));
       this.Club2Music.volume = 1f;
-      this.HardTut.FirstGuard.navMesh.stoppingDistance = 1f;
+      this.HardTut.FirstGuard.NavmeshProxDistance = 1f;
       this.HardTut.FirstGuard.StartScheduleTask(new Person.ScheduleTask()
       {
         IDName = "dance_wait",

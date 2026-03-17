@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_HealthPod
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -147,9 +147,15 @@ public class int_HealthPod : int_basicSit
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     Debug.LogError((object) "it fucking loaded");
-    base.sd_LoadData(Data, SlitChar);
-    this.PodUseType = int.Parse(Data[this._CurrentLoadingIndex++]);
-    this.HealTimerMax = Main.ParseFloat(Data[this._CurrentLoadingIndex++]);
-    this.HealTimer = Main.ParseFloat(Data[this._CurrentLoadingIndex++]);
+    try
+    {
+      base.sd_LoadData(Data, SlitChar);
+      this.PodUseType = int.Parse(Data[this._CurrentLoadingIndex++]);
+      this.HealTimerMax = Main.ParseFloat(Data[this._CurrentLoadingIndex++]);
+      this.HealTimer = Main.ParseFloat(Data[this._CurrentLoadingIndex++]);
+    }
+    catch
+    {
+    }
   }
 }

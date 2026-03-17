@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Dressable
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -145,13 +145,20 @@ public class Dressable : SaveableBehaviour
   {
     this.BeingUndressed = false;
     this.RefreshShapeWhileEquipped();
-    if (this.PersonEquipped.IsPlayer && (double) this.IncreasedHeight != 0.0)
+    if ((Object) this.PersonEquipped == (Object) null)
     {
-      this.PersonEquipped.UserControl.m_Character.UsingStandingHeight = new Vector3(0.0f, this.IncreasedHeight, 0.0f);
-      this.PersonEquipped.UserControl.m_Character.StandState = this.PersonEquipped.UserControl.m_Character.StandState;
+      Debug.LogError((object) ("WTF? PersonEquipped == null " + this.name));
     }
-    this.RefreshColors();
-    this.SetIKs();
+    else
+    {
+      if (this.PersonEquipped.IsPlayer && (double) this.IncreasedHeight != 0.0)
+      {
+        this.PersonEquipped.UserControl.m_Character.UsingStandingHeight = new Vector3(0.0f, this.IncreasedHeight, 0.0f);
+        this.PersonEquipped.UserControl.m_Character.StandState = this.PersonEquipped.UserControl.m_Character.StandState;
+      }
+      this.RefreshColors();
+      this.SetIKs();
+    }
   }
 
   public virtual void OnUndressed()

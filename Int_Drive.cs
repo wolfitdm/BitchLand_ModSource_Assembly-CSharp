@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Int_Drive
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -232,7 +232,7 @@ public class Int_Drive : int_Lockable
   {
     for (int index = 0; index < this.PeopleSeated.Length; ++index)
     {
-      if ((UnityEngine.Object) this.PeopleSeated[index] == (UnityEngine.Object) interactingPerson)
+      if ((UnityEngine.Object) this.PeopleSeated[index] != (UnityEngine.Object) null && (UnityEngine.Object) this.PeopleSeated[index] == (UnityEngine.Object) interactingPerson)
       {
         this.PeopleSeated[index] = (Person) null;
         break;
@@ -240,7 +240,7 @@ public class Int_Drive : int_Lockable
     }
     for (int index = 0; index < this.VisibleNPCs.Count; ++index)
     {
-      if (this.VisibleNPCs[index].name == interactingPerson.WorldSaveID)
+      if ((UnityEngine.Object) this.VisibleNPCs[index] != (UnityEngine.Object) null && this.VisibleNPCs[index].name == interactingPerson.WorldSaveID)
       {
         GameObject visibleNpC = this.VisibleNPCs[index];
         this.VisibleNPCs.RemoveAt(index);

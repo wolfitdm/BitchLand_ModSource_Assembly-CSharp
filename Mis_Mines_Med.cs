@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Mines_Med
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -441,6 +441,7 @@ public class Mis_Mines_Med : Mission
           Main.Instance.MainThreads.Add(new Action(this.Goal2));
         })
       });
+      person.RemoveMoveBlocker("asdasd");
       person.navMesh.speed = 6f;
     }), person)), person);
   }
@@ -479,17 +480,21 @@ public class Mis_Mines_Med : Mission
     person.AddMoveBlocker("quest");
     person.ThisPersonInt.AddBlocker("quest");
     person.PlaceAt(this.SPOTS[0]);
-    person.StartScheduleTask(new Person.ScheduleTask()
+    Main.RunInNextFrame((Action) (() =>
     {
-      IDName = "SarahGoToSephie",
-      RunTo = false,
-      ActionPlace = this.SPOTS[2],
-      OnArrive = (Action) (() =>
+      person.RemoveMoveBlocker("quest");
+      person.StartScheduleTask(new Person.ScheduleTask()
       {
-        person.PlaceAt(this.SPOTS[2]);
-        Main.Instance.MainThreads.Add(new Action(this.Goal4));
-      })
-    });
+        IDName = "SarahGoToSephie",
+        RunTo = false,
+        ActionPlace = this.SPOTS[2],
+        OnArrive = (Action) (() =>
+        {
+          person.PlaceAt(this.SPOTS[2]);
+          Main.Instance.MainThreads.Add(new Action(this.Goal4));
+        })
+      });
+    }));
     merussy.PlaceAt(this.SPOTS[1]);
     merussy.State = Person_State.Work;
     merussy.AddMoveBlocker("quest");

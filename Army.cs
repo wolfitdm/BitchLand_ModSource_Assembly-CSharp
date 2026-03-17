@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Army
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -173,6 +173,7 @@ public class Army : BaseType
             case "Random Spots":
               if (person.DEBUG)
                 Debug.Log((object) "LBL_PatrolRandom");
+              person.AddCullBlocker("worktime");
               int_PatrolSpot[] objectsOfType = UnityEngine.Object.FindObjectsOfType<int_PatrolSpot>(true);
               int index1 = UnityEngine.Random.Range(0, objectsOfType.Length);
               person.NavmeshProxDistance = 1f;
@@ -195,6 +196,7 @@ public class Army : BaseType
                   bl_Patrol allPatrol = Main.Instance.AllPatrols[index2];
                   if (person.DEBUG)
                     Debug.Log((object) "LBL_PatrolSpecific");
+                  person.AddCullBlocker("worktime");
                   bl_RandomPatrol blRandomPatrol = person.gameObject.GetComponent<bl_RandomPatrol>();
                   if ((UnityEngine.Object) blRandomPatrol == (UnityEngine.Object) null)
                     blRandomPatrol = person.gameObject.AddComponent<bl_RandomPatrol>();
@@ -213,24 +215,22 @@ public class Army : BaseType
     }
     if (person.DEBUG)
       Debug.Log((object) "LBL_CheckForTrainees");
-    if (UnityEngine.Random.Range(0, 3) == 0)
+    if ((double) UnityEngine.Random.Range(0.0f, 1f) < 0.800000011920929)
     {
-      int count = Main.Instance.SpawnedPeopleOfType_World[2].Count;
-      if (count != 0)
+      List<Person> personList = new List<Person>();
+      foreach (Component component1 in Physics.OverlapSphere(person.transform.position, 50f, (int) Main.Instance.Layers_LookForNPCs))
       {
-        int index3 = UnityEngine.Random.Range(0, count);
-        for (int index4 = 0; index4 < 5; ++index4)
+        InteractRedirect component2 = component1.GetComponent<InteractRedirect>();
+        if ((UnityEngine.Object) component2 != (UnityEngine.Object) null && (UnityEngine.Object) component2.Redirect != (UnityEngine.Object) null && component2.Redirect is int_Person)
         {
-          _trainee = Main.Instance.SpawnedPeopleOfType_World[2][index3];
-          if ((UnityEngine.Object) _trainee != (UnityEngine.Object) null && !_trainee.TheHealth.dead && _trainee.ThisPersonInt.CanInteract && !_trainee.Interacting && person.HasPathTo(_trainee.transform.position))
-          {
-            ++index3;
-            if (index3 >= count)
-              index3 = 0;
-          }
-          else
-            break;
+          Person thisPerson = ((int_Person) component2.Redirect).ThisPerson;
+          if (thisPerson.PersonType.ThisType == Person_Type.Prisioner && !thisPerson.TheHealth.dead && !thisPerson.TheHealth.Incapacitated && thisPerson.ThisPersonInt.CanInteract && !thisPerson.Leashed && ((UnityEngine.Object) thisPerson.InteractingWith == (UnityEngine.Object) null || thisPerson.InteractingWith.CanInterruptUse) && person.HasPathTo(thisPerson.transform.position))
+            personList.Add(thisPerson);
         }
+      }
+      if (personList.Count != 0)
+      {
+        _trainee = personList[UnityEngine.Random.Range(0, personList.Count)];
         if (!((UnityEngine.Object) _trainee == (UnityEngine.Object) null))
         {
           if (person.DEBUG)
@@ -246,9 +246,26 @@ public class Army : BaseType
             WhenNoMove = (Action) (() => person.CompleteScheduleTask(true)),
             OnArrive = (Action) (() =>
             {
-              if ((UnityEngine.Object) _trainee != (UnityEngine.Object) null && !_trainee.TheHealth.dead && SpawnedSexScene.CanStartSex(person, _trainee) && _trainee.ThisPersonInt.CanInteract)
+              if ((UnityEngine.Object) _trainee != (UnityEngine.Object) null && !_trainee.TheHealth.dead && !_trainee.TheHealth.Incapacitated && _trainee.ThisPersonInt.CanInteract && !_trainee.Leashed)
               {
-                _trainee.UnRagdoll();
+                if (!((UnityEngine.Object) _trainee.InteractingWith == (UnityEngine.Object) null))
+                {
+                  if (_trainee.InteractingWith.CanInterruptUse)
+                  {
+                    _trainee.InteractingWith.StopInteracting();
+                  }
+                  else
+                  {
+                    if (_trainee.InteractingWith is int_wallpussy)
+                    {
+                      int num = (UnityEngine.Object) ((int_wallpussy) _trainee.InteractingWith).Client == (UnityEngine.Object) null ? 1 : 0;
+                      person.CompleteScheduleTask(true);
+                      return;
+                    }
+                    person.CompleteScheduleTask(true);
+                    return;
+                  }
+                }
                 SpawnedSexScene spawnedSexScene = Main.Instance.SexScene.SpawnSexScene(4, UnityEngine.Random.Range(0, 4), person, _trainee, canControl: false);
                 spawnedSexScene.On_ClothingToggle(true);
                 spawnedSexScene.TimerForRandomPoseChange = true;
@@ -287,6 +304,7 @@ public class Army : BaseType
 label_52:
     if (person.DEBUG)
       Debug.Log((object) "LBL_PatrolWonder");
+    person.RemoveCullBlocker("worktime");
     return false;
   }
 }

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Army
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 34432851-88D2-4640-8704-0D81AB8DF51E
-// Assembly location: E:\sw_games\11_5\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
+// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -51,7 +51,7 @@ public class Mis_Army : Mission
       this.EnableOnMission.SetActive(true);
       this.War.StartScheduleTask(new Person.ScheduleTask()
       {
-        IDName = "0",
+        IDName = "war1",
         RunTo = true,
         ActionPlace = this.War_ShootingRangeSpot,
         OnArrive = (Action) (() =>
@@ -177,8 +177,7 @@ public class Mis_Army : Mission
                                           this.CurrentGoal = this.Goals[19];
                                           if (this.CurrentGoal.Completed)
                                           {
-                                            Main.Instance.CanSaveFlags.Remove("ArmyMissionGoal2");
-                                            Main.Instance.CanSaveFlags = Main.Instance.CanSaveFlags;
+                                            Main.Instance.CanSaveFlags_remove("ArmyMissionGoal2");
                                             this.CompletedMission = true;
                                           }
                                         }
@@ -370,7 +369,7 @@ public class Mis_Army : Mission
     Main.Instance.GameplayMenu.DisplaySubtitle("Come this way", this.VoiceLines[1], new Action(this.War.ThisPersonInt.EndTheChat), this.War);
     this.War.StartScheduleTask(new Person.ScheduleTask()
     {
-      IDName = "0",
+      IDName = "war2",
       RunTo = true,
       ActionPlace = this.War_CrawlSpot,
       OnArrive = (Action) (() =>
@@ -609,8 +608,7 @@ public class Mis_Army : Mission
     this.CompleteGoal(19);
     Main.Instance.MainThreads.Remove(new Action(this.Goal19));
     this.EnableOnMission_part2.SetActive(false);
-    Main.Instance.CanSaveFlags.Remove("ArmyMissionGoal2");
-    Main.Instance.CanSaveFlags = Main.Instance.CanSaveFlags;
+    Main.Instance.CanSaveFlags_remove("ArmyMissionGoal2");
     this.CompleteMission();
     Main.Instance.GameplayMenu.StartMission((Mission) this.ArmyMission2);
     Main.Instance.GameplayMenu.DisplaySubtitle("Let's go!", this.ZeaVoiceLines[9], new Action(this.Zea.ThisPersonInt.EndTheChat), this.Zea);
