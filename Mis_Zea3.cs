@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Zea3
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -1005,6 +1005,7 @@ public class Mis_Zea3 : Mission
     _war.A_Walking = "Orc Walk2";
     _war.enabled = true;
     _war.RemoveMoveBlocker("Cutscene");
+    _war.navMesh.enabled = true;
     this.WarWalkTimer = 0.0f;
     Main.Instance.MainThreads.Add(new Action(this.MusicRepeaterWar));
     _war.StartScheduleTask(new Person.ScheduleTask()
@@ -1289,6 +1290,7 @@ public class Mis_Zea3 : Mission
                       Main.Instance.CityCharacters.Sarah.MoveBlockers.Clear();
                       Main.Instance.CityCharacters.Sarah.AddMoveBlocker("reset");
                       Main.Instance.CityCharacters.Sarah.RemoveMoveBlocker("reset");
+                      Main.Instance.CityCharacters.Sarah.navMesh.enabled = true;
                       this.Ely_spots[35].gameObject.SetActive(false);
                       this.Ely_spots[34].gameObject.SetActive(true);
                       Mis_ZeaMistake objectOfType = UnityEngine.Object.FindObjectOfType<Mis_ZeaMistake>();
@@ -1599,6 +1601,7 @@ public class Mis_Zea3 : Mission
     _sarah.SetLowLod();
     _sarah.enabled = false;
     _sarah.Anim.enabled = true;
+    _sarah.navMesh.enabled = false;
     Main.RunInSeconds((Action) (() => _sarah.Anim.Play("waveGate")), 1f);
     Main.RunInSeconds((Action) (() => _sarah.Anim.Play("waveGate")), 2f);
     Animation _anim = this.TankAnim;
@@ -1725,7 +1728,7 @@ public class Mis_Zea3 : Mission
 
   public void WhileTrip()
   {
-    this.TankEngine.pitch = (float) (0.30000001192092896 + (double) this.TankRigid.velocity.magnitude / 20.0);
+    this.TankEngine.pitch = (float) (0.30000001192092896 + (double) this.TankRigid.linearVelocity.magnitude / 20.0);
     this._TankTime = this.TankAnim["tanktrip"].time;
     switch (this.TankTripState)
     {

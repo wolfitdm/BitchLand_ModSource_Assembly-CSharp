@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: FirstPersonAIO
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -158,16 +158,16 @@ public class FirstPersonAIO : MonoBehaviour
     this.baseCamFOV = this.playerCamera.fieldOfView;
     this.capsule.radius = this.capsule.height / 4f;
     this.staminaInternal = this.staminaLevel;
-    this.advanced.zeroFrictionMaterial = new PhysicMaterial("Zero_Friction");
+    this.advanced.zeroFrictionMaterial = new PhysicsMaterial("Zero_Friction");
     this.advanced.zeroFrictionMaterial.dynamicFriction = 0.0f;
     this.advanced.zeroFrictionMaterial.staticFriction = 0.0f;
-    this.advanced.zeroFrictionMaterial.frictionCombine = PhysicMaterialCombine.Minimum;
-    this.advanced.zeroFrictionMaterial.bounceCombine = PhysicMaterialCombine.Minimum;
-    this.advanced.highFrictionMaterial = new PhysicMaterial("Max_Friction");
+    this.advanced.zeroFrictionMaterial.frictionCombine = PhysicsMaterialCombine.Minimum;
+    this.advanced.zeroFrictionMaterial.bounceCombine = PhysicsMaterialCombine.Minimum;
+    this.advanced.highFrictionMaterial = new PhysicsMaterial("Max_Friction");
     this.advanced.highFrictionMaterial.dynamicFriction = 1f;
     this.advanced.highFrictionMaterial.staticFriction = 1f;
-    this.advanced.highFrictionMaterial.frictionCombine = PhysicMaterialCombine.Maximum;
-    this.advanced.highFrictionMaterial.bounceCombine = PhysicMaterialCombine.Average;
+    this.advanced.highFrictionMaterial.frictionCombine = PhysicsMaterialCombine.Maximum;
+    this.advanced.highFrictionMaterial.bounceCombine = PhysicsMaterialCombine.Average;
     this.originalLocalPosition = this.snapHeadjointToCapsul ? new Vector3(this.head.localPosition.x, this.capsule.height / 2f * this.head.localScale.y, this.head.localPosition.z) : this.head.localPosition;
     if ((UnityEngine.Object) this.GetComponent<AudioSource>() == (UnityEngine.Object) null)
       this.gameObject.AddComponent<AudioSource>();
@@ -239,7 +239,7 @@ public class FirstPersonAIO : MonoBehaviour
   {
     if (this.useStamina)
     {
-      this.isSprinting = Input.GetKey(this.sprintKey) && !this.isCrouching && (double) this.staminaInternal > 0.0 && ((double) Mathf.Abs(this.fps_Rigidbody.velocity.x) > 0.0099999997764825821 || (double) Mathf.Abs(this.fps_Rigidbody.velocity.z) > 0.0099999997764825821);
+      this.isSprinting = Input.GetKey(this.sprintKey) && !this.isCrouching && (double) this.staminaInternal > 0.0 && ((double) Mathf.Abs(this.fps_Rigidbody.linearVelocity.x) > 0.0099999997764825821 || (double) Mathf.Abs(this.fps_Rigidbody.linearVelocity.z) > 0.0099999997764825821);
       if (this.isSprinting)
       {
         this.staminaInternal -= this.staminaDepletionSpeed * 2f * Time.deltaTime;
@@ -249,7 +249,7 @@ public class FirstPersonAIO : MonoBehaviour
           this.StaminaMeter.color = (Color) Vector4.MoveTowards((Vector4) this.StaminaMeter.color, new Vector4(1f, 1f, 1f, 1f), 0.15f);
         }
       }
-      else if ((!Input.GetKey(this.sprintKey) || (double) Mathf.Abs(this.fps_Rigidbody.velocity.x) < 0.0099999997764825821 || (double) Mathf.Abs(this.fps_Rigidbody.velocity.z) < 0.0099999997764825821 || this.isCrouching) && (double) this.staminaInternal < (double) this.staminaLevel)
+      else if ((!Input.GetKey(this.sprintKey) || (double) Mathf.Abs(this.fps_Rigidbody.linearVelocity.x) < 0.0099999997764825821 || (double) Mathf.Abs(this.fps_Rigidbody.linearVelocity.z) < 0.0099999997764825821 || this.isCrouching) && (double) this.staminaInternal < (double) this.staminaLevel)
         this.staminaInternal += this.staminaDepletionSpeed * Time.deltaTime;
       if (this.drawStaminaMeter)
       {
@@ -281,7 +281,7 @@ public class FirstPersonAIO : MonoBehaviour
       else
       {
         this.fps_Rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
-        vector3_1 = (this.transform.forward * this.inputXY.y * this.speed + this.transform.right * this.inputXY.x * this.walkSpeedInternal) * ((double) this.fps_Rigidbody.velocity.y > 0.0099999997764825821 ? this.SlopeCheck() : 0.8f);
+        vector3_1 = (this.transform.forward * this.inputXY.y * this.speed + this.transform.right * this.inputXY.x * this.walkSpeedInternal) * ((double) this.fps_Rigidbody.linearVelocity.y > 0.0099999997764825821 ? this.SlopeCheck() : 0.8f);
       }
     }
     else
@@ -296,7 +296,7 @@ public class FirstPersonAIO : MonoBehaviour
     this.inputXY = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
     if ((double) this.inputXY.magnitude > 1.0)
       this.inputXY.Normalize();
-    this.yVelocity = this.fps_Rigidbody.velocity.y;
+    this.yVelocity = this.fps_Rigidbody.linearVelocity.y;
     if (this.IsGrounded && this.jumpInput && (double) this.jumpPowerInternal > 0.0 && !this.didJump)
     {
       if ((double) this.advanced.maxSlopeAngle > 0.0)
@@ -305,7 +305,7 @@ public class FirstPersonAIO : MonoBehaviour
         {
           this.didJump = true;
           this.jumpInput = false;
-          this.yVelocity += (double) this.fps_Rigidbody.velocity.y < 0.0099999997764825821 ? this.jumpPowerInternal : this.jumpPowerInternal / 3f;
+          this.yVelocity += (double) this.fps_Rigidbody.linearVelocity.y < 0.0099999997764825821 ? this.jumpPowerInternal : this.jumpPowerInternal / 3f;
           this.advanced.isTouchingWalkable = false;
           this.advanced.isTouchingFlat = false;
           this.advanced.isTouchingUpright = false;
@@ -326,7 +326,7 @@ public class FirstPersonAIO : MonoBehaviour
       if (this.advanced.isTouchingUpright && !this.advanced.isTouchingWalkable && !this.didJump)
         this.yVelocity += Physics.gravity.y;
     }
-    this.fps_Rigidbody.velocity = !this.playerCanMove || this.controllerPauseState ? Vector3.zero : vector3_1 + Vector3.up * this.yVelocity;
+    this.fps_Rigidbody.linearVelocity = !this.playerCanMove || this.controllerPauseState ? Vector3.zero : vector3_1 + Vector3.up * this.yVelocity;
     if ((double) this.inputXY.magnitude > 0.0 || !this.IsGrounded)
       this.capsule.sharedMaterial = this.advanced.zeroFrictionMaterial;
     else
@@ -336,7 +336,7 @@ public class FirstPersonAIO : MonoBehaviour
     {
       if (this.isSprinting && !this.isCrouching && (double) this.playerCamera.fieldOfView != (double) this.baseCamFOV + (double) this.advanced.FOVKickAmount * 2.0 - 0.0099999997764825821)
       {
-        if ((double) Mathf.Abs(this.fps_Rigidbody.velocity.x) > 0.5 || (double) Mathf.Abs(this.fps_Rigidbody.velocity.z) > 0.5)
+        if ((double) Mathf.Abs(this.fps_Rigidbody.linearVelocity.x) > 0.5 || (double) Mathf.Abs(this.fps_Rigidbody.linearVelocity.z) > 0.5)
           this.playerCamera.fieldOfView = Mathf.SmoothDamp(this.playerCamera.fieldOfView, this.baseCamFOV + this.advanced.FOVKickAmount * 2f, ref this.advanced.fovRef, this.advanced.changeTime);
       }
       else if ((double) this.playerCamera.fieldOfView != (double) this.baseCamFOV)
@@ -406,7 +406,7 @@ public class FirstPersonAIO : MonoBehaviour
     }
     if (this.useHeadbob)
     {
-      vector3_2 = this.fps_Rigidbody.velocity;
+      vector3_2 = this.fps_Rigidbody.linearVelocity;
       this.head.localPosition = (double) vector3_2.magnitude <= 0.10000000149011612 ? Vector3.SmoothDamp(this.head.localPosition, this.snapHeadjointToCapsul ? new Vector3(this.originalLocalPosition.x, this.capsule.height / 2f * this.head.localScale.y, this.originalLocalPosition.z) + new Vector3(x1, y, 0.0f) : this.originalLocalPosition + new Vector3(x1, y, 0.0f), ref this.miscRefVel, 0.15f) : Vector3.MoveTowards(this.head.localPosition, this.snapHeadjointToCapsul ? new Vector3(this.originalLocalPosition.x, this.capsule.height / 2f * this.head.localScale.y, this.originalLocalPosition.z) + new Vector3(x1, y, 0.0f) : this.originalLocalPosition + new Vector3(x1, y, 0.0f), 0.5f);
       this.head.localRotation = Quaternion.Euler(x2, 0.0f, z);
     }
@@ -418,7 +418,7 @@ public class FirstPersonAIO : MonoBehaviour
         if (Physics.Raycast(this.transform.position, Vector3.down, out hitInfo2))
         {
           if (this.dynamicFootstep.materialMode == FirstPersonAIO.DynamicFootStep.matMode.physicMaterial)
-            this.dynamicFootstep.currentClipSet = !this.dynamicFootstep.woodPhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.woodPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.woodClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.grassPhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.grassPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.grassClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.metalAndGlassPhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.metalAndGlassPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.metalAndGlassClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.rockAndConcretePhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.rockAndConcretePhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.rockAndConcreteClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.dirtAndGravelPhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.dirtAndGravelPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.dirtAndGravelClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.mudPhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.mudPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.mudClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.customPhysMat.Any<PhysicMaterial>() || !this.dynamicFootstep.customPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.customClipSet.Any<AudioClip>() ? this.footStepSounds : this.dynamicFootstep.customClipSet) : this.dynamicFootstep.mudClipSet) : this.dynamicFootstep.dirtAndGravelClipSet) : this.dynamicFootstep.rockAndConcreteClipSet) : this.dynamicFootstep.metalAndGlassClipSet) : this.dynamicFootstep.grassClipSet) : this.dynamicFootstep.woodClipSet;
+            this.dynamicFootstep.currentClipSet = !this.dynamicFootstep.woodPhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.woodPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.woodClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.grassPhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.grassPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.grassClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.metalAndGlassPhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.metalAndGlassPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.metalAndGlassClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.rockAndConcretePhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.rockAndConcretePhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.rockAndConcreteClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.dirtAndGravelPhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.dirtAndGravelPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.dirtAndGravelClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.mudPhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.mudPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.mudClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.customPhysMat.Any<PhysicsMaterial>() || !this.dynamicFootstep.customPhysMat.Contains(hitInfo2.collider.sharedMaterial) || !this.dynamicFootstep.customClipSet.Any<AudioClip>() ? this.footStepSounds : this.dynamicFootstep.customClipSet) : this.dynamicFootstep.mudClipSet) : this.dynamicFootstep.dirtAndGravelClipSet) : this.dynamicFootstep.rockAndConcreteClipSet) : this.dynamicFootstep.metalAndGlassClipSet) : this.dynamicFootstep.grassClipSet) : this.dynamicFootstep.woodClipSet;
           else if ((bool) (UnityEngine.Object) hitInfo2.collider.GetComponent<MeshRenderer>())
             this.dynamicFootstep.currentClipSet = !this.dynamicFootstep.woodMat.Any<Material>() || !this.dynamicFootstep.woodMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.woodClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.grassMat.Any<Material>() || !this.dynamicFootstep.grassMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.grassClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.metalAndGlassMat.Any<Material>() || !this.dynamicFootstep.metalAndGlassMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.metalAndGlassClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.rockAndConcreteMat.Any<Material>() || !this.dynamicFootstep.rockAndConcreteMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.rockAndConcreteClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.dirtAndGravelMat.Any<Material>() || !this.dynamicFootstep.dirtAndGravelMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.dirtAndGravelClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.mudMat.Any<Material>() || !this.dynamicFootstep.mudMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.mudClipSet.Any<AudioClip>() ? (!this.dynamicFootstep.customMat.Any<Material>() || !this.dynamicFootstep.customMat.Contains(hitInfo2.collider.GetComponent<MeshRenderer>().sharedMaterial) || !this.dynamicFootstep.customClipSet.Any<AudioClip>() ? (this.footStepSounds.Any<AudioClip>() ? this.footStepSounds : (List<AudioClip>) null) : this.dynamicFootstep.customClipSet) : this.dynamicFootstep.mudClipSet) : this.dynamicFootstep.dirtAndGravelClipSet) : this.dynamicFootstep.rockAndConcreteClipSet) : this.dynamicFootstep.metalAndGlassClipSet) : this.dynamicFootstep.grassClipSet) : this.dynamicFootstep.woodClipSet;
           if (this.IsGrounded)
@@ -672,8 +672,8 @@ public class FirstPersonAIO : MonoBehaviour
   public class AdvancedSettings
   {
     public float gravityMultiplier = 1f;
-    public PhysicMaterial zeroFrictionMaterial;
-    public PhysicMaterial highFrictionMaterial;
+    public PhysicsMaterial zeroFrictionMaterial;
+    public PhysicsMaterial highFrictionMaterial;
     public float maxSlopeAngle = 55f;
     internal bool isTouchingWalkable;
     internal bool isTouchingUpright;
@@ -700,13 +700,13 @@ public class FirstPersonAIO : MonoBehaviour
   public class DynamicFootStep
   {
     public FirstPersonAIO.DynamicFootStep.matMode materialMode;
-    public List<PhysicMaterial> woodPhysMat;
-    public List<PhysicMaterial> metalAndGlassPhysMat;
-    public List<PhysicMaterial> grassPhysMat;
-    public List<PhysicMaterial> dirtAndGravelPhysMat;
-    public List<PhysicMaterial> rockAndConcretePhysMat;
-    public List<PhysicMaterial> mudPhysMat;
-    public List<PhysicMaterial> customPhysMat;
+    public List<PhysicsMaterial> woodPhysMat;
+    public List<PhysicsMaterial> metalAndGlassPhysMat;
+    public List<PhysicsMaterial> grassPhysMat;
+    public List<PhysicsMaterial> dirtAndGravelPhysMat;
+    public List<PhysicsMaterial> rockAndConcretePhysMat;
+    public List<PhysicsMaterial> mudPhysMat;
+    public List<PhysicsMaterial> customPhysMat;
     public List<Material> woodMat;
     public List<Material> metalAndGlassMat;
     public List<Material> grassMat;

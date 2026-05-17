@@ -1,9 +1,10 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: LoadingScene
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,10 +18,12 @@ public class LoadingScene : MonoBehaviour
   public GameObject Loading;
   public GameObject Asking;
   public GameObject ZipError;
+  public GameObject ModsMsg;
   public string UpdateCheckLink;
   public static int SceneToLoad;
   public static bool SkipQuestion;
   public static bool FirstOpen;
+  public static bool HasShownModMsg;
   public GameObject UpdateMsg;
 
   private void Start()
@@ -51,6 +54,38 @@ public class LoadingScene : MonoBehaviour
     Texture2D texture2D = new Texture2D(0, 0);
     texture2D.LoadImage(File.ReadAllBytes(files[Random.Range(0, files.Length - 1)]));
     this.BackgroundImage.sprite = Sprite.Create(texture2D, new Rect(0.0f, 0.0f, (float) texture2D.width, (float) texture2D.height), new Vector2(0.0f, 0.0f));
+    List<string> stringList = new List<string>();
+    string path = Application.dataPath + "/../";
+    string[] strArray = new string[6]
+    {
+      "MANAGER",
+      "BEPINEX",
+      "CONFIG",
+      "WINHTTP",
+      "VERSION",
+      "LOAD"
+    };
+    stringList.AddRange((IEnumerable<string>) Directory.GetFiles(path));
+    stringList.AddRange((IEnumerable<string>) Directory.GetDirectories(path));
+    for (int index1 = 0; index1 < stringList.Count; ++index1)
+    {
+      for (int index2 = 0; index2 < strArray.Length; ++index2)
+      {
+        if (stringList[index1].ToUpperInvariant().Contains(strArray[index2]))
+        {
+          if (!LoadingScene.HasShownModMsg)
+          {
+            this.ModsMsg.SetActive(true);
+            LoadingScene.HasShownModMsg = true;
+            LoadingScene.SkipQuestion = false;
+            goto label_19;
+          }
+          else
+            goto label_19;
+        }
+      }
+    }
+label_19:
     if (LoadingScene.SkipQuestion)
     {
       this.StartGame();

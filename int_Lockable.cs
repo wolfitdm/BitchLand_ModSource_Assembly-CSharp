@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: int_Lockable
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,7 @@ using UnityEngine.AI;
 public class int_Lockable : Interactible
 {
   public NavMeshObstacle Obstacle;
+  public NavMeshObstacle[] Obstacles;
   public bool StartLocked;
   public bool PlayerOwned;
   public AudioSource Audio;
@@ -58,6 +59,17 @@ public class int_Lockable : Interactible
       {
         this.Obstacle.carving = value;
         this.Obstacle.enabled = value;
+      }
+      if (this.Obstacles != null && this.Obstacles.Length != 0)
+      {
+        for (int index = 0; index < this.Obstacles.Length; ++index)
+        {
+          if ((UnityEngine.Object) this.Obstacles[index] != (UnityEngine.Object) null)
+          {
+            this.Obstacles[index].carving = value;
+            this.Obstacles[index].enabled = value;
+          }
+        }
       }
       if (this.m_Locked)
       {

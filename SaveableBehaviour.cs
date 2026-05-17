@@ -1,15 +1,17 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: SaveableBehaviour
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #nullable disable
 public class SaveableBehaviour : MonoBehaviour
@@ -26,6 +28,8 @@ public class SaveableBehaviour : MonoBehaviour
   public GameObject RootObj;
   public List<string> CanSaveFlagger = new List<string>();
   public string[] _LatestDataLoading;
+  public bool IsThisAfterV13;
+  public int VersionThisIs;
 
   public virtual bool CanSave => this.CanSaveFlagger.Count == 0;
 
@@ -137,11 +141,45 @@ public class SaveableBehaviour : MonoBehaviour
 
   public virtual string[] sd_SaveData(char SlitChar = ':')
   {
-    return new string[1]{ this.WorldSaveID };
+    return new string[3]
+    {
+      this.WorldSaveID,
+      "Version_14",
+      this.gameObject.scene.buildIndex.ToString()
+    };
   }
 
   public virtual void sd_LoadData(string[] Data, char SlitChar = ':')
   {
+    this.IsThisAfterV13 = SaveableBehaviour.IsAfterV13(Data);
+    if (!this.IsThisAfterV13)
+      return;
+    this.VersionThisIs = int.Parse(Data[1].Split("_", StringSplitOptions.None)[1], (IFormatProvider) CultureInfo.InvariantCulture);
+    int buildIndex = int.Parse(Data[2]);
+    if (buildIndex != 6)
+      return;
+    Scene sceneByBuildIndex = SceneManager.GetSceneByBuildIndex(buildIndex);
+    if (!sceneByBuildIndex.isLoaded)
+      return;
+    SceneManager.MoveGameObjectToScene(this.RootObj, sceneByBuildIndex);
+  }
+
+  public static bool IsAfterV13(string[] Data)
+  {
+    return Data != null && Data.Length > 1 && Data[1].StartsWith("Version_");
+  }
+
+  public static int LineFor(string[] Data, string Title)
+  {
+    if (Data != null)
+    {
+      for (int index = 0; index < Data.Length; ++index)
+      {
+        if (Data[index] == Title)
+          return index;
+      }
+    }
+    return 0;
   }
 
   public virtual void AfterDataLoaded()
@@ -151,7 +189,7 @@ public class SaveableBehaviour : MonoBehaviour
   public virtual void SaveToFile(string filename)
   {
     string[] saveableData = this.SaveableData;
-    if (saveableData == null)
+    if (saveableData == null || saveableData.Length <= 1)
       return;
     Debug.Log((object) ("Saving " + this.gameObject.name + "-" + saveableData[0] + "-" + saveableData[1]));
     File.WriteAllLines(filename, saveableData);

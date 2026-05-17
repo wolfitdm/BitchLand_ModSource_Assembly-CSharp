@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Gameplay
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -321,6 +321,8 @@ public class UI_Gameplay : UI_Menu
   public GameObject Build_CraftIngredientEntry;
   public List<GameObject> Build_SpawnedCraftRecipeEntries;
   public bl_CraftRecipes Build_TheSelectedReceipt;
+  public List<List<string>> BuildingCategories;
+  public Dropdown Building_CategoriesDrop;
   public GameObject _BuildindPlan;
   public int_ConstructionPlan ThisPlan;
   public int_ConstructionPlan.e_BuildSnapType CurrentSnapType;
@@ -1254,7 +1256,12 @@ label_8:
     List<int_PatrolSpot> intPatrolSpotList = new List<int_PatrolSpot>();
     intPatrolSpotList.AddRange((IEnumerable<int_PatrolSpot>) UnityEngine.Object.FindObjectsOfType<int_PatrolSpot>(true));
     for (int index = 0; index < intPatrolSpotList.Count; ++index)
-      intPatrolSpotList[index].gameObject.SetActive(value);
+    {
+      if (value)
+        intPatrolSpotList[index].Show();
+      else
+        intPatrolSpotList[index].Hide();
+    }
   }
 
   public void Open_WorkerManagementTable()
@@ -2507,6 +2514,7 @@ label_4:
     this.PersonDesc.text = relationship.Name + "\n\n" + (relationship is Girl ? "Female (" : "Male (") + ((UnityEngine.Object) relationship.PersonType != (UnityEngine.Object) null ? relationship.PersonType.ThisType.ToString() : "Classless") + ")\n" + relationship.Personality.ToString() + "\nSexed " + relationship.TimesSexedPlayer.ToString() + " times\n" + str3 + "\n" + (relationship.transform.localScale.y + 0.75f).ToString("##.##") + " Meters " + UI_Gameplay.MetersToFeetAndInches(relationship.transform.localScale.y + 0.75f) + "\n" + (relationship is Girl ? (((Girl) relationship).Futa ? str2 : "No Penis") : str2) + "\n" + (relationship is Girl ? "(" + ((double) relationship.StoryModeFertility == 0.0 ? (object) (relationship.Fertility * 100f).ToString("0.#") : (object) (float) ((double) relationship.StoryModeFertility * 100.0))?.ToString() + "% fertile) " + (((Girl) relationship).Pregnant ? "Pregnancy: " + ((Girl) relationship).PregnancyDisplayPercent : "Not Pregnant") : string.Empty) + "\n" + (relationship is Girl ? "Had " + ((Girl) relationship).HadPregnancies.ToString() + " Pregnancies" : string.Empty);
   }
 
+  [Obsolete]
   public static Texture2D LoadTexture(string FilePath)
   {
     if (File.Exists(FilePath))
@@ -3278,6 +3286,67 @@ label_31:
   {
     this.CloseAllJournalMenus();
     this.Journal_Building.SetActive(true);
+    if (this.BuildingCategories == null)
+    {
+      this.BuildingCategories = new List<List<string>>();
+      List<string> stringList1 = new List<string>();
+      stringList1.AddRange((IEnumerable<string>) new string[6]
+      {
+        "Wood",
+        "Concrete",
+        "Metal",
+        "Doors",
+        "Other",
+        "Glass"
+      });
+      List<string> stringList2 = new List<string>();
+      stringList2.AddRange((IEnumerable<string>) new string[2]
+      {
+        "Statues",
+        "Cheap shacks"
+      });
+      List<string> stringList3 = new List<string>();
+      stringList3.AddRange((IEnumerable<string>) new string[9]
+      {
+        "Bedroom",
+        "Kitchen",
+        "Office",
+        "Living room",
+        "Bathroom",
+        "Bar",
+        "Outdoors",
+        "Misc",
+        "Lights"
+      });
+      List<string> stringList4 = new List<string>();
+      stringList4.AddRange((IEnumerable<string>) new string[4]
+      {
+        "Sex Machines",
+        "Wood Posts",
+        "Dildo Poles",
+        "Spots (Civilian)"
+      });
+      List<string> stringList5 = new List<string>();
+      stringList5.AddRange((IEnumerable<string>) new string[3]
+      {
+        "Defence",
+        "Service",
+        "Management"
+      });
+      this.BuildingCategories.Add(stringList1);
+      this.BuildingCategories.Add(stringList2);
+      this.BuildingCategories.Add(stringList3);
+      this.BuildingCategories.Add(stringList4);
+      this.BuildingCategories.Add(stringList5);
+      List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
+      for (int index = 0; index < this.BuildingCategories[0].Count; ++index)
+        options.Add(new Dropdown.OptionData()
+        {
+          text = this.BuildingCategories[0][index]
+        });
+      this.Building_CategoriesDrop.ClearOptions();
+      this.Building_CategoriesDrop.AddOptions(options);
+    }
     for (int index = 0; index < this.MenuButtons.Length; ++index)
       this.MenuButtons[index].sprite = this.UnselectedButton;
     this.MenuButtons[8].sprite = this.SelectedButton;
@@ -3286,9 +3355,12 @@ label_31:
     this.Build_RefreshRecipes(0);
   }
 
+  public void Build_RefreshCategory() => this.Build_RefreshRecipes(this.Build_SelectedRecipeType);
+
   public void Build_RefreshRecipes(int recipeType)
   {
     Main.Log(nameof (Build_RefreshRecipes));
+    bool flag = recipeType == this.Build_SelectedRecipeType;
     this.Build_SelectedRecipeType = recipeType;
     for (int index = 0; index < this.Build_RecipeTypesImg.Length; ++index)
       this.Build_RecipeTypesImg[index].color = Color.white;
@@ -3296,6 +3368,18 @@ label_31:
     for (int index = 0; index < this.Build_SpawnedCraftRecipes.Count; ++index)
       UnityEngine.Object.Destroy((UnityEngine.Object) this.Build_SpawnedCraftRecipes[index]);
     this.Build_SpawnedCraftRecipes.Clear();
+    if (!flag)
+    {
+      List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
+      for (int index = 0; index < this.BuildingCategories[recipeType].Count; ++index)
+        options.Add(new Dropdown.OptionData()
+        {
+          text = this.BuildingCategories[recipeType][index]
+        });
+      this.Building_CategoriesDrop.ClearOptions();
+      this.Building_CategoriesDrop.AddOptions(options);
+      this.Building_CategoriesDrop.SetValueWithoutNotify(0);
+    }
     switch (recipeType)
     {
       case 0:
@@ -3314,6 +3398,7 @@ label_31:
         Main.Instance.BuildRecs_Loaded = Main.Instance.BuildRecs_Defence;
         break;
     }
+    int count = Main.Instance.BuildRecs_Loaded.Count;
     for (int index = 0; index < Main.Instance.BuildRecs_Loaded.Count; ++index)
     {
       GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.Build_CraftRecipeEntry, this.Build_CraftRecipeEntry.transform.parent);
@@ -3323,10 +3408,19 @@ label_31:
       component.OnClick = new Action<int>(this.Build_SelectRecipe);
       component.Title.text = Main.Instance.BuildRecs_Loaded[index].Name.Split("\n", StringSplitOptions.None)[0];
       if (Main.Instance.BuildRecs_Loaded[index].scat)
+      {
         gameObject.SetActive(Main.Instance.ScatContent);
+        if (!Main.Instance.ScatContent)
+          --count;
+      }
+      if (Main.Instance.BuildRecs_Loaded[index].Subcategory != this.Building_CategoriesDrop.value)
+      {
+        gameObject.SetActive(false);
+        --count;
+      }
       this.Build_SpawnedCraftRecipes.Add(gameObject);
     }
-    this.Build_CraftList.sizeDelta = new Vector2(0.0f, (float) (this.Build_SpawnedCraftRecipes.Count * 41));
+    this.Build_CraftList.sizeDelta = new Vector2(0.0f, (float) (count * 41 + 41));
     this.Build_SelectRecipe(this.Build_SelectedRecipe);
   }
 

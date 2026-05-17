@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!--Project was exported from assembly: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll-->
+  <!--Project was exported from assembly: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll-->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2240F25B-9CF9-490F-9203-A3F7D4F0D82A}</ProjectGuid>
+    <ProjectGuid>{888985D0-E37F-409C-BD95-D1790157F3AB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AssemblyName>Assembly-CSharp</AssemblyName>
     <ApplicationVersion>1.0.0.0</ApplicationVersion>
@@ -41,26 +41,66 @@
     <Reference Include="Unity.Postprocessing.Runtime">
       <HintPath>lib\Unity.Postprocessing.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro" />
-    <Reference Include="UnityEngine.AIModule" />
-    <Reference Include="UnityEngine.AnimationModule" />
-    <Reference Include="UnityEngine.AssetBundleModule" />
-    <Reference Include="UnityEngine.AudioModule" />
-    <Reference Include="UnityEngine.CoreModule" />
-    <Reference Include="UnityEngine.IMGUIModule" />
-    <Reference Include="UnityEngine.ImageConversionModule" />
-    <Reference Include="UnityEngine.InputLegacyModule" />
-    <Reference Include="UnityEngine.JSONSerializeModule" />
-    <Reference Include="UnityEngine.ParticleSystemModule" />
-    <Reference Include="UnityEngine.Physics2DModule" />
-    <Reference Include="UnityEngine.PhysicsModule" />
-    <Reference Include="UnityEngine.ScreenCaptureModule" />
-    <Reference Include="UnityEngine.TerrainModule" />
-    <Reference Include="UnityEngine.TerrainPhysicsModule" />
-    <Reference Include="UnityEngine.TextRenderingModule" />
-    <Reference Include="UnityEngine.UI" />
-    <Reference Include="UnityEngine.UIModule" />
-    <Reference Include="UnityEngine.WindModule" />
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>lib\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>lib\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>lib\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>lib\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>lib\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>lib\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>lib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>lib\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>lib\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>lib\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>lib\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>lib\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>lib\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>lib\UnityEngine.ScreenCaptureModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainModule">
+      <HintPath>lib\UnityEngine.TerrainModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainPhysicsModule">
+      <HintPath>lib\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>lib\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>lib\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>lib\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.WindModule">
+      <HintPath>lib\UnityEngine.WindModule.dll</HintPath>
+    </Reference>
     <Reference Include="netstandard">
       <HintPath>lib\netstandard.dll</HintPath>
     </Reference>
@@ -204,16 +244,19 @@
     <Compile Include="SimpleInteract.cs" />
     <Compile Include="int_ArmyManagementTable.cs" />
     <Compile Include="bl_ConstructionSnapSpot.cs" />
+    <Compile Include="e_SnapScale.cs" />
     <Compile Include="bl_ObjWithConstructionSnap.cs" />
     <Compile Include="int_Bathe.cs" />
     <Compile Include="int_CondomBox.cs" />
     <Compile Include="int_ConstructionPlan.cs" />
     <Compile Include="int_Couch.cs" />
     <Compile Include="int_CustomPoster.cs" />
+    <Compile Include="int_DeflateMax.cs" />
     <Compile Include="int_DildoPole.cs" />
     <Compile Include="int_Dragable.cs" />
     <Compile Include="int_FloorSit.cs" />
     <Compile Include="int_HealthPod.cs" />
+    <Compile Include="int_Lamp.cs" />
     <Compile Include="int_LoadCustomCharacter.cs" />
     <Compile Include="int_Lockable.cs" />
     <Compile Include="int_LockableSit.cs" />
@@ -244,6 +287,7 @@
     <Compile Include="int_misc_StopUsing.cs" />
     <Compile Include="ItemRarity.cs" />
     <Compile Include="int_money.cs" />
+    <Compile Include="int_obtainhiddenresource.cs" />
     <Compile Include="int_personStorage.cs" />
     <Compile Include="int_readable.cs" />
     <Compile Include="int_smallcontainer.cs" />
@@ -308,9 +352,11 @@
     <Compile Include="bl_WorldSection.cs" />
     <Compile Include="bl_WorldStructure.cs" />
     <Compile Include="bl_ow_job.cs" />
+    <Compile Include="int_MineEntrance.cs" />
     <Compile Include="DressableType.cs" />
     <Compile Include="GenderType.cs" />
     <Compile Include="e_MatColorType.cs" />
+    <Compile Include="e_HairLenght.cs" />
     <Compile Include="Dressable.cs" />
     <Compile Include="Girl.cs" />
     <Compile Include="Guy.cs" />
@@ -539,8 +585,28 @@
     <Compile Include="Random_touch.cs" />
     <Compile Include="ShpalaInit.cs" />
     <Compile Include="UnitySourceGeneratedAssemblyMonoScriptTypes_v1.cs" />
-    <Compile Include="com\heparo\terrain\toolkit\TerrainToolkit.cs" />
+    <Compile Include="MapMagic\Nodes\MatrixGenerators\CTSOutput200.cs" />
+    <Compile Include="MapMagic\Nodes\MatrixGenerators\MegaSplatOutput200.cs" />
+    <Compile Include="MapMagic\Nodes\MatrixGenerators\RTPOutput200.cs" />
+    <Compile Include="UnityStandardAssets\Cameras\FreeLookCam.cs" />
+    <Compile Include="UnityStandardAssets\Cameras\ProtectCameraFromWallClip.cs" />
+    <Compile Include="UnityStandardAssets\Cameras\AbstractTargetFollower.cs" />
+    <Compile Include="UnityStandardAssets\Cameras\PivotBasedCameraRig.cs" />
+    <Compile Include="UnityStandardAssets\Effects\AfterburnerPhysicsForce.cs" />
+    <Compile Include="UnityStandardAssets\Effects\ExplosionFireAndDebris.cs" />
+    <Compile Include="UnityStandardAssets\Effects\ExplosionPhysicsForce.cs" />
+    <Compile Include="UnityStandardAssets\Effects\Explosive.cs" />
+    <Compile Include="UnityStandardAssets\Effects\ExtinguishableParticleSystem.cs" />
+    <Compile Include="UnityStandardAssets\Effects\FireLight.cs" />
+    <Compile Include="UnityStandardAssets\Effects\Hose.cs" />
+    <Compile Include="UnityStandardAssets\Effects\ParticleSystemMultiplier.cs" />
+    <Compile Include="UnityStandardAssets\Effects\SmokeParticles.cs" />
+    <Compile Include="UnityStandardAssets\Effects\WaterHoseParticles.cs" />
+    <Compile Include="UnityStandardAssets\SceneUtils\ParticleSceneControls.cs" />
+    <Compile Include="UnityStandardAssets\SceneUtils\PlaceTargetWithMouse.cs" />
+    <Compile Include="UnityStandardAssets\SceneUtils\SlowMoButton.cs" />
     <Compile Include="MGAssets\SpinWeapon.cs" />
+    <Compile Include="com\heparo\terrain\toolkit\TerrainToolkit.cs" />
     <Compile Include="VariableInventorySystem\IVariableInventoryCell.cs" />
     <Compile Include="VariableInventorySystem\IVariableInventoryCellActions.cs" />
     <Compile Include="VariableInventorySystem\IVariableInventoryCellData.cs" />
@@ -671,23 +737,6 @@
     <Compile Include="Assets\Scripts\MapGenerator\Generators\TreeGenerator.cs" />
     <Compile Include="Assets\Scripts\MapGenerator\Abstract\IMap.cs" />
     <Compile Include="Assets\Scripts\Interactibles\bl_NoItemSexSpot.cs" />
-    <Compile Include="UnityStandardAssets\Effects\AfterburnerPhysicsForce.cs" />
-    <Compile Include="UnityStandardAssets\Effects\ExplosionFireAndDebris.cs" />
-    <Compile Include="UnityStandardAssets\Effects\ExplosionPhysicsForce.cs" />
-    <Compile Include="UnityStandardAssets\Effects\Explosive.cs" />
-    <Compile Include="UnityStandardAssets\Effects\ExtinguishableParticleSystem.cs" />
-    <Compile Include="UnityStandardAssets\Effects\FireLight.cs" />
-    <Compile Include="UnityStandardAssets\Effects\Hose.cs" />
-    <Compile Include="UnityStandardAssets\Effects\ParticleSystemMultiplier.cs" />
-    <Compile Include="UnityStandardAssets\Effects\SmokeParticles.cs" />
-    <Compile Include="UnityStandardAssets\Effects\WaterHoseParticles.cs" />
-    <Compile Include="UnityStandardAssets\Cameras\FreeLookCam.cs" />
-    <Compile Include="UnityStandardAssets\Cameras\ProtectCameraFromWallClip.cs" />
-    <Compile Include="UnityStandardAssets\Cameras\AbstractTargetFollower.cs" />
-    <Compile Include="UnityStandardAssets\Cameras\PivotBasedCameraRig.cs" />
-    <Compile Include="UnityStandardAssets\SceneUtils\ParticleSceneControls.cs" />
-    <Compile Include="UnityStandardAssets\SceneUtils\PlaceTargetWithMouse.cs" />
-    <Compile Include="UnityStandardAssets\SceneUtils\SlowMoButton.cs" />
     <Compile Include="DigitalRuby\RainMaker\DemoScript.cs" />
     <Compile Include="DigitalRuby\RainMaker\DemoScript2D.cs" />
     <Compile Include="DigitalRuby\RainMaker\DemoScriptStartRainOnSpaceBar.cs" />
@@ -725,9 +774,6 @@
     <Compile Include="Peace\Serialization\ShaderParam.cs" />
     <Compile Include="Peace\Serialization\Color4dDef.cs" />
     <Compile Include="Peace\Serialization\PerlinInfo.cs" />
-    <Compile Include="MapMagic\Nodes\MatrixGenerators\CTSOutput200.cs" />
-    <Compile Include="MapMagic\Nodes\MatrixGenerators\MegaSplatOutput200.cs" />
-    <Compile Include="MapMagic\Nodes\MatrixGenerators\RTPOutput200.cs" />
     <Compile Include="KevinIglesias\IKHelperHand.cs" />
     <Compile Include="KevinIglesias\IKHelperTool.cs" />
     <Compile Include="ChobiAssets\KTP\Armor_Collider_CS.cs" />
@@ -761,10 +807,10 @@
     <Compile Include="DitzelGames\FastIK\SampleProcedualAnimation.cs" />
     <Compile Include="DitzelGames\FastIK\SampleRotator.cs" />
     <Compile Include="DitzelGames\FastIK\SampleSinMover.cs" />
+    <Compile Include="Deener6\OverCameraParticle.cs" />
     <Compile Include="CTI\CTI_CustomWind.cs" />
     <Compile Include="CTI\CTI_Utils.cs" />
     <Compile Include="AGIA\AGIAFree_sample.cs" />
-    <Compile Include="Deener6\OverCameraParticle.cs" />
     <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

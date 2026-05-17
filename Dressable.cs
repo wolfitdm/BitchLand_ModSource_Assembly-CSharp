@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Dressable
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +12,7 @@ public class Dressable : SaveableBehaviour
 {
   public GenderType GenderFor;
   public DressableType BodyPart;
+  public e_HairLenght HairLenght;
   public bool Skinned;
   public bool DefaultBones;
   public bool AttachBones;
@@ -228,6 +229,13 @@ public class Dressable : SaveableBehaviour
       this.DyedColor = Main.ParseColor(Data[2]);
     }
     this.RefreshColors();
+  }
+
+  public string[] base_sd_SaveData(char SlitChar = ':') => base.sd_SaveData(SlitChar);
+
+  public void base_sd_LoadData(string[] Data, char SlitChar = ':')
+  {
+    base.sd_LoadData(Data, SlitChar);
   }
 
   public virtual void RefreshShapeWhileEquipped()

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: ChobiAssets.KTP.Bullet_Nav_CS
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -40,13 +40,13 @@ namespace ChobiAssets.KTP
     {
       if (!this.isLive)
         return;
-      this.thisTransform.LookAt(this.thisTransform.position + this.thisRigidbody.velocity);
+      this.thisTransform.LookAt(this.thisTransform.position + this.thisRigidbody.linearVelocity);
       if (!this.isRayHit)
       {
         this.ray.origin = this.thisTransform.position;
-        this.ray.direction = this.thisRigidbody.velocity;
+        this.ray.direction = this.thisRigidbody.linearVelocity;
         RaycastHit hitInfo;
-        Physics.Raycast(this.ray, out hitInfo, this.thisRigidbody.velocity.magnitude * Time.fixedDeltaTime, this.layerMask);
+        Physics.Raycast(this.ray, out hitInfo, this.thisRigidbody.linearVelocity.magnitude * Time.fixedDeltaTime, this.layerMask);
         if (!(bool) (Object) hitInfo.collider)
           return;
         this.nextPos = hitInfo.point;
@@ -77,7 +77,7 @@ namespace ChobiAssets.KTP
     {
       if ((bool) (Object) this.brokenObject)
         Object.Instantiate<GameObject>(this.brokenObject, this.thisTransform.position, Quaternion.identity);
-      float damageValue = this.attackForce * Mathf.Lerp(0.0f, 1f, Mathf.Sqrt(Mathf.Abs(90f - Vector3.Angle(this.thisRigidbody.velocity, this.hitNormal)) / 90f));
+      float damageValue = this.attackForce * Mathf.Lerp(0.0f, 1f, Mathf.Sqrt(Mathf.Abs(90f - Vector3.Angle(this.thisRigidbody.linearVelocity, this.hitNormal)) / 90f));
       if ((bool) (Object) this.hitTransform)
       {
         Armor_Collider_CS component1 = this.hitTransform.GetComponent<Armor_Collider_CS>();

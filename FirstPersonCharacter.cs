@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: FirstPersonCharacter
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -382,20 +382,20 @@ public class FirstPersonCharacter : MonoBehaviour
       this.input.Normalize();
     this.desiredMove = this.DesiredMoveTransformReference.forward * this.input.y * num1 + this.transform.right * this.input.x * num2;
     this.desiredMove = new Vector3(this.desiredMove.x, 0.0f, this.desiredMove.z);
-    float y = this._ThisRigid.velocity.y;
+    float y = this._ThisRigid.linearVelocity.y;
     if (this.grounded & flag)
     {
       y += this.jumpPower;
       this.grounded = false;
     }
-    this._ThisRigid.velocity = this.desiredMove + Vector3.up * y;
+    this._ThisRigid.linearVelocity = this.desiredMove + Vector3.up * y;
     if ((double) this.desiredMove.magnitude > 0.0 || !this.grounded)
       this.capsule.material = this.advanced.zeroFrictionMaterial;
     else
       this.capsule.material = this.advanced.highFrictionMaterial;
     RaycastHit[] raycastHitArray = Physics.RaycastAll(new Ray(this.transform.position, -this.transform.up), this.capsule.height * 0.7f);
     Array.Sort((Array) raycastHitArray, this.rayHitComparer);
-    if (this.grounded || (double) this._ThisRigid.velocity.y < (double) this.jumpPower * 0.5)
+    if (this.grounded || (double) this._ThisRigid.linearVelocity.y < (double) this.jumpPower * 0.5)
     {
       this.grounded = false;
       for (int index = 0; index < raycastHitArray.Length; ++index)
@@ -404,7 +404,7 @@ public class FirstPersonCharacter : MonoBehaviour
         {
           this.grounded = true;
           this._ThisRigid.position = Vector3.MoveTowards(this._ThisRigid.position, raycastHitArray[index].point + Vector3.up * this.capsule.height * 0.5f, Time.deltaTime * this.advanced.groundStickyEffect);
-          this._ThisRigid.velocity = new Vector3(this._ThisRigid.velocity.x, 0.0f, this._ThisRigid.velocity.z);
+          this._ThisRigid.linearVelocity = new Vector3(this._ThisRigid.linearVelocity.x, 0.0f, this._ThisRigid.linearVelocity.z);
           break;
         }
       }
@@ -416,8 +416,8 @@ public class FirstPersonCharacter : MonoBehaviour
   public class AdvancedSettings
   {
     public float gravityMultiplier = 1f;
-    public PhysicMaterial zeroFrictionMaterial;
-    public PhysicMaterial highFrictionMaterial;
+    public PhysicsMaterial zeroFrictionMaterial;
+    public PhysicsMaterial highFrictionMaterial;
     public float groundStickyEffect = 5f;
   }
 

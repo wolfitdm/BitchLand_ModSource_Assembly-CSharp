@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: ChobiAssets.KTP.Fire_Spawn_CS
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections;
 using UnityEngine;
@@ -37,7 +37,7 @@ namespace ChobiAssets.KTP
         bulletObject.GetComponent<Bullet_Nav_CS>().attackForce = this.attackForce;
         Vector3 tempVelocity = this.thisTransform.forward * this.bulletVelocity;
         yield return (object) new WaitForFixedUpdate();
-        bulletObject.GetComponent<Rigidbody>().velocity = tempVelocity;
+        bulletObject.GetComponent<Rigidbody>().linearVelocity = tempVelocity;
         bulletObject = (GameObject) null;
         tempVelocity = new Vector3();
       }

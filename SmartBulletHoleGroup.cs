@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: SmartBulletHoleGroup
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using UnityEngine;
@@ -13,18 +13,18 @@ public class SmartBulletHoleGroup
 {
   public string tag;
   public Material material;
-  public PhysicMaterial physicMaterial;
+  public PhysicsMaterial physicMaterial;
   public BulletHolePool bulletHole;
 
   public SmartBulletHoleGroup()
   {
     this.tag = "Everything";
     this.material = (Material) null;
-    this.physicMaterial = (PhysicMaterial) null;
+    this.physicMaterial = (PhysicsMaterial) null;
     this.bulletHole = (BulletHolePool) null;
   }
 
-  public SmartBulletHoleGroup(string t, Material m, PhysicMaterial pm, BulletHolePool bh)
+  public SmartBulletHoleGroup(string t, Material m, PhysicsMaterial pm, BulletHolePool bh)
   {
     this.tag = t;
     this.material = m;

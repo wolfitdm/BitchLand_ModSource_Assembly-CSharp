@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: UI_Customize
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -375,6 +375,8 @@ public class UI_Customize : UI_Menu
   public GameObject Debug_Menu;
   public UnityEngine.UI.Text Debug_ValuesNow;
   public UnityEngine.UI.Text Debug_ValuesToSet;
+  public List<Texture2D> _PooledThumbnails = new List<Texture2D>();
+  public int _PooledCurrentIndex;
 
   public UI_Customize() => this.MenuName = "CustomizePlayer";
 
@@ -1818,6 +1820,21 @@ public class UI_Customize : UI_Menu
     File.Delete(str2);
   }
 
+  public static int GetPNGDataVer(string fileName)
+  {
+    byte[] numArray = File.ReadAllBytes(fileName);
+    long dataStart = UI_Customize.FindDataStart(fileName, UI_Customize.StringToBytes("DataStart"));
+    char ch = (char) numArray[dataStart + 1L];
+    string str1 = ch.ToString();
+    ch = (char) numArray[dataStart + 2L];
+    string str2 = ch.ToString();
+    string s = str1 + str2;
+    int pngDataVer = 0;
+    ref int local = ref pngDataVer;
+    int.TryParse(s, out local);
+    return pngDataVer;
+  }
+
   public static byte[] StringToBytes(string str) => Encoding.UTF8.GetBytes(str);
 
   public static byte[] ConvertIntToByteArray(int number)
@@ -1869,42 +1886,10 @@ public class UI_Customize : UI_Menu
 
   public static void AddCustomChunkToPng(string pngFilePath, byte[] chunkData, string chunkType)
   {
-    using (FileStream fileStream = new FileStream(pngFilePath, FileMode.Open, FileAccess.ReadWrite))
-    {
-      byte[] numArray1 = new byte[8];
-      fileStream.Read(numArray1, 0, 8);
-      if (!UI_Customize.IsPngFile(numArray1))
-        throw new Exception("Not a valid PNG file.");
-      long iendPosition = UI_Customize.FindIendPosition((Stream) fileStream);
-      fileStream.SetLength(iendPosition);
-      byte[] bytes1 = BitConverter.GetBytes(chunkData.Length);
-      Array.Reverse<byte>(bytes1);
-      byte[] bytes2 = Encoding.ASCII.GetBytes(chunkType);
-      byte[] numArray2 = new byte[chunkData.Length + 12];
-      Array.Copy((Array) bytes1, (Array) numArray2, 4);
-      Array.Copy((Array) bytes2, 0, (Array) numArray2, 4, 4);
-      Array.Copy((Array) chunkData, 0, (Array) numArray2, 8, chunkData.Length);
-      byte[] bytes3 = BitConverter.GetBytes(UI_Customize.CalculateCrc(bytes2, chunkData));
-      Array.Reverse<byte>(bytes3);
-      Array.Copy((Array) bytes3, 0, (Array) numArray2, chunkData.Length + 8, 4);
-      fileStream.Write(numArray2, 0, numArray2.Length);
-      byte[] buffer = new byte[12]
-      {
-        (byte) 0,
-        (byte) 0,
-        (byte) 0,
-        (byte) 0,
-        (byte) 73,
-        (byte) 69,
-        (byte) 78,
-        (byte) 68,
-        (byte) 174,
-        (byte) 66,
-        (byte) 96,
-        (byte) 130
-      };
-      fileStream.Write(buffer, 0, buffer.Length);
-    }
+    List<byte> byteList = new List<byte>();
+    byteList.AddRange((IEnumerable<byte>) File.ReadAllBytes(pngFilePath));
+    byteList.AddRange((IEnumerable<byte>) chunkData);
+    File.WriteAllBytes(pngFilePath, byteList.ToArray());
   }
 
   private static long FindIendPosition(Stream stream)
@@ -1965,6 +1950,7 @@ public class UI_Customize : UI_Menu
     for (int index = 0; index < this.CharacterEntries.Count; ++index)
       UnityEngine.Object.Destroy((UnityEngine.Object) this.CharacterEntries[index]);
     this.CharacterEntries2.Clear();
+    this.ClearPooledTextures();
     string[] files = Directory.GetFiles(path, "*.png");
     this.CharacterListRect.sizeDelta = new Vector2(0.0f, (float) ((files.Length + 3) / 4 * 150));
     for (int index = 0; index < files.Length; ++index)
@@ -2493,4 +2479,27 @@ public class UI_Customize : UI_Menu
   public void Click_LoadPresetBody() => this.LoadPresetopen(false);
 
   public void On_WorldSize() => bl_SectionGenerate2.SmallWorld = this.WorldSize.value == 1;
+
+  public Texture2D LoadTexture(string FilePath)
+  {
+    if (File.Exists(FilePath))
+    {
+      if (this._PooledThumbnails.Count <= this._PooledCurrentIndex)
+        this._PooledThumbnails.Add(new Texture2D(0, 0));
+      if (this._PooledThumbnails[this._PooledCurrentIndex].LoadImage(File.ReadAllBytes(FilePath)))
+      {
+        Texture2D pooledThumbnail = this._PooledThumbnails[this._PooledCurrentIndex];
+        ++this._PooledCurrentIndex;
+        return pooledThumbnail;
+      }
+    }
+    return (Texture2D) null;
+  }
+
+  public void ClearPooledTextures()
+  {
+    this._PooledCurrentIndex = 0;
+    for (int index = 0; index < this._PooledThumbnails.Count; ++index)
+      this._PooledThumbnails[index].LoadImage(Main.OnePixel);
+  }
 }

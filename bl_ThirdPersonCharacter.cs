@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_ThirdPersonCharacter
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -143,7 +143,7 @@ public class bl_ThirdPersonCharacter : MonoBehaviour
     this.m_Animator.SetFloat("Turn", this.m_TurnAmount, 0.1f, Time.deltaTime);
     this.m_Animator.SetBool("OnGround", this.m_IsGrounded);
     if (!this.m_IsGrounded)
-      this.m_Animator.SetFloat("Jump", this.m_Rigidbody.velocity.y);
+      this.m_Animator.SetFloat("Jump", this.m_Rigidbody.linearVelocity.y);
     else
       this.m_Animator.SetFloat("Jump", 0.0f);
     float num = ((double) Mathf.Repeat(this.m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime + this.m_RunCycleLegOffset, 1f) < 0.5 ? 1f : -1f) * this.m_ForwardAmount;
@@ -168,7 +168,7 @@ public class bl_ThirdPersonCharacter : MonoBehaviour
     this.m_Animator.SetFloat("Turn", this.m_TurnAmount, 0.1f, Time.deltaTime);
     this.m_Animator.SetBool("OnGround", this.m_IsGrounded);
     if (!this.m_IsGrounded)
-      this.m_Animator.SetFloat("Jump", this.m_Rigidbody.velocity.y);
+      this.m_Animator.SetFloat("Jump", this.m_Rigidbody.linearVelocity.y);
     else
       this.m_Animator.SetFloat("Jump", 0.0f);
     float num = ((double) Mathf.Repeat(this.m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime + this.m_RunCycleLegOffset, 1f) < 0.5 ? 1f : -1f) * this.m_ForwardAmount;
@@ -191,7 +191,7 @@ public class bl_ThirdPersonCharacter : MonoBehaviour
     else
     {
       this.m_Rigidbody.AddForce(Physics.gravity * this.m_GravityMultiplier - Physics.gravity);
-      this.m_GroundCheckDistance = (double) this.m_Rigidbody.velocity.y < 0.0 ? this.m_OrigGroundCheckDistance : 0.01f;
+      this.m_GroundCheckDistance = (double) this.m_Rigidbody.linearVelocity.y < 0.0 ? this.m_OrigGroundCheckDistance : 0.01f;
     }
   }
 
@@ -200,7 +200,7 @@ public class bl_ThirdPersonCharacter : MonoBehaviour
     this.FallingTimer = 0.0f;
     if (!jump)
       return;
-    this.m_Rigidbody.velocity = new Vector3(this.m_Rigidbody.velocity.x, this.m_JumpPower, this.m_Rigidbody.velocity.z);
+    this.m_Rigidbody.linearVelocity = new Vector3(this.m_Rigidbody.linearVelocity.x, this.m_JumpPower, this.m_Rigidbody.linearVelocity.z);
     this.m_IsGrounded = false;
     this.m_Animator.applyRootMotion = false;
     this.m_GroundCheckDistance = 0.1f;
@@ -215,9 +215,9 @@ public class bl_ThirdPersonCharacter : MonoBehaviour
   {
     if (!this.m_IsGrounded || (double) Time.deltaTime <= 0.0)
       return;
-    this.m_Rigidbody.velocity = (this.m_Animator.deltaPosition * this.m_MoveSpeedMultiplier / Time.deltaTime) with
+    this.m_Rigidbody.linearVelocity = (this.m_Animator.deltaPosition * this.m_MoveSpeedMultiplier / Time.deltaTime) with
     {
-      y = this.m_Rigidbody.velocity.y
+      y = this.m_Rigidbody.linearVelocity.y
     };
   }
 

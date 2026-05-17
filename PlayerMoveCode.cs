@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: PlayerMoveCode
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -82,7 +82,7 @@ public class PlayerMoveCode : GenericBehaviour
         return;
       if (!this.behaviourManager.IsGrounded() && !this.isColliding && this.behaviourManager.GetTempLockStatus())
         this.behaviourManager.GetRigidBody.AddForce(this.transform.forward * this.jumpIntertialForce * Physics.gravity.magnitude * this.sprintSpeed, ForceMode.Acceleration);
-      if ((double) this.behaviourManager.GetRigidBody.velocity.y >= 0.0 || !this.behaviourManager.IsGrounded())
+      if ((double) this.behaviourManager.GetRigidBody.linearVelocity.y >= 0.0 || !this.behaviourManager.IsGrounded())
         return;
       this.behaviourManager.GetAnim.SetBool(this.groundedBool, true);
       this.GetComponent<CapsuleCollider>().material.dynamicFriction = 0.6f;
@@ -97,7 +97,7 @@ public class PlayerMoveCode : GenericBehaviour
   {
     if (this.behaviourManager.IsGrounded())
       this.behaviourManager.GetRigidBody.useGravity = true;
-    else if (!this.behaviourManager.GetAnim.GetBool(this.jumpBool) && (double) this.behaviourManager.GetRigidBody.velocity.y > 0.0)
+    else if (!this.behaviourManager.GetAnim.GetBool(this.jumpBool) && (double) this.behaviourManager.GetRigidBody.linearVelocity.y > 0.0)
       this.RemoveVerticalVelocity();
     this.Rotating(horizontal, vertical);
     this.speed = Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f).magnitude;
@@ -111,7 +111,7 @@ public class PlayerMoveCode : GenericBehaviour
 
   private void RemoveVerticalVelocity()
   {
-    this.behaviourManager.GetRigidBody.velocity = this.behaviourManager.GetRigidBody.velocity with
+    this.behaviourManager.GetRigidBody.linearVelocity = this.behaviourManager.GetRigidBody.linearVelocity with
     {
       y = 0.0f
     };

@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: HelmetWithLamp
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -29,7 +29,7 @@ public class HelmetWithLamp : Dressable
       }
       if (this.MainLight.enabled)
       {
-        if (this.PersonEquipped.UserControl.FirstPerson && (double) this.PersonEquipped._Rigidbody.velocity.x < 1.1000000238418579 && (double) this.PersonEquipped._Rigidbody.velocity.x > -1.1000000238418579 && (double) this.PersonEquipped._Rigidbody.velocity.z < 1.1000000238418579 && (double) this.PersonEquipped._Rigidbody.velocity.z > -1.1000000238418579)
+        if (this.PersonEquipped.UserControl.FirstPerson && (double) this.PersonEquipped._Rigidbody.linearVelocity.x < 1.1000000238418579 && (double) this.PersonEquipped._Rigidbody.linearVelocity.x > -1.1000000238418579 && (double) this.PersonEquipped._Rigidbody.linearVelocity.z < 1.1000000238418579 && (double) this.PersonEquipped._Rigidbody.linearVelocity.z > -1.1000000238418579)
           this.MainLight.transform.LookAt(this.PersonEquipped.ViewPoint);
         else
           this.MainLight.transform.localEulerAngles = this.OrgLightRot;

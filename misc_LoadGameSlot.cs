@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: misc_LoadGameSlot
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.IO;
@@ -42,11 +42,11 @@ public class misc_LoadGameSlot : MonoBehaviour
 
   public void DuplicateSave()
   {
-    this.CopyDirectory(this.ThisSlot, this.ThisSlot.Remove(this.ThisSlot.Length - 1) + "_/", true);
+    misc_LoadGameSlot.CopyDirectory(this.ThisSlot, this.ThisSlot.Remove(this.ThisSlot.Length - 1) + "_/");
     Main.Instance.OpenMenu("LoadGame");
   }
 
-  public void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+  public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive = true)
   {
     DirectoryInfo directoryInfo1 = new DirectoryInfo(sourceDir);
     DirectoryInfo[] directoryInfoArray = directoryInfo1.Exists ? directoryInfo1.GetDirectories() : throw new DirectoryNotFoundException("Source directory not found: " + directoryInfo1.FullName);
@@ -61,7 +61,7 @@ public class misc_LoadGameSlot : MonoBehaviour
     foreach (DirectoryInfo directoryInfo2 in directoryInfoArray)
     {
       string destinationDir1 = Path.Combine(destinationDir, directoryInfo2.Name);
-      this.CopyDirectory(directoryInfo2.FullName, destinationDir1, true);
+      misc_LoadGameSlot.CopyDirectory(directoryInfo2.FullName, destinationDir1);
     }
   }
 }

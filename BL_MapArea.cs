@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: BL_MapArea
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -31,11 +31,20 @@ public class BL_MapArea : MonoBehaviour
     Main.Instance.MusicPlayer.Stop();
     Main.Instance.MusicPlayer.clip = (AudioClip) null;
     for (int index = 0; index < this.DisabledWhileInside.Length; ++index)
-      this.DisabledWhileInside[index].SetActive(false);
+    {
+      if ((Object) this.DisabledWhileInside[index] != (Object) null)
+        this.DisabledWhileInside[index].SetActive(false);
+    }
     for (int index = 0; index < this.EnabledWhileInside.Length; ++index)
-      this.EnabledWhileInside[index].SetActive(true);
+    {
+      if ((Object) this.EnabledWhileInside[index] != (Object) null)
+        this.EnabledWhileInside[index].SetActive(true);
+    }
     for (int index = 0; index < this.LightsEnabledWhileInside.Length; ++index)
-      this.LightsEnabledWhileInside[index].enabled = true;
+    {
+      if ((Object) this.LightsEnabledWhileInside[index] != (Object) null)
+        this.LightsEnabledWhileInside[index].enabled = true;
+    }
     if (this.DisableSkybox)
       Main.Instance.PlayerCam.clearFlags = CameraClearFlags.Color;
     else
@@ -48,11 +57,20 @@ public class BL_MapArea : MonoBehaviour
     Main.Instance.MusicPlayer.clip = (AudioClip) null;
     Main.Instance.Lights.SetActive(true);
     for (int index = 0; index < this.EnabledWhileInside.Length; ++index)
-      this.EnabledWhileInside[index].SetActive(false);
+    {
+      if ((Object) this.EnabledWhileInside[index] != (Object) null)
+        this.EnabledWhileInside[index].SetActive(false);
+    }
     for (int index = 0; index < this.DisabledWhileInside.Length; ++index)
-      this.DisabledWhileInside[index].SetActive(true);
+    {
+      if ((Object) this.DisabledWhileInside[index] != (Object) null)
+        this.DisabledWhileInside[index].SetActive(true);
+    }
     for (int index = 0; index < this.LightsEnabledWhileInside.Length; ++index)
-      this.LightsEnabledWhileInside[index].enabled = false;
+    {
+      if ((Object) this.LightsEnabledWhileInside[index] != (Object) null)
+        this.LightsEnabledWhileInside[index].enabled = false;
+    }
     Main.Instance.CurrentArea = (BL_MapArea) null;
   }
 }

@@ -1,14 +1,15 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Weapon
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using DitzelGames.FastIK;
 using KevinIglesias;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 #nullable disable
@@ -150,25 +151,38 @@ public class Weapon : SaveableBehaviour
 
   public override string[] sd_SaveData(char SlitChar = ':')
   {
-    return new string[4]
+    if (this.PickedUp)
+      return new string[0];
+    List<string> stringList = new List<string>();
+    stringList.AddRange((IEnumerable<string>) base.sd_SaveData(SlitChar));
+    stringList.AddRange((IEnumerable<string>) new string[5]
     {
-      this.WorldSaveID,
+      MethodBase.GetCurrentMethod().DeclaringType.Name,
+      "PrefabName",
       this.PrefabName,
       Main.Vector32Str(this.transform.position),
       Main.Vector32Str(this.transform.eulerAngles)
-    };
+    });
+    return stringList.ToArray();
   }
 
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     try
     {
-      this.transform.position = Main.ParseVector3(Data[2]);
-      this.transform.eulerAngles = Main.ParseVector3(Data[3]);
+      base.sd_LoadData(Data, SlitChar);
+      if (this.IsThisAfterV13)
+        this._CurrentLoadingIndex = SaveableBehaviour.LineFor(Data, MethodBase.GetCurrentMethod().DeclaringType.Name) + 3;
+      else
+        this._CurrentLoadingIndex = 2;
+      this.transform.position = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
+      this.transform.eulerAngles = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
     }
     catch
     {
     }
+    if (this.IsThisAfterV13)
+      return;
     this._CurrentLoadingIndex = 4;
   }
 
@@ -703,7 +717,7 @@ public class Weapon : SaveableBehaviour
             {
               List<SmartBulletHoleGroup> smartBulletHoleGroupList2 = new List<SmartBulletHoleGroup>();
               foreach (BulletHolePool defaultBulletHole in this.defaultBulletHoles)
-                smartBulletHoleGroupList2.Add(new SmartBulletHoleGroup("Default", (Material) null, (PhysicMaterial) null, defaultBulletHole));
+                smartBulletHoleGroupList2.Add(new SmartBulletHoleGroup("Default", (Material) null, (PhysicsMaterial) null, defaultBulletHole));
               smartBulletHoleGroup = smartBulletHoleGroupList2[UnityEngine.Random.Range(0, smartBulletHoleGroupList2.Count)];
             }
             else

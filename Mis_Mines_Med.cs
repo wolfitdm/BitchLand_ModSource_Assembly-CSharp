@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Mines_Med
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -499,8 +499,9 @@ public class Mis_Mines_Med : Mission
     merussy.State = Person_State.Work;
     merussy.AddMoveBlocker("quest");
     merussy.ThisPersonInt.AddBlocker("quest");
-    merussy.CantBeForced = false;
-    person.CantBeForced = false;
+    merussy.CantBeForced = true;
+    Main.Instance.CityCharacters.Sarah.CantBeForced = true;
+    person.CantBeForced = true;
   }
 
   public void ExitLab()
@@ -545,6 +546,8 @@ public class Mis_Mines_Med : Mission
               sarah.LookAtPlayer.NonplayerTarget = (Transform) null;
               sarah.ThisPersonInt.EndTheChat();
               this.AddGoal(3, true);
+              sephie.CantBeForced = true;
+              sarah.CantBeForced = true;
               _gameplay.DisplaySubtitle("Oh my fucking god", this.VoiceLines[7], new Action(sephie.ThisPersonInt.EndTheChat), sephie);
               sarah.StartScheduleTask(new Person.ScheduleTask()
               {
@@ -643,6 +646,7 @@ public class Mis_Mines_Med : Mission
         {
           sarah.enabled = false;
           sarah.navMesh.enabled = false;
+          sarah.AddMoveBlocker("saranomove");
           sarah.PlaceAt(this.SPOTS[8]);
           sarah.Anim.Play("crawl1");
           Main.Instance.MainThreads.Add(new Action(this.Goal7));
@@ -696,41 +700,49 @@ public class Mis_Mines_Med : Mission
     Person sarah = Main.Instance.CityCharacters.Sarah;
     Person sephie = Main.Instance.CityCharacters.Merussy;
     sarah.PlaceAt(this.SPOTS[10]);
-    sarah.enabled = true;
-    sarah.navMesh.enabled = true;
     sephie.navMesh.enabled = false;
     sephie.AddMoveBlocker("aaaaa");
     sephie.PlaceAt(this.SPOTS[11]);
     Main.Instance.Player.PlaceAt(this.SPOTS[12]);
     this.HOle.SetActive(false);
-    Main.RunInSeconds((Action) (() => _gameplay.DisplaySubtitle("Come this way, I found some weird ancient technology", this.VoiceLines[31], (Action) (() =>
+    Main.RunInSeconds((Action) (() =>
     {
-      sarah.ThisPersonInt.EndTheChat();
-      sephie.RemoveMoveBlocker("aaaaa");
-      sephie.navMesh.enabled = true;
-      sarah.StartScheduleTask(new Person.ScheduleTask()
+      sarah.PlaceAt(this.SPOTS[10]);
+      sarah.RemoveMoveBlocker("saranomove");
+      sarah.enabled = true;
+      sarah.navMesh.enabled = false;
+      _gameplay.DisplaySubtitle("Come this way, I found some weird ancient technology", this.VoiceLines[31], (Action) (() =>
       {
-        IDName = "SarahGoToTrain",
-        RunTo = true,
-        ActionPlace = this.SPOTS[13],
-        OnArrive = (Action) (() =>
+        sarah.ThisPersonInt.EndTheChat();
+        sephie.RemoveMoveBlocker("aaaaa");
+        sephie.navMesh.enabled = true;
+        sarah.enabled = true;
+        sarah.navMesh.enabled = true;
+        sarah.StartScheduleTask(new Person.ScheduleTask()
         {
-          sarah.PlaceAt(this.SPOTS[13]);
-          Main.Instance.MainThreads.Add(new Action(this.Goal8));
-        })
-      });
-      sephie.StartScheduleTask(new Person.ScheduleTask()
-      {
-        IDName = "SephieGoToTrain",
-        RunTo = false,
-        ActionPlace = this.SPOTS[14],
-        OnArrive = (Action) (() =>
+          IDName = "SarahGoToTrain",
+          RunTo = true,
+          ActionPlace = this.SPOTS[13],
+          OnArrive = (Action) (() =>
+          {
+            sarah.PlaceAt(this.SPOTS[13]);
+            sarah.AddMoveBlocker("sarahlookattrain");
+            Main.Instance.MainThreads.Add(new Action(this.Goal8));
+          })
+        });
+        sephie.StartScheduleTask(new Person.ScheduleTask()
         {
-          sephie.PlaceAt(this.SPOTS[14]);
-          this._SephieArrivedAtTrain = true;
-        })
-      });
-    }), sarah)), 2f);
+          IDName = "SephieGoToTrain",
+          RunTo = false,
+          ActionPlace = this.SPOTS[14],
+          OnArrive = (Action) (() =>
+          {
+            sephie.PlaceAt(this.SPOTS[14]);
+            this._SephieArrivedAtTrain = true;
+          })
+        });
+      }), sarah);
+    }), 2f);
   }
 
   public void Goal8()
@@ -741,8 +753,11 @@ public class Mis_Mines_Med : Mission
     Main.Instance.MainThreads.Remove(new Action(this.Goal8));
     UI_Gameplay _gameplay = Main.Instance.GameplayMenu;
     Person sephie = Main.Instance.CityCharacters.Merussy;
+    sephie.CantBeForced = false;
+    sarah.CantBeForced = false;
     _gameplay.DisplaySubtitle("Check it out, what the heck is this huge machine", this.VoiceLines[32], (Action) (() => _gameplay.DisplaySubtitle("This is a fucking steam train", this.VoiceLines[10], (Action) (() => _gameplay.DisplaySubtitle("There's nothing \"technology\" about it", this.VoiceLines[11], (Action) (() => _gameplay.DisplaySubtitle("Well it does run on coal instead of electricity, which is kinda convenient right now", this.VoiceLines[12], (Action) (() => _gameplay.DisplaySubtitle("So it is a train after all, and runs only on coal?", this.VoiceLines[33], (Action) (() => _gameplay.DisplaySubtitle("That's amazing!", this.VoiceLines[34], (Action) (() => _gameplay.DisplaySubtitle("Maybe my sweetie here could use it later to find land for a new city", this.VoiceLines[35], (Action) (() => _gameplay.DisplaySubtitle("Oh gawd this connects with the outside, that's a major safety threat", this.VoiceLines[13], (Action) (() => _gameplay.DisplaySubtitle("I have to get War here asap to setup defences", this.VoiceLines[14], (Action) (() => _gameplay.DisplaySubtitle("Let's get out of here now, this dust is what gives you lung cancer", this.VoiceLines[15], (Action) (() => _gameplay.DisplaySubtitle("And Sarah, I really should upgrade your vocal cords, they are starting to sound bad", this.VoiceLines[37], (Action) (() =>
     {
+      sarah.RemoveMoveBlocker("sarahlookattrain");
       sarah.ThisPersonInt.EndTheChat();
       this.EndMission();
     }), sephie)), sephie)), sephie)), sephie)), sarah)), sarah)), sarah)), sephie)), sephie)), sephie)), sarah);
@@ -760,8 +775,10 @@ public class Mis_Mines_Med : Mission
     this.CompleteMission();
     Main.RunInSeconds((Action) (() =>
     {
-      (Main.Instance.AllMissions[10] as Mis_Zea1).StartIfItCan();
-      Main.Instance.AllMissions[12].InitMission();
+      if ((Main.Instance.AllMissions[10] as Mis_Zea1).MissionCanStart())
+        (Main.Instance.AllMissions[10] as Mis_Zea1).StartIfItCan();
+      else
+        Main.Instance.GameplayMenu.StartMission(Main.Instance.AllMissions[12]);
     }), 10f);
     Main.Instance.CanSaveFlags_remove("SarahMission");
     Person sarah = Main.Instance.CityCharacters.Sarah;

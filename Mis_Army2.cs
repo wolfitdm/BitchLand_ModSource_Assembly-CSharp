@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Mis_Army2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -235,6 +235,8 @@ public class Mis_Army2 : Mission
       this.Truck.MyRigidbody.isKinematic = false;
       this.CompleteGoal(12);
       this.AddGoal(13, true);
+      if ((UnityEngine.Object) this.Truck.RunOverTrigger != (UnityEngine.Object) null)
+        this.Truck.RunOverTrigger.SetActive(true);
       this.Trigger3.SetActive(true);
       this.ThirdZoneMusic.OnEnter();
       this.CarGun.enabled = true;
@@ -747,6 +749,8 @@ public class Mis_Army2 : Mission
 
   public void EnterTrigger3()
   {
+    if ((UnityEngine.Object) this.Truck != (UnityEngine.Object) null && (UnityEngine.Object) this.Truck.RunOverTrigger != (UnityEngine.Object) null)
+      this.Truck.RunOverTrigger.SetActive(false);
     Main.Instance.MainThreads.Add(new Action(this.TankLookAt));
     this.ESBTank.SetActive(true);
     Main.Instance.MusicPlayer.pitch = 1f;
@@ -885,12 +889,16 @@ public class Mis_Army2 : Mission
       Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[23]);
       Main.Instance.GameplayMenu.DisplaySubtitle("You woke up", this.VoiceLines[23], (Action) (() =>
       {
+        Main.Instance.CanSaveFlags_remove("ArmyMissionGoal2");
+        Main.Instance.CanSaveFlags_remove("Quest Army2");
         Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[24]);
         Main.Instance.GameplayMenu.DisplaySubtitle("Just as I was about to make an eva reference", this.VoiceLines[24], (Action) (() =>
         {
           Main.Instance.MusicPlayer.PlayOneShot(this.VoiceLines[25]);
           Main.Instance.GameplayMenu.DisplaySubtitle("Guess I'll do it anyway~", this.VoiceLines[25], (Action) (() =>
           {
+            Main.Instance.CanSaveFlags_remove("ArmyMissionGoal2");
+            Main.Instance.CanSaveFlags_remove("Quest Army2");
             this.Sia.Orgasm();
             this.Sia.Masturbating = false;
             Main.Instance.GameplayMenu.Subtitle.SetActive(false);
@@ -903,8 +911,6 @@ public class Mis_Army2 : Mission
             Main.Instance.GameplayMenu.SaveButton.interactable = true;
             Main.Instance.GameplayMenu.CantSaveMsg.SetActive(false);
             this.CompleteMission();
-            Main.Instance.CanSaveFlags_remove("ArmyMissionGoal2");
-            Main.Instance.CanSaveFlags_remove("Quest Army2");
             this.Sia.StartScheduleTask(new Person.ScheduleTask()
             {
               IDName = "asdasd",

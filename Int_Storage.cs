@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Int_Storage
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -267,7 +267,7 @@ label_0:
       }
     }
     ++this._CurrentLoadingIndex;
-    for (int index = 0; index < num; ++index)
+    for (int index1 = 0; index1 < num; ++index1)
     {
       try
       {
@@ -279,7 +279,10 @@ label_0:
             if (str.Contains("="))
             {
               string[] Data1 = str.Split("=", StringSplitOptions.None);
-              GameObject prefab = Main.Instance.GetPrefab(Data1[1]);
+              int index2 = 1;
+              if (SaveableBehaviour.IsAfterV13(Data1))
+                index2 = 5;
+              GameObject prefab = Main.Instance.GetPrefab(Data1[index2]);
               if ((UnityEngine.Object) prefab != (UnityEngine.Object) null)
               {
                 GameObject gameObject = Main.Spawn(prefab, saveable: true);

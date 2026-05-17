@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Terra.Terrain.Util.PoissonDiscSampler
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,39 +29,28 @@ namespace Terra.Terrain.Util
 
     public IEnumerable<Vector2> Samples()
     {
-      PoissonDiscSampler poissonDiscSampler1 = this;
-      PoissonDiscSampler poissonDiscSampler2 = poissonDiscSampler1;
-      double num1 = (double) Random.value;
-      Rect rect = poissonDiscSampler1.rect;
-      double width = (double) rect.width;
-      double x = num1 * width;
-      double num2 = (double) Random.value;
-      rect = poissonDiscSampler1.rect;
-      double height = (double) rect.height;
-      double y = num2 * height;
-      Vector2 sample = new Vector2((float) x, (float) y);
-      yield return poissonDiscSampler2.AddSample(sample);
-      while (poissonDiscSampler1.activeSamples.Count > 0)
+      yield return this.AddSample(new Vector2(Random.value * this.rect.width, Random.value * this.rect.height));
+      while (this.activeSamples.Count > 0)
       {
-        int i = (int) Random.value * poissonDiscSampler1.activeSamples.Count;
-        Vector2 activeSample = poissonDiscSampler1.activeSamples[i];
+        int i = (int) Random.value * this.activeSamples.Count;
+        Vector2 activeSample = this.activeSamples[i];
         bool found = false;
         for (int index = 0; index < 30; ++index)
         {
           float f = 6.28318548f * Random.value;
-          float num3 = Mathf.Sqrt(Random.value * 3f * poissonDiscSampler1.radius2 + poissonDiscSampler1.radius2);
-          Vector2 vector2 = activeSample + num3 * new Vector2(Mathf.Cos(f), Mathf.Sin(f));
-          if (poissonDiscSampler1.rect.Contains(vector2) && poissonDiscSampler1.IsFarEnough(vector2))
+          float num = Mathf.Sqrt(Random.value * 3f * this.radius2 + this.radius2);
+          Vector2 vector2 = activeSample + num * new Vector2(Mathf.Cos(f), Mathf.Sin(f));
+          if (this.rect.Contains(vector2) && this.IsFarEnough(vector2))
           {
             found = true;
-            yield return poissonDiscSampler1.AddSample(vector2);
+            yield return this.AddSample(vector2);
             break;
           }
         }
         if (!found)
         {
-          poissonDiscSampler1.activeSamples[i] = poissonDiscSampler1.activeSamples[poissonDiscSampler1.activeSamples.Count - 1];
-          poissonDiscSampler1.activeSamples.RemoveAt(poissonDiscSampler1.activeSamples.Count - 1);
+          this.activeSamples[i] = this.activeSamples[this.activeSamples.Count - 1];
+          this.activeSamples.RemoveAt(this.activeSamples.Count - 1);
         }
       }
     }

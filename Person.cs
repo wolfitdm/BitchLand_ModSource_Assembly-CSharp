@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Person
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using DitzelGames.FastIK;
 using System;
@@ -12,6 +12,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 #nullable disable
 public class Person : SaveableBehaviour
@@ -160,6 +161,8 @@ public class Person : SaveableBehaviour
   public Dressable CurrentSocks;
   public Dressable CurrentHat;
   public Dressable CurrentHair;
+  public GameObject OriginalHair;
+  public e_HairLenght OriginalHairSize;
   public BackPack CurrentBackpack;
   public Dressable CurrentFeet;
   public Dressable CurrentBeard;
@@ -445,203 +448,208 @@ public class Person : SaveableBehaviour
   {
     if (this._DirtySkin)
       this.States[0] = true;
-    using (BinaryWriter writer = new BinaryWriter((Stream) File.Open(filename, FileMode.Create)))
+    MemoryStream output = new MemoryStream();
+    BinaryWriter writer = new BinaryWriter((Stream) output);
+    writer.Write("14");
+    writer.Write(this.WorldSaveID);
+    writer.Write(this.Name);
+    this.WriteVector3(writer, this.transform.position);
+    this.WriteVector3(writer, this.transform.eulerAngles);
+    this.WriteVector3(writer, this.transform.localScale);
+    this.WriteColor(writer, this.NaturalEyeColor);
+    this.WriteColor(writer, this.NaturalHairColor);
+    this.WriteColor(writer, this.NaturalSkinColor);
+    this.WriteColor(writer, this.DyedEyeColor);
+    this.WriteColor(writer, this.DyedHairColor);
+    this.WriteColor(writer, this.TannedSkinColor);
+    writer.Write(this.HasPenis);
+    writer.Write(this.Penis.transform.localScale.x);
+    if (this.EquippedClothes.Count == 0)
     {
-      writer.Write("12");
-      writer.Write(this.WorldSaveID);
-      writer.Write(this.Name);
-      this.WriteVector3(writer, this.transform.position);
-      this.WriteVector3(writer, this.transform.eulerAngles);
-      this.WriteVector3(writer, this.transform.localScale);
-      this.WriteColor(writer, this.NaturalEyeColor);
-      this.WriteColor(writer, this.NaturalHairColor);
-      this.WriteColor(writer, this.NaturalSkinColor);
-      this.WriteColor(writer, this.DyedEyeColor);
-      this.WriteColor(writer, this.DyedHairColor);
-      this.WriteColor(writer, this.TannedSkinColor);
-      writer.Write(this.HasPenis);
-      writer.Write(this.Penis.transform.localScale.x);
-      if (this.EquippedClothes.Count == 0)
+      writer.Write("None");
+    }
+    else
+    {
+      string str = this.EquippedClothes[0].sv_SaveData();
+      for (int index = 1; index < this.EquippedClothes.Count; ++index)
       {
-        writer.Write("None");
+        if (this.EquippedClothes[index].BodyPart != DressableType.BackPack)
+          str = str + ";" + this.EquippedClothes[index].sv_SaveData();
+      }
+      writer.Write(str);
+    }
+    string path = filename.Replace(".chr", ".backpack");
+    if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null)
+    {
+      string[] saveableData = this.CurrentBackpack.SaveableData;
+      File.WriteAllLines(path, saveableData);
+    }
+    else if (File.Exists(path))
+      File.Delete(path);
+    for (int index = 0; index < this.AllFaceBones.Length; ++index)
+    {
+      Transform allFaceBone = this.AllFaceBones[index];
+      if ((UnityEngine.Object) allFaceBone != (UnityEngine.Object) null)
+      {
+        this.WriteVector3(writer, allFaceBone.localPosition);
+        this.WriteVector3(writer, allFaceBone.localEulerAngles);
+        this.WriteVector3(writer, allFaceBone.localScale);
+      }
+    }
+    for (int index = 0; index < this.AllBodyBones.Length; ++index)
+    {
+      Transform allBodyBone = this.AllBodyBones[index];
+      if ((UnityEngine.Object) allBodyBone != (UnityEngine.Object) null)
+      {
+        this.WriteVector3(writer, allBodyBone.localPosition);
+        this.WriteVector3(writer, allBodyBone.localEulerAngles);
+        this.WriteVector3(writer, allBodyBone.localScale);
+      }
+    }
+    writer.Write(this.PlayerKnowsName);
+    if (this is Girl)
+      writer.Write((this as Girl)._PregnancyPercent);
+    else
+      writer.Write(0.0f);
+    writer.Write((int) this.Personality);
+    writer.Write(this.Fetishes.Count);
+    for (int index = 0; index < this.Fetishes.Count; ++index)
+      writer.Write((int) this.Fetishes[index]);
+    writer.Write(this.HomeAddress);
+    if ((UnityEngine.Object) this.PersonType == (UnityEngine.Object) null)
+      writer.Write(0);
+    else
+      writer.Write((int) this.PersonType.ThisType);
+    writer.Write(this.States.Length);
+    for (int index = 0; index < this.States.Length; ++index)
+      writer.Write(this.States[index]);
+    writer.Write(this.Arousal);
+    writer.Write(this.Money);
+    writer.Write(this.TheHealth.currentHealth);
+    writer.Write(this.TheHealth.maxHealth);
+    writer.Write(this.TheHealth.dead);
+    writer.Write(this.TheHealth.Incapacitated);
+    writer.Write(this.Hunger);
+    writer.Write(this.Energy);
+    writer.Write(this.Toilet);
+    writer.Write(this.HungerMax);
+    writer.Write(this.EnergyMax);
+    writer.Write(this.ToiletMax);
+    writer.Write(this.IntestinalSubstance);
+    writer.Write(this.Favor);
+    writer.Write(this._SexSkills.Value);
+    writer.Write(this._WorkSkills.Value);
+    writer.Write(this._ArmySkills.Value);
+    writer.Write(this.SexXpThisLvlMax);
+    writer.Write(this.SexXpThisLvl);
+    writer.Write(this.WorkXpThisLvlMax);
+    writer.Write(this.WorkXpThisLvl);
+    writer.Write(this.ArmyXpThisLvlMax);
+    writer.Write(this.ArmyXpThisLvl);
+    writer.Write(this.SecondWeapon);
+    writer.Write(this.Height);
+    writer.Write(this.Perks.Count);
+    for (int index = 0; index < this.Perks.Count; ++index)
+      writer.Write(this.Perks[index]);
+    writer.Write((int) this.State);
+    writer.Write(this.JobIndex);
+    if ((UnityEngine.Object) this.WorkJob == (UnityEngine.Object) null)
+      writer.Write("NoJob");
+    else
+      writer.Write(this.WorkJob.JobName);
+    writer.Write(this.WeaponInv.weaponIndex);
+    writer.Write(this.WeaponInv.weapons.Count);
+    for (int index = 0; index < this.WeaponInv.weapons.Count; ++index)
+    {
+      GameObject weapon = this.WeaponInv.weapons[index];
+      if ((UnityEngine.Object) weapon == (UnityEngine.Object) null)
+      {
+        writer.Write("null");
       }
       else
       {
-        string str = this.EquippedClothes[0].sv_SaveData();
-        for (int index = 1; index < this.EquippedClothes.Count; ++index)
-        {
-          if (this.EquippedClothes[index].BodyPart != DressableType.BackPack)
-            str = str + ";" + this.EquippedClothes[index].sv_SaveData();
-        }
-        writer.Write(str);
+        Weapon component = weapon.GetComponent<Weapon>();
+        writer.Write(component.PrefabName);
       }
-      if ((UnityEngine.Object) this.CurrentBackpack != (UnityEngine.Object) null)
+    }
+    writer.Write(this._SkinStates.Length);
+    for (int index = 0; index < this._SkinStates.Length; ++index)
+      writer.Write(this._SkinStates[index]);
+    writer.Write(this._DirtySkin);
+    if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null)
+      writer.Write(this.CurrentZone.name);
+    else
+      writer.Write("None");
+    writer.Write(this.VoicePitch);
+    if (this.Interacting && (UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
+      writer.Write(this.InteractingWith.WorldSaveID);
+    else
+      writer.Write("None");
+    if ((UnityEngine.Object) this.Storage_Hands == (UnityEngine.Object) null)
+      Main.Log(this.Name + " Storage_Hands == null", true);
+    else if (this.Storage_Hands.StorageItems == null)
+    {
+      Main.Log(this.Name + " Storage_Hands.StorageItems == null", true);
+    }
+    else
+    {
+      writer.Write(this.Storage_Hands.StorageItems.Count);
+      for (int index = 0; index < this.Storage_Hands.StorageItems.Count; ++index)
       {
-        string[] saveableData = this.CurrentBackpack.SaveableData;
-        File.WriteAllLines(filename.Replace(".chr", ".backpack"), saveableData);
+        writer.Write(this.Storage_Hands.StorageItems[index].GetComponent<SaveableBehaviour>().sv_SaveData());
+        this.Storage_Hands.StorageItems[index].SetActive(false);
+        Main.Instance.EnableAfterSave.Add(this.Storage_Hands.StorageItems[index]);
       }
-      for (int index = 0; index < this.AllFaceBones.Length; ++index)
+      if ((UnityEngine.Object) this.Storage_Vag == (UnityEngine.Object) null)
       {
-        Transform allFaceBone = this.AllFaceBones[index];
-        if ((UnityEngine.Object) allFaceBone != (UnityEngine.Object) null)
+        writer.Write(0);
+      }
+      else
+      {
+        writer.Write(this.Storage_Vag.StorageItems.Count);
+        for (int index = 0; index < this.Storage_Vag.StorageItems.Count; ++index)
         {
-          this.WriteVector3(writer, allFaceBone.localPosition);
-          this.WriteVector3(writer, allFaceBone.localEulerAngles);
-          this.WriteVector3(writer, allFaceBone.localScale);
+          writer.Write(this.Storage_Vag.StorageItems[index].GetComponent<SaveableBehaviour>().sv_SaveData());
+          this.Storage_Vag.StorageItems[index].SetActive(false);
+          Main.Instance.EnableAfterSave.Add(this.Storage_Vag.StorageItems[index]);
         }
       }
-      for (int index = 0; index < this.AllBodyBones.Length; ++index)
+      writer.Write(this.Storage_Anal.StorageItems.Count);
+      for (int index = 0; index < this.Storage_Anal.StorageItems.Count; ++index)
       {
-        Transform allBodyBone = this.AllBodyBones[index];
-        if ((UnityEngine.Object) allBodyBone != (UnityEngine.Object) null)
-        {
-          this.WriteVector3(writer, allBodyBone.localPosition);
-          this.WriteVector3(writer, allBodyBone.localEulerAngles);
-          this.WriteVector3(writer, allBodyBone.localScale);
-        }
+        writer.Write(this.Storage_Anal.StorageItems[index].GetComponent<SaveableBehaviour>().sv_SaveData());
+        this.Storage_Anal.StorageItems[index].SetActive(false);
+        Main.Instance.EnableAfterSave.Add(this.Storage_Anal.StorageItems[index]);
       }
-      writer.Write(this.PlayerKnowsName);
+      writer.Write(0);
+      writer.Write(0);
       if (this is Girl)
-        writer.Write((this as Girl)._PregnancyPercent);
-      else
-        writer.Write(0.0f);
-      writer.Write((int) this.Personality);
-      writer.Write(this.Fetishes.Count);
-      for (int index = 0; index < this.Fetishes.Count; ++index)
-        writer.Write((int) this.Fetishes[index]);
-      writer.Write(this.HomeAddress);
-      if ((UnityEngine.Object) this.PersonType == (UnityEngine.Object) null)
-        writer.Write(0);
-      else
-        writer.Write((int) this.PersonType.ThisType);
-      writer.Write(this.States.Length);
-      for (int index = 0; index < this.States.Length; ++index)
-        writer.Write(this.States[index]);
-      writer.Write(this.Arousal);
-      writer.Write(this.Money);
-      writer.Write(this.TheHealth.currentHealth);
-      writer.Write(this.TheHealth.maxHealth);
-      writer.Write(this.TheHealth.dead);
-      writer.Write(this.TheHealth.Incapacitated);
-      writer.Write(this.Hunger);
-      writer.Write(this.Energy);
-      writer.Write(this.Toilet);
-      writer.Write(this.HungerMax);
-      writer.Write(this.EnergyMax);
-      writer.Write(this.ToiletMax);
-      writer.Write(this.IntestinalSubstance);
-      writer.Write(this.Favor);
-      writer.Write(this._SexSkills.Value);
-      writer.Write(this._WorkSkills.Value);
-      writer.Write(this._ArmySkills.Value);
-      writer.Write(this.SexXpThisLvlMax);
-      writer.Write(this.SexXpThisLvl);
-      writer.Write(this.WorkXpThisLvlMax);
-      writer.Write(this.WorkXpThisLvl);
-      writer.Write(this.ArmyXpThisLvlMax);
-      writer.Write(this.ArmyXpThisLvl);
-      writer.Write(this.SecondWeapon);
-      writer.Write(this.Height);
-      writer.Write(this.Perks.Count);
-      for (int index = 0; index < this.Perks.Count; ++index)
-        writer.Write(this.Perks[index]);
-      writer.Write((int) this.State);
-      writer.Write(this.JobIndex);
-      if ((UnityEngine.Object) this.WorkJob == (UnityEngine.Object) null)
-        writer.Write("NoJob");
-      else
-        writer.Write(this.WorkJob.JobName);
-      writer.Write(this.WeaponInv.weaponIndex);
-      writer.Write(this.WeaponInv.weapons.Count);
-      for (int index = 0; index < this.WeaponInv.weapons.Count; ++index)
       {
-        GameObject weapon = this.WeaponInv.weapons[index];
-        if ((UnityEngine.Object) weapon == (UnityEngine.Object) null)
-        {
-          writer.Write("null");
-        }
+        this.WriteVector3(writer, (this as Girl).PregnancyBones_default[0]);
+        this.WriteVector3(writer, (this as Girl).PregnancyBones_default[1]);
+        this.WriteVector3(writer, (this as Girl).PregnancyBones_default[2]);
+        this.WriteVector3(writer, (this as Girl).PregnancyBones_default[3]);
+      }
+      writer.Write(this.TimesSexedPlayer);
+      writer.Write(this.sCustomBodyTexIndex);
+      writer.Write(this.sCustomFaceTexIndex);
+      if (this is Girl)
+      {
+        if ((UnityEngine.Object) (this as Girl).PregnancyParent != (UnityEngine.Object) null)
+          writer.Write((this as Girl).PregnancyParent.WorldSaveID);
         else
-        {
-          Weapon component = weapon.GetComponent<Weapon>();
-          writer.Write(component.PrefabName);
-        }
+          writer.Write("None");
       }
-      writer.Write(this._SkinStates.Length);
-      for (int index = 0; index < this._SkinStates.Length; ++index)
-        writer.Write(this._SkinStates[index]);
-      writer.Write(this._DirtySkin);
-      if ((UnityEngine.Object) this.CurrentZone != (UnityEngine.Object) null)
-        writer.Write(this.CurrentZone.name);
-      else
-        writer.Write("None");
-      writer.Write(this.VoicePitch);
-      if (this.Interacting && (UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
-        writer.Write(this.InteractingWith.WorldSaveID);
-      else
-        writer.Write("None");
-      if ((UnityEngine.Object) this.Storage_Hands == (UnityEngine.Object) null)
-        Main.Log(this.Name + " Storage_Hands == null", true);
-      else if (this.Storage_Hands.StorageItems == null)
+      writer.Write(this.Fertility);
+      writer.Write(this.SaveableVars.Count);
+      for (int index = 0; index < this.SaveableVars.Count; ++index)
       {
-        Main.Log(this.Name + " Storage_Hands.StorageItems == null", true);
+        writer.Write(this.SaveableVars.Keys[index]);
+        writer.Write(this.SaveableVars.Values[index]);
       }
-      else
-      {
-        writer.Write(this.Storage_Hands.StorageItems.Count);
-        for (int index = 0; index < this.Storage_Hands.StorageItems.Count; ++index)
-        {
-          writer.Write(this.Storage_Hands.StorageItems[index].GetComponent<SaveableBehaviour>().sv_SaveData());
-          this.Storage_Hands.StorageItems[index].SetActive(false);
-          Main.Instance.EnableAfterSave.Add(this.Storage_Hands.StorageItems[index]);
-        }
-        if ((UnityEngine.Object) this.Storage_Vag == (UnityEngine.Object) null)
-        {
-          writer.Write(0);
-        }
-        else
-        {
-          writer.Write(this.Storage_Vag.StorageItems.Count);
-          for (int index = 0; index < this.Storage_Vag.StorageItems.Count; ++index)
-          {
-            writer.Write(this.Storage_Vag.StorageItems[index].GetComponent<SaveableBehaviour>().sv_SaveData());
-            this.Storage_Vag.StorageItems[index].SetActive(false);
-            Main.Instance.EnableAfterSave.Add(this.Storage_Vag.StorageItems[index]);
-          }
-        }
-        writer.Write(this.Storage_Anal.StorageItems.Count);
-        for (int index = 0; index < this.Storage_Anal.StorageItems.Count; ++index)
-        {
-          writer.Write(this.Storage_Anal.StorageItems[index].GetComponent<SaveableBehaviour>().sv_SaveData());
-          this.Storage_Anal.StorageItems[index].SetActive(false);
-          Main.Instance.EnableAfterSave.Add(this.Storage_Anal.StorageItems[index]);
-        }
-        writer.Write(0);
-        writer.Write(0);
-        if (this is Girl)
-        {
-          this.WriteVector3(writer, (this as Girl).PregnancyBones_default[0]);
-          this.WriteVector3(writer, (this as Girl).PregnancyBones_default[1]);
-          this.WriteVector3(writer, (this as Girl).PregnancyBones_default[2]);
-          this.WriteVector3(writer, (this as Girl).PregnancyBones_default[3]);
-        }
-        writer.Write(this.TimesSexedPlayer);
-        writer.Write(this.sCustomBodyTexIndex);
-        writer.Write(this.sCustomFaceTexIndex);
-        if (this is Girl)
-        {
-          if ((UnityEngine.Object) (this as Girl).PregnancyParent != (UnityEngine.Object) null)
-            writer.Write((this as Girl).PregnancyParent.WorldSaveID);
-          else
-            writer.Write("None");
-        }
-        writer.Write(this.Fertility);
-        writer.Write(this.SaveableVars.Count);
-        for (int index = 0; index < this.SaveableVars.Count; ++index)
-        {
-          writer.Write(this.SaveableVars.Keys[index]);
-          writer.Write(this.SaveableVars.Values[index]);
-        }
-      }
+      writer.Write(this.gameObject.scene.buildIndex);
+      File.WriteAllBytes(filename, output.ToArray());
+      writer.Flush();
     }
   }
 
@@ -666,7 +674,7 @@ public class Person : SaveableBehaviour
         using (BinaryReader reader = new BinaryReader((Stream) File.Open(filename, FileMode.Open)))
         {
           reader.BaseStream.Seek((long) offset, SeekOrigin.Begin);
-          long num1 = reader.BaseStream.Length - 16L;
+          long length1 = reader.BaseStream.Length;
           string str1 = reader.ReadString();
           this.WorldSaveID = reader.ReadString();
           this.Name = reader.ReadString().Replace("NPC_", "");
@@ -681,8 +689,8 @@ public class Person : SaveableBehaviour
           this.DyedHairColor = this.ReadColor(reader);
           this.TannedSkinColor = this.ReadColor(reader);
           this.HasPenis = reader.ReadBoolean();
-          float num2 = reader.ReadSingle();
-          this.Penis.transform.localScale = new Vector3(num2, num2, num2);
+          float num1 = reader.ReadSingle();
+          this.Penis.transform.localScale = new Vector3(num1, num1, num1);
           this.StartingClothes.Clear();
           this._StartingClothes.Clear();
           string str2 = reader.ReadString();
@@ -757,14 +765,14 @@ label_20:
                           {
                             if (!(str1 == "4.5 (Technical update)"))
                             {
-                              float num3 = reader.ReadSingle();
+                              float num2 = reader.ReadSingle();
                               this.Personality = (Personality_Type) reader.ReadInt32();
-                              int num4 = reader.ReadInt32();
-                              for (int index = 0; index < num4; ++index)
+                              int num3 = reader.ReadInt32();
+                              for (int index = 0; index < num3; ++index)
                                 this.Fetishes.Add((e_Fetish) reader.ReadInt32());
                               if (!(str1 == "5"))
                               {
-                                if (reader.BaseStream.Position != num1)
+                                if (reader.BaseStream.Position < length1)
                                 {
                                   string str5 = reader.ReadString();
                                   if (str5 != "None")
@@ -779,17 +787,17 @@ label_20:
                                     }
                                   }
                                   this.PersonType = Main.Instance.PersonTypes[reader.ReadInt32()];
-                                  int num5 = reader.ReadInt32();
-                                  for (int index = 0; index < num5; ++index)
+                                  int num4 = reader.ReadInt32();
+                                  for (int index = 0; index < num4; ++index)
                                     this.States[index] = reader.ReadBoolean();
                                   this.Arousal = reader.ReadSingle();
                                   this.Money = reader.ReadInt32();
                                   this.TheHealth.currentHealth = reader.ReadSingle();
                                   this.TheHealth.startingHealth = this.TheHealth.currentHealth;
                                   this.TheHealth.maxHealth = reader.ReadSingle();
-                                  int num6 = reader.ReadBoolean() ? 1 : 0;
+                                  int num5 = reader.ReadBoolean() ? 1 : 0;
                                   bool flag = reader.ReadBoolean();
-                                  if (num6 != 0)
+                                  if (num5 != 0)
                                     this.TheHealth.Die(false);
                                   else if (flag)
                                     this.TheHealth.Incapacitate();
@@ -816,8 +824,8 @@ label_20:
                                     this.Height = this.transform.localScale.y;
                                   else
                                     this.transform.localScale = new Vector3(this.Height, this.Height, this.Height);
-                                  int num7 = reader.ReadInt32();
-                                  for (int index = 0; index < num7; ++index)
+                                  int num6 = reader.ReadInt32();
+                                  for (int index = 0; index < num6; ++index)
                                     this.Perks.Add(reader.ReadString());
                                   this.State = (Person_State) reader.ReadInt32();
                                   this.JobIndex = reader.ReadInt32();
@@ -835,13 +843,13 @@ label_20:
                                     }
                                   }
                                   this.WeaponInv.startingWeaponIndex = reader.ReadInt32();
-                                  int num8 = reader.ReadInt32();
+                                  int num7 = reader.ReadInt32();
                                   this._StartingWeapons.Clear();
-                                  for (int index = 0; index < num8; ++index)
+                                  for (int index = 0; index < num7; ++index)
                                     this._StartingWeapons.Add(reader.ReadString());
-                                  int length = reader.ReadInt32();
-                                  this._SkinStates = new bool[length];
-                                  for (int index = 0; index < length; ++index)
+                                  int length2 = reader.ReadInt32();
+                                  this._SkinStates = new bool[length2];
+                                  for (int index = 0; index < length2; ++index)
                                     this._SkinStates[index] = reader.ReadBoolean();
                                   this._DirtySkin = reader.ReadBoolean();
                                   string str7 = reader.ReadString();
@@ -856,9 +864,9 @@ label_20:
                                       }
                                     }
                                   }
-                                  float num9 = reader.ReadSingle();
-                                  if ((double) num9 > 0.30000001192092896 && (double) num9 < 1.2000000476837158)
-                                    this.VoicePitch = num9;
+                                  float num8 = reader.ReadSingle();
+                                  if ((double) num8 > 0.30000001192092896 && (double) num8 < 1.2000000476837158)
+                                    this.VoicePitch = num8;
                                   string str8 = reader.ReadString();
                                   if (!this._DontLoadInteraction && str8 != "None" && str8.Length > 0)
                                   {
@@ -881,15 +889,15 @@ label_20:
                                       }
                                     }
                                   }
-                                  if (reader.BaseStream.Position == num1)
+                                  if (reader.BaseStream.Position >= length1)
                                   {
                                     if (this is Girl)
                                       this.States[22] = true;
                                   }
                                   else
                                   {
-                                    int num10 = reader.ReadInt32();
-                                    for (int index = 0; index < num10; ++index)
+                                    int num9 = reader.ReadInt32();
+                                    for (int index = 0; index < num9; ++index)
                                     {
                                       string str9 = reader.ReadString();
                                       if (str9 != null && str9.Length != 0)
@@ -915,8 +923,8 @@ label_20:
                                         }
                                       }
                                     }
-                                    int num11 = reader.ReadInt32();
-                                    for (int index = 0; index < num11; ++index)
+                                    int num10 = reader.ReadInt32();
+                                    for (int index = 0; index < num10; ++index)
                                     {
                                       string str10 = reader.ReadString();
                                       if (str10 != null && str10.Length != 0)
@@ -942,8 +950,8 @@ label_20:
                                         }
                                       }
                                     }
-                                    int num12 = reader.ReadInt32();
-                                    for (int index = 0; index < num12; ++index)
+                                    int num11 = reader.ReadInt32();
+                                    for (int index = 0; index < num11; ++index)
                                     {
                                       string str11 = reader.ReadString();
                                       if (str11 != null && str11.Length != 0)
@@ -969,15 +977,15 @@ label_20:
                                         }
                                       }
                                     }
-                                    if (reader.BaseStream.Position != num1)
+                                    if (reader.BaseStream.Position < length1)
                                     {
-                                      int num13 = reader.ReadInt32();
+                                      int num12 = reader.ReadInt32();
                                       this._CustomSkinStates = new bool[Main.Instance._CustomBodySkinsName.Count];
-                                      for (int index = 0; index < num13; ++index)
+                                      for (int index = 0; index < num12; ++index)
                                         this._CustomSkinStates[index] = reader.ReadBoolean();
-                                      int num14 = reader.ReadInt32();
+                                      int num13 = reader.ReadInt32();
                                       this._CustomFaceSkinStates = new bool[Main.Instance._CustomFaceSkinsName.Count];
-                                      for (int index = 0; index < num14; ++index)
+                                      for (int index = 0; index < num13; ++index)
                                         this._CustomFaceSkinStates[index] = reader.ReadBoolean();
                                       if (this is Girl)
                                       {
@@ -986,11 +994,11 @@ label_20:
                                         (this as Girl).PregnancyBones_default[1] = this.ReadVector3(reader);
                                         (this as Girl).PregnancyBones_default[2] = this.ReadVector3(reader);
                                         (this as Girl).PregnancyBones_default[3] = this.ReadVector3(reader);
-                                        if ((double) num3 != 0.0)
-                                          (this as Girl).PregnancyPercent = num3;
+                                        if ((double) num2 != 0.0)
+                                          (this as Girl).PregnancyPercent = num2;
                                       }
                                       this.TimesSexedPlayer = reader.ReadInt32();
-                                      if (reader.BaseStream.Position != num1)
+                                      if (reader.BaseStream.Position < length1)
                                       {
                                         this.sCustomBodyTexIndex = reader.ReadString();
                                         this.sCustomFaceTexIndex = reader.ReadString();
@@ -1012,7 +1020,7 @@ label_20:
                                               this._CustomFaceSkinStates[index] = true;
                                           }
                                         }
-                                        if (reader.BaseStream.Position != num1)
+                                        if (reader.BaseStream.Position < length1)
                                         {
                                           if (this is Girl)
                                           {
@@ -1020,14 +1028,24 @@ label_20:
                                             if (str14 != "None")
                                               (this as Girl).s_PregnancyParent = str14;
                                           }
-                                          if (reader.BaseStream.Position != num1)
+                                          if (reader.BaseStream.Position < length1)
                                           {
                                             this.Fertility = reader.ReadSingle();
-                                            if (reader.BaseStream.Position != num1)
+                                            if (reader.BaseStream.Position < length1)
                                             {
-                                              int num15 = reader.ReadInt32();
-                                              for (int index = 0; index < num15; ++index)
+                                              int num14 = reader.ReadInt32();
+                                              for (int index = 0; index < num14; ++index)
                                                 this.SaveableVars.Add(reader.ReadString(), reader.ReadString());
+                                              if (reader.BaseStream.Position < length1)
+                                              {
+                                                int buildIndex = reader.ReadInt32();
+                                                if (buildIndex == 6)
+                                                {
+                                                  Scene sceneByBuildIndex = SceneManager.GetSceneByBuildIndex(buildIndex);
+                                                  if (sceneByBuildIndex.isLoaded)
+                                                    SceneManager.MoveGameObjectToScene(this.gameObject, sceneByBuildIndex);
+                                                }
+                                              }
                                             }
                                           }
                                         }
@@ -1067,10 +1085,11 @@ label_20:
     }
   }
 
+  [Obsolete]
   public override string[] sd_SaveData(char SlitChar = ':')
   {
     List<string> stringList1 = new List<string>();
-    stringList1.Add("12");
+    stringList1.Add("14");
     stringList1.Add(this.WorldSaveID);
     stringList1.Add(this.Name);
     stringList1.Add(this.transform.position.ToString());
@@ -1127,10 +1146,11 @@ label_20:
     return stringList1.ToArray();
   }
 
+  [Obsolete]
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     base.sd_LoadData(Data, SlitChar);
-    if (Data[0] != "12")
+    if (Data[0] != "14")
       Debug.LogError((object) "DiferentVersion");
     this.WorldSaveID = Data[1];
     this.Name = Data[2];
@@ -2487,7 +2507,7 @@ label_93:
       int num1;
       if (!this.navMesh.enabled)
       {
-        vector2 = new Vector2(this._Rigidbody.velocity.x, this._Rigidbody.velocity.z);
+        vector2 = new Vector2(this._Rigidbody.linearVelocity.x, this._Rigidbody.linearVelocity.z);
         num1 = (double) vector2.magnitude < 0.10000000149011612 ? 1 : 0;
       }
       else
@@ -2501,7 +2521,7 @@ label_93:
         int num2;
         if (!this.navMesh.enabled)
         {
-          vector2 = new Vector2(this._Rigidbody.velocity.x, this._Rigidbody.velocity.z);
+          vector2 = new Vector2(this._Rigidbody.linearVelocity.x, this._Rigidbody.linearVelocity.z);
           num2 = (double) vector2.magnitude < 1.6000000238418579 ? 1 : 0;
         }
         else
@@ -3047,7 +3067,7 @@ label_29:
       return;
     if (this.DEBUG)
       Debug.LogError((object) ("Interacting -> " + this.Interacting.ToString()));
-    if (this.Interacting)
+    if (this.Interacting && (UnityEngine.Object) this.InteractingWith != (UnityEngine.Object) null)
       this.InteractingWith.StopInteracting();
     this.CurrentScheduleTask = task;
     if (this.CurrentScheduleTask == null)
@@ -3883,7 +3903,11 @@ label_29:
       this.DressClothe(clothes[index]);
   }
 
-  public GameObject DressClothe(GameObject prefab, bool spawnNew = true, string clothingData = "")
+  public GameObject DressClothe(
+    GameObject prefab,
+    bool spawnNew = true,
+    string clothingData = "",
+    bool assignOrg = true)
   {
     if ((UnityEngine.Object) prefab == (UnityEngine.Object) null)
       return (GameObject) null;
@@ -3994,6 +4018,12 @@ label_29:
         if ((UnityEngine.Object) this.CurrentHair != (UnityEngine.Object) null)
           this.UndressClothe(this.CurrentHair);
         this.CurrentHair = componentInChildren2;
+        if (assignOrg)
+        {
+          this.OriginalHair = prefab;
+          this.OriginalHairSize = componentInChildren2.HairLenght;
+          break;
+        }
         break;
       case DressableType.Head:
         this.HiddenHead = true;
@@ -5353,6 +5383,54 @@ label_0:
       if (!this.Unlocked_Storage_Anal || !((UnityEngine.Object) this.Storage_Anal != (UnityEngine.Object) null) || this.Storage_Anal.Full)
         return;
       this.Storage_Anal.AddItem(item);
+    }
+  }
+
+  public void GrownHair(bool higher = true)
+  {
+    e_HairLenght eHairLenght1 = e_HairLenght.Bald;
+    if ((UnityEngine.Object) this.CurrentHair != (UnityEngine.Object) null)
+      eHairLenght1 = this.CurrentHair.HairLenght;
+    e_HairLenght eHairLenght2;
+    switch (eHairLenght1)
+    {
+      case e_HairLenght.Default:
+        eHairLenght2 = higher ? e_HairLenght.Default : e_HairLenght.Bald;
+        break;
+      case e_HairLenght.Short:
+        if (!higher)
+          return;
+        eHairLenght2 = e_HairLenght.Default;
+        break;
+      case e_HairLenght.Long:
+        eHairLenght2 = higher ? e_HairLenght.Default : e_HairLenght.Bald;
+        break;
+      case e_HairLenght.VeryLong:
+        return;
+      case e_HairLenght.Bald:
+        if (!higher)
+          return;
+        eHairLenght2 = e_HairLenght.Short;
+        break;
+      default:
+        return;
+    }
+    if (this.OriginalHairSize == eHairLenght2)
+    {
+      this.DressClothe(this.OriginalHair, assignOrg: false);
+    }
+    else
+    {
+      List<GameObject> gameObjectList = new List<GameObject>();
+      for (int index = 0; index < Main.Instance.Prefabs_Hair.Count; ++index)
+      {
+        Dressable component = Main.Instance.Prefabs_Hair[index].GetComponent<Dressable>();
+        if ((UnityEngine.Object) component != (UnityEngine.Object) null && component.HairLenght == eHairLenght2)
+          gameObjectList.Add(Main.Instance.Prefabs_Hair[index]);
+        else
+          Debug.LogError((object) ("no accesible dressable -> " + Main.Instance.Prefabs_Hair[index].name));
+      }
+      this.DressClothe(gameObjectList[UnityEngine.Random.Range(0, gameObjectList.Count)], assignOrg: false);
     }
   }
 

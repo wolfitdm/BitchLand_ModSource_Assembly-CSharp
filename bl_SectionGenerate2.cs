@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_SectionGenerate2
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System.Collections;
 using System.Collections.Generic;
@@ -32,8 +32,10 @@ public class bl_SectionGenerate2 : MonoBehaviour
   public List<int> StructuresMax_small = new List<int>();
   public List<int> StructuresMin_big = new List<int>();
   public List<int> StructuresMax_big = new List<int>();
+  public Transform _PlayerStartChunk;
   [Header(" -- runtime --- ")]
   public static List<Transform> ItemFallRespawnSpots = new List<Transform>();
+  public static List<Transform> ItemFallRespawnSpots_Mines = new List<Transform>();
 
   public static bool SmallWorld
   {
@@ -773,7 +775,7 @@ label_281:
     Main.Instance.NewGameMenu.ExtraLoadingText.text = "0/" + _totalChunks.ToString();
     Main.Instance.NewGameMenu.ExtraLoadingTextTitle.text = "Spawning Chunks";
     yield return (object) null;
-    Transform _PlayerStartChunk = (Transform) null;
+    sectionGenerate2._PlayerStartChunk = (Transform) null;
     for (int x = 1; x < _sectionXSize - 1; ++x)
     {
       for (int y = 1; y < _sectionYSize - 1; ++y)
@@ -784,7 +786,7 @@ label_281:
         if (worldChunkType == 21)
         {
           transform1 = UnityEngine.Object.Instantiate<GameObject>(sectionGenerate2.PlayerStartPrefab).transform;
-          _PlayerStartChunk = transform1;
+          sectionGenerate2._PlayerStartChunk = transform1;
         }
         else if (structure != 0)
         {
@@ -875,7 +877,7 @@ label_281:
       transform.transform.position = new Vector3((float) ((_sectionXSize - 2) * 27), (float) (newChunks[_sectionXSize - 2, index].Height * 9), (float) (index * 27));
       transform.transform.eulerAngles = new Vector3(0.0f, 90f, 0.0f);
     }
-    Transform Spot = _PlayerStartChunk.Find("PlayerStart");
+    Transform Spot = sectionGenerate2._PlayerStartChunk.Find("PlayerStart");
     if (!loadingGame)
     {
       Debug.Log((object) "placing player");

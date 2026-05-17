@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_MinableObject
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -32,6 +32,7 @@ public class bl_MinableObject : Interactible
   public Transform[] SpawnSpots;
   public Interactible[] OtherIntsToCheckOnCanBreak;
   public bool BakeNavmeshOnBuild;
+  public bool _StartedMining;
   public List<Person> _Builders = new List<Person>();
   public Int_Storage[] ReleaseWhenBreak;
 
@@ -69,6 +70,7 @@ public class bl_MinableObject : Interactible
   {
     if (person.DEBUG)
       Debug.Log((object) ("Interact -> " + person.name));
+    this._StartedMining = false;
     if ((UnityEngine.Object) person.WeaponInv.CurrentWeapon == (UnityEngine.Object) null)
     {
       if (!person.IsPlayer)
@@ -90,11 +92,16 @@ public class bl_MinableObject : Interactible
       person.transform.eulerAngles = new Vector3(0.0f, person.transform.eulerAngles.y, 0.0f);
       person.Anim.Play(this.MiningAnim);
       if (person.IsPlayer)
+      {
+        Main.Instance.GameplayMenu.QLeave.SetActive(true);
+        Main.Instance.GameplayMenu.QLeave.transform.Find("a/Text").GetComponent<UnityEngine.UI.Text>().text = "Cancel";
         Main.Instance.GameplayMenu.WeaponReloadUI.SetActive(true);
+      }
       else
         person.enabled = false;
       this._TimeMining = this.TimeMiningMax;
       Main.Instance.MainThreads.Add(new Action(this.MiningThread));
+      this._StartedMining = true;
     }
   }
 
@@ -104,13 +111,7 @@ public class bl_MinableObject : Interactible
     {
       if (this.InteractingPerson.IsPlayer && Main.Instance.CancelKey())
       {
-        Main.Instance.MainThreads.Remove(new Action(this.MiningThread));
-        this.InteractingPerson.Interacting = false;
-        this.InteractingPerson.RemoveMoveBlocker("Mining");
-        this.InteractingPerson.enabled = true;
-        if (this.InteractingPerson.IsPlayer)
-          Main.Instance.GameplayMenu.WeaponReloadUI.SetActive(false);
-        this.InteractingPerson = (Person) null;
+        this.CancelMining();
         return;
       }
       this._TimeMining -= Time.deltaTime;
@@ -120,6 +121,11 @@ public class bl_MinableObject : Interactible
         return;
       }
     }
+    this.FinishMining();
+  }
+
+  public virtual void FinishMining()
+  {
     Main.Instance.MainThreads.Remove(new Action(this.MiningThread));
     if ((UnityEngine.Object) this.InteractingPerson != (UnityEngine.Object) null)
     {
@@ -127,11 +133,25 @@ public class bl_MinableObject : Interactible
       this.InteractingPerson.RemoveMoveBlocker("Mining");
       this.InteractingPerson.enabled = true;
       if (this.InteractingPerson.IsPlayer)
+      {
         Main.Instance.GameplayMenu.WeaponReloadUI.SetActive(false);
+        Main.Instance.GameplayMenu.QLeave.SetActive(false);
+      }
     }
     this.Break(this.InteractingPerson);
     if (this.NPCOnFinishInteract != null)
       this.NPCOnFinishInteract();
+    this.InteractingPerson = (Person) null;
+  }
+
+  public virtual void CancelMining()
+  {
+    Main.Instance.MainThreads.Remove(new Action(this.MiningThread));
+    this.InteractingPerson.Interacting = false;
+    this.InteractingPerson.RemoveMoveBlocker("Mining");
+    this.InteractingPerson.enabled = true;
+    Main.Instance.GameplayMenu.WeaponReloadUI.SetActive(false);
+    Main.Instance.GameplayMenu.QLeave.SetActive(false);
     this.InteractingPerson = (Person) null;
   }
 
@@ -152,7 +172,7 @@ public class bl_MinableObject : Interactible
     if ((UnityEngine.Object) person != (UnityEngine.Object) null && person.Perks.Contains("Mining Skill lvl 2") && this.ExtraOre != null && this.ExtraOre.Length != 0 && (UnityEngine.Object) this.ExtraOre[0] != (UnityEngine.Object) null)
     {
       Transform transform3 = Main.Spawn(this.ExtraOre[0], saveable: true).transform;
-      Transform transform4 = this.SpawnSpots == null || this.SpawnSpots.Length == 0 ? this.transform : this.SpawnSpots[this.BreaksInto.Length - 1];
+      Transform transform4 = this.SpawnSpots == null || this.SpawnSpots.Length == 0 ? this.transform : (this.SpawnSpots.Length < this.BreaksInto.Length ? this.SpawnSpots[0] : this.SpawnSpots[this.BreaksInto.Length - 1]);
       transform3.position = transform4.position;
       transform3.rotation = transform4.rotation;
       if (this.SpawnNonDespawnable)
@@ -169,7 +189,13 @@ public class bl_MinableObject : Interactible
 
   public virtual void OnBuilt(List<Person> builders)
   {
-    foreach (int_Lockable componentsInChild in this.RootObj.GetComponentsInChildren<int_Lockable>(true))
+    GameObject gameObject = this.RootObj;
+    if ((UnityEngine.Object) gameObject == (UnityEngine.Object) null)
+    {
+      Debug.Log((object) ("This Obj Has Null RootObj - " + this.name));
+      gameObject = this.gameObject;
+    }
+    foreach (int_Lockable componentsInChild in gameObject.GetComponentsInChildren<int_Lockable>(true))
       componentsInChild.PlayerOwned = true;
     if (!this.BakeNavmeshOnBuild)
       return;
@@ -252,32 +278,40 @@ public class bl_MinableObject : Interactible
   public override string[] sd_SaveData(char SlitChar = ':')
   {
     Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
-    return new string[5]
+    List<string> stringList = new List<string>();
+    stringList.AddRange((IEnumerable<string>) this.base_sd_SaveData(SlitChar));
+    stringList.AddRange((IEnumerable<string>) new string[6]
     {
-      this.WorldSaveID,
+      MethodBase.GetCurrentMethod().DeclaringType.Name,
+      "PrefabName",
       this.PrefabName,
       Main.Vector32Str(transform.position),
       Main.Vector32Str(transform.eulerAngles),
       Main.Vector32Str(transform.localScale)
-    };
+    });
+    return stringList.ToArray();
   }
 
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
     Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
-    if (Data.Length > 2)
-      transform.position = Main.ParseVector3(Data[2]);
+    this.base_sd_LoadData(Data, SlitChar);
+    if (this.IsThisAfterV13)
+      this._CurrentLoadingIndex = SaveableBehaviour.LineFor(Data, MethodBase.GetCurrentMethod().DeclaringType.Name) + 3;
+    else
+      this._CurrentLoadingIndex = 2;
+    if (Data.Length > this._CurrentLoadingIndex)
+      transform.position = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
     else
       Debug.LogError((object) ("Data.Length > 2 -> " + this.gameObject.name));
-    if (Data.Length > 3)
-      transform.eulerAngles = Main.ParseVector3(Data[3]);
+    if (Data.Length > this._CurrentLoadingIndex)
+      transform.eulerAngles = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
     else
       Debug.LogError((object) ("Data.Length > 3 -> " + this.gameObject.name));
-    if (Data.Length > 4)
-      transform.localScale = Main.ParseVector3(Data[4]);
+    if (Data.Length > this._CurrentLoadingIndex)
+      transform.localScale = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
     else
       Debug.LogError((object) ("Data.Length > 4 -> " + this.gameObject.name));
-    this._CurrentLoadingIndex = 5;
   }
 
   public override byte[] ByteSaveableData2

@@ -1,11 +1,12 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Interactible
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityStandardAssets.Cameras;
 
@@ -16,6 +17,7 @@ public class Interactible : SaveableBehaviour
   public bool ScatInteractible;
   public bool NPCCanUseInFollow;
   public bool OnlyInteractibleInOW;
+  public bool HangSocialInt;
   public bool RootClass_NullUserAtEnd;
   public bool SetInteracting = true;
   public bool CanInterruptUse;
@@ -418,23 +420,38 @@ public class Interactible : SaveableBehaviour
     this.InteractingPerson = (Person) null;
   }
 
+  public string[] base_sd_SaveData(char SlitChar = ':') => base.sd_SaveData(SlitChar);
+
+  public void base_sd_LoadData(string[] Data, char SlitChar = ':')
+  {
+    base.sd_LoadData(Data, SlitChar);
+  }
+
   public override string[] sd_SaveData(char SlitChar = ':')
   {
+    List<string> stringList = new List<string>();
     Transform transform = (UnityEngine.Object) this.RootObj != (UnityEngine.Object) null ? this.RootObj.transform : this.transform;
-    return new string[5]
+    stringList.AddRange((IEnumerable<string>) base.sd_SaveData(SlitChar));
+    stringList.AddRange((IEnumerable<string>) new string[6]
     {
-      this.WorldSaveID,
+      MethodBase.GetCurrentMethod().DeclaringType.Name,
+      "PrefabName",
       this.PrefabName,
       Main.Vector32Str(transform.position),
       Main.Vector32Str(transform.eulerAngles),
       (UnityEngine.Object) this.InteractingPerson == (UnityEngine.Object) null ? "NULL" : this.InteractingPerson.WorldSaveID
-    };
+    });
+    return stringList.ToArray();
   }
 
   public override void sd_LoadData(string[] Data, char SlitChar = ':')
   {
+    base.sd_LoadData(Data, SlitChar);
     Transform transform = (UnityEngine.Object) this.RootObj == (UnityEngine.Object) null ? this.transform : this.RootObj.transform;
-    this._CurrentLoadingIndex = 2;
+    if (this.IsThisAfterV13)
+      this._CurrentLoadingIndex = SaveableBehaviour.LineFor(Data, MethodBase.GetCurrentMethod().DeclaringType.Name) + 3;
+    else
+      this._CurrentLoadingIndex = 2;
     if (Data.Length <= this._CurrentLoadingIndex)
       return;
     transform.position = Main.ParseVector3(Data[this._CurrentLoadingIndex++]);
@@ -496,19 +513,20 @@ public class Interactible : SaveableBehaviour
       this.DespawnTimerThread();
     if (!((UnityEngine.Object) this.RootObj != (UnityEngine.Object) null) || (double) this.RootObj.transform.position.y >= -100.0)
       return;
-    Vector3 vector3 = new Vector3(0.0f, 0.2f, 0.0f);
+    Vector3 vector3 = new Vector3(0.0f, 0.0f, 0.0f);
     if (Main.Instance.OpenWorld)
     {
       float num1 = 5E+07f;
-      for (int index = 0; index < bl_SectionGenerate2.ItemFallRespawnSpots.Count; ++index)
+      List<Transform> transformList = bl_UndergroundMine2.Instance.gameObject.activeSelf ? bl_SectionGenerate2.ItemFallRespawnSpots_Mines : bl_SectionGenerate2.ItemFallRespawnSpots;
+      for (int index = 0; index < transformList.Count; ++index)
       {
-        if ((UnityEngine.Object) bl_SectionGenerate2.ItemFallRespawnSpots[index] != (UnityEngine.Object) null)
+        if ((UnityEngine.Object) transformList[index] != (UnityEngine.Object) null)
         {
-          float num2 = Vector3.Distance(bl_SectionGenerate2.ItemFallRespawnSpots[index].position, this.transform.position);
+          float num2 = Vector3.Distance(transformList[index].position, this.transform.position);
           if ((double) num2 < (double) num1)
           {
             num1 = num2;
-            vector3 = bl_SectionGenerate2.ItemFallRespawnSpots[index].position;
+            vector3 = transformList[index].position + new Vector3(0.0f, 0.2f, 0.0f);
           }
         }
       }
@@ -517,7 +535,7 @@ public class Interactible : SaveableBehaviour
     Rigidbody component = this.RootObj.GetComponent<Rigidbody>();
     if (!((UnityEngine.Object) component != (UnityEngine.Object) null))
       return;
-    component.velocity = Vector3.zero;
+    component.linearVelocity = Vector3.zero;
   }
 
   private void OnTriggerEnter(Collider other)

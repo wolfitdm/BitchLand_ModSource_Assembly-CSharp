@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: FirstPersonMovement
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -30,6 +30,6 @@ public class FirstPersonMovement : MonoBehaviour
     if (this.speedOverrides.Count > 0)
       num = this.speedOverrides[this.speedOverrides.Count - 1]();
     Vector2 vector2 = new Vector2(Input.GetAxis("Horizontal") * num, Input.GetAxis("Vertical") * num);
-    this.rigidbody.velocity = this.transform.rotation * new Vector3(vector2.x, this.rigidbody.velocity.y, vector2.y);
+    this.rigidbody.linearVelocity = this.transform.rotation * new Vector3(vector2.x, this.rigidbody.linearVelocity.y, vector2.y);
   }
 }

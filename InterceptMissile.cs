@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: InterceptMissile
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections;
@@ -103,7 +103,7 @@ public class InterceptMissile : MonoBehaviour
       return;
     if (this.motorActive)
       this.MissileSpeed += this.Acceleration * Time.deltaTime;
-    this.rb.velocity = this.transform.forward * this.MissileSpeed;
+    this.rb.linearVelocity = this.transform.forward * this.MissileSpeed;
     if (this.targetTracking)
       this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, this.guideRotation, this.TurnRate * Time.deltaTime);
     if ((double) this.Since(this.MissileLaunchTime) <= (double) this.MissileLifeTime)
@@ -158,7 +158,7 @@ public class InterceptMissile : MonoBehaviour
     }
     // ISSUE: reference to a compiler-generated field
     this.\u003C\u003E1__state = -1;
-    interceptMissile.rb.velocity = interceptMissile.transform.forward * interceptMissile.InitialLaunchForce;
+    interceptMissile.rb.linearVelocity = interceptMissile.transform.forward * interceptMissile.InitialLaunchForce;
     // ISSUE: reference to a compiler-generated field
     this.\u003C\u003E2__current = (object) new WaitForSeconds(time);
     // ISSUE: reference to a compiler-generated field

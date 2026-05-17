@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: Army
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using System;
 using System.Collections.Generic;
@@ -175,25 +175,31 @@ public class Army : BaseType
                 Debug.Log((object) "LBL_PatrolRandom");
               person.AddCullBlocker("worktime");
               int_PatrolSpot[] objectsOfType = UnityEngine.Object.FindObjectsOfType<int_PatrolSpot>(true);
-              int index1 = UnityEngine.Random.Range(0, objectsOfType.Length);
-              person.NavmeshProxDistance = 1f;
-              person.AddWorkScheduleTask(new Person.ScheduleTask()
+              if (objectsOfType.Length != 0)
               {
-                IDName = "LBL_PatrolRandom",
-                ActionPlace = objectsOfType[index1].RootObj.transform,
-                RunTo = false,
-                NoMoveChecker = true,
-                NoMoveTimer = 4f,
-                WhenNoMove = (Action) (() => person.CompleteScheduleTask(true)),
-                OnArrive = (Action) (() => person.CompleteScheduleTask(true))
-              }, true);
-              return true;
-            default:
-              for (int index2 = 0; index2 < Main.Instance.AllPatrols.Count; ++index2)
-              {
-                if (Main.Instance.AllPatrols[index2].Name == strArray2[1])
+                int index = UnityEngine.Random.Range(0, objectsOfType.Length);
+                if (!person.HasPathTo(objectsOfType[index].RootObj.transform.position))
+                  return false;
+                person.NavmeshProxDistance = 1f;
+                person.AddWorkScheduleTask(new Person.ScheduleTask()
                 {
-                  bl_Patrol allPatrol = Main.Instance.AllPatrols[index2];
+                  IDName = "LBL_PatrolRandom",
+                  ActionPlace = objectsOfType[index].RootObj.transform,
+                  RunTo = false,
+                  NoMoveChecker = true,
+                  NoMoveTimer = 4f,
+                  WhenNoMove = (Action) (() => person.CompleteScheduleTask(true)),
+                  OnArrive = (Action) (() => person.CompleteScheduleTask(true))
+                }, true);
+                return true;
+              }
+              goto label_52;
+            default:
+              for (int index = 0; index < Main.Instance.AllPatrols.Count; ++index)
+              {
+                if (Main.Instance.AllPatrols[index].Name == strArray2[1])
+                {
+                  bl_Patrol allPatrol = Main.Instance.AllPatrols[index];
                   if (person.DEBUG)
                     Debug.Log((object) "LBL_PatrolSpecific");
                   person.AddCullBlocker("worktime");

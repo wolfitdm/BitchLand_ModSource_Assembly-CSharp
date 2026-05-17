@@ -1,8 +1,8 @@
 ﻿// Decompiled with JetBrains decompiler
 // Type: bl_CityCharacters
 // Assembly: Assembly-CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D722A332-18BD-4C4F-854C-859C1C1AE1E7
-// Assembly location: E:\sw_games\Bitchland_11c_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
+// MVID: DAC2C327-70D4-472B-9503-C9271148CB13
+// Assembly location: E:\Bitchland11e2_PreinstalledMods\Bitch Land_Data\Managed\Assembly-CSharp.dll
 
 using UnityEngine;
 
@@ -37,6 +37,9 @@ public class bl_CityCharacters : MonoBehaviour
   public Person Xoxa;
   public Person Ana;
   public Person Lai;
+  public Person Ewa;
+  public Person Branca;
+  public Person Ebi;
 
   public void SetPerson(Person person)
   {
@@ -243,7 +246,15 @@ public class bl_CityCharacters : MonoBehaviour
       case 2476545120:
         if (!(name == "Rit"))
           return;
+        this.Rit = person;
         this.Rit.PersonType = Main.Instance.PersonTypes[7];
+        this.Rit.Energy = 100f;
+        this.Rit.NoEnergyLoss = true;
+        this.Rit.CantBeRestrained = true;
+        this.Rit.PlayerKnowsName = true;
+        this.Rit.TheHealth.canDie = false;
+        this.Rit.CantBeHit = true;
+        this.Rit.CantBeForced = true;
         return;
       case 2512061727:
         if (!(name == "Merussy"))
@@ -267,10 +278,31 @@ public class bl_CityCharacters : MonoBehaviour
         this.Lai._DirtySkin = false;
         this.Lai.SetBodyTexture();
         return;
+      case 3430243453:
+        if (!(name == "Ebi"))
+          return;
+        this.Ebi = person;
+        this.Ebi.PersonType = Main.Instance.PersonTypes[6];
+        this.Ebi.Energy = 100f;
+        this.Ebi.NoEnergyLoss = true;
+        this.Ebi.CantBeRestrained = true;
+        this.Ebi.PlayerKnowsName = true;
+        this.Ebi.TheHealth.canDie = false;
+        this.Ebi.CantBeHit = true;
+        this.Ebi.CantBeForced = true;
+        return;
       case 3583585522:
         if (!(name == "Jeanne"))
           return;
+        this.Jeanne = person;
         this.Jeanne.PersonType = Main.Instance.PersonTypes[7];
+        this.Jeanne.Energy = 100f;
+        this.Jeanne.NoEnergyLoss = true;
+        this.Jeanne.CantBeRestrained = true;
+        this.Jeanne.PlayerKnowsName = true;
+        this.Jeanne.TheHealth.canDie = false;
+        this.Jeanne.CantBeHit = true;
+        this.Jeanne.CantBeForced = true;
         return;
       case 3633252167:
         if (!(name == "Ely"))
